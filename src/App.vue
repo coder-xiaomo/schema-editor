@@ -1,11 +1,42 @@
-<script setup lang="ts"></script>
+﻿<script setup lang="ts">
+import { useEditorStore } from '@/stores/editor'
+import EditorToolbar from '@/components/EditorToolbar.vue'
+import EditorSidebar from '@/components/EditorSidebar.vue'
+import CommonConfigPanel from '@/components/CommonConfigPanel.vue'
+import TableEditor from '@/components/TableEditor.vue'
+import AddFieldModal from '@/components/AddFieldModal.vue'
+
+const store = useEditorStore()
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <div class="app-container">
+    <!-- 顶部工具栏 -->
+    <EditorToolbar />
 
-<style scoped></style>
+    <div class="main-layout">
+      <!-- 左侧导航 -->
+      <EditorSidebar />
+
+      <!-- 右侧内容区 -->
+      <div class="content">
+        <!-- Common 配置面板 -->
+        <CommonConfigPanel v-if="store.showCommonPanel && store.commonConfig" />
+
+        <!-- 表编辑面板 -->
+        <TableEditor v-else-if="store.currentTable" />
+
+        <!-- 空状态 -->
+        <div v-else class="empty-state">
+          <p>请先导入 JSON 文件，然后在左侧选择要编辑的表</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 添加字段弹窗 -->
+    <AddFieldModal />
+
+    <!-- Toast 通知 -->
+    <div class="toast" :class="{ show: store.toastVisible }">{{ store.toastMsg }}</div>
+  </div>
+</template>
