@@ -38,7 +38,8 @@ const store = useEditorStore()
           @click="store.selectTable(sIdx, tIdx)"
         >
           <span class="sidebar-icon">&#9679;</span>
-          {{ table.name }}
+          <span class="table-name">{{ table.name }}</span>
+          <span v-if="table.comment" class="table-comment" :title="table.comment">{{ table.comment }}</span>
           <span class="delete-btn" @click.stop="store.deleteTable(sIdx, tIdx)" title="Delete table">&times;</span>
         </div>
       </template>
@@ -126,6 +127,19 @@ const store = useEditorStore()
 
 .sidebar-item.table-item {
   padding-left: 24px;
+}
+
+.table-name {
+  flex-shrink: 0;
+}
+
+.table-comment {
+  color: #999;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .sidebar-item.common-item {
