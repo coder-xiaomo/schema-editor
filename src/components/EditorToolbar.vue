@@ -11,11 +11,11 @@ const store = useEditorStore()
 
     <!-- Primary: Open Folder -->
     <button class="btn btn-primary" @click="store.openProject()">
-      <span class="btn-icon">&#128193;</span> Open Folder
+      <span class="btn-icon">&#128193;&#xFE0E;</span> Open Folder
     </button>
 
     <span v-if="store.projectOpened" class="sync-badge" title="编辑内容实时同步到本地文件">
-      &#128190; Auto-saving to disk
+      &#128190;&#xFE0E; Auto-saving to disk
     </span>
   </div>
 </template>
@@ -65,7 +65,7 @@ const store = useEditorStore()
   background: #4a90d9;
   color: #fff;
   border-color: #4a90d9;
-  padding: 5px 16px;
+  /* padding: 5px 16px; */
   font-weight: 500;
 }
 
@@ -81,9 +81,10 @@ const store = useEditorStore()
 
 .sync-badge {
   font-size: 11px;
-  color: #888;
+  /* color: #888; */
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  opacity: 0.618;
 }
 </style>

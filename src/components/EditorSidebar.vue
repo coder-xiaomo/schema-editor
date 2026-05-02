@@ -51,11 +51,11 @@ const store = useEditorStore()
     </div>
 
     <!-- Sidebar Footer -->
-    <div class="sidebar-footer">
+    <div v-if="!store.projectOpened" class="sidebar-footer">
       <button class="btn-footer btn-footer-primary" @click="store.openProject()">
-        &#128193; Open
+        <!-- &#128193; Open -->
+        &#128193;&#xFE0E; Open
       </button>
-      <span v-if="store.projectOpened" class="footer-sync-hint" title="编辑实时同步">&#128190;</span>
     </div>
   </div>
 </template>
@@ -224,12 +224,6 @@ const store = useEditorStore()
 .btn-footer-primary:hover {
   background: #3a7bc8;
   border-color: #3a7bc8;
-}
-
-.footer-sync-hint {
-  font-size: 12px;
-  color: #888;
-  margin-left: 4px;
 }
 
 /* ===== Scrollbar ===== */
