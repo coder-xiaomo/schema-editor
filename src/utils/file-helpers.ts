@@ -117,6 +117,23 @@ export async function writeSqlToOutput(
   await writable.close()
 }
 
+/**
+ * 从 output/<dialect>/ 目录删除文件
+ */
+export async function deleteSqlFromOutput(
+  rootHandle: any,
+  dialect: string,
+  filename: string
+): Promise<void> {
+  try {
+    const outputHandle = await rootHandle.getDirectoryHandle('output', { create: false })
+    const dialectHandle = await outputHandle.getDirectoryHandle(dialect, { create: false })
+    await dialectHandle.removeEntry(filename)
+  } catch {
+    // 文件可能不存在，忽略
+  }
+}
+
 // ===== Initial Data 文件读写 =====
 
 /**

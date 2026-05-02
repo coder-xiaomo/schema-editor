@@ -6,6 +6,7 @@ import {
   writeCommonToHandle,
   writeSchemaToHandle,
   deleteSchemaFromHandle,
+  deleteSqlFromOutput,
   writeSqlToOutput,
   readInitialDataFromHandle,
   writeInitialDataToHandle,
@@ -323,6 +324,22 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     schemas.splice(schemaIdx, 1)
+
+    // Delete SQL output files and regenerate aggregate files
+    if (rootDirHandle.value) {
+      const schemaName = schema.schema
+      try {
+        await deleteSqlFromOutput(rootDirHandle.value, 'mysql', `${schemaName}.sql`)
+      } catch (e) {
+        console.warn('Failed to delete mysql output:', e)
+      }
+      try {
+        await deleteSqlFromOutput(rootDirHandle.value, 'postgresql', `${schemaName}.sql`)
+      } catch (e) {
+        console.warn('Failed to delete postgresql output:', e)
+      }
+      await syncSqlToOutput()
+    }
 
     // Update selection
     if (schemas.length === 0) {
