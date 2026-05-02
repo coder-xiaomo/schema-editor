@@ -156,12 +156,27 @@ export const useEditorStore = defineStore('editor', () => {
   async function syncSqlToOutput() {
     if (!rootDirHandle.value) return
     try {
+      const allMysql: { name: string; sql: string }[] = []
+      const allPgsql: { name: string; sql: string }[] = []
+
       for (const schema of schemas) {
         const mysqlSql = generateSchemaMySQL(schema, commonConfig.value)
         await writeSqlToOutput(rootDirHandle.value, 'mysql', `${schema.schema}.sql`, mysqlSql)
+        allMysql.push({ name: schema.schema, sql: mysqlSql })
 
         const pgsqlSql = generateSchemaPostgreSQL(schema, commonConfig.value)
         await writeSqlToOutput(rootDirHandle.value, 'postgresql', `${schema.schema}.sql`, pgsqlSql)
+        allPgsql.push({ name: schema.schema, sql: pgsqlSql })
+      }
+
+      // 生成包含所有 schema 的汇总文件（按 schema 名字母序排列）
+      if (allMysql.length > 0) {
+        const sorted = allMysql.sort((a, b) => a.name.localeCompare(b.name))
+        await writeSqlToOutput(rootDirHandle.value, 'mysql', '__all_schemas__.sql', sorted.map(s => s.sql).join('\n\n'))
+      }
+      if (allPgsql.length > 0) {
+        const sorted = allPgsql.sort((a, b) => a.name.localeCompare(b.name))
+        await writeSqlToOutput(rootDirHandle.value, 'postgresql', '__all_schemas__.sql', sorted.map(s => s.sql).join('\n\n'))
       }
     } catch (e) {
       console.error('SQL output sync failed:', e)
