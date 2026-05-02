@@ -44,9 +44,17 @@ const store = useEditorStore()
       </template>
 
       <!-- Empty State -->
-      <div v-if="store.schemas.length === 0 && !store.commonConfig" class="empty-hint">
-        导入 JSON 文件开始编辑
+      <div v-if="!store.projectOpened && store.schemas.length === 0 && !store.commonConfig" class="empty-hint">
+        Click "Open Folder" to start
       </div>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <button class="btn-footer btn-footer-primary" @click="store.openProject()">
+        &#128193; Open
+      </button>
+      <span v-if="store.projectOpened" class="footer-sync-hint" title="编辑实时同步">&#128190;</span>
     </div>
   </div>
 </template>
@@ -162,6 +170,52 @@ const store = useEditorStore()
   text-align: center;
   color: #aaa;
   font-size: 12px;
+}
+
+/* ===== Sidebar Footer ===== */
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-top: 1px solid #eee;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.btn-footer {
+  padding: 4px 10px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+  color: #555;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+
+.btn-footer:hover {
+  background: #e8e8e8;
+  border-color: #aaa;
+}
+
+.btn-footer-primary {
+  background: #4a90d9;
+  color: #fff;
+  border-color: #4a90d9;
+  font-weight: 500;
+}
+
+.btn-footer-primary:hover {
+  background: #3a7bc8;
+  border-color: #3a7bc8;
+}
+
+.footer-sync-hint {
+  font-size: 12px;
+  color: #888;
+  margin-left: 4px;
 }
 
 /* ===== Scrollbar ===== */

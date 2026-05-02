@@ -1,53 +1,22 @@
 ﻿<script setup lang="ts">
-import { ref } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 
 const store = useEditorStore()
-
-// Hidden file input refs
-const commonFileInput = ref<HTMLInputElement | null>(null)
-const schemaFileInput = ref<HTMLInputElement | null>(null)
-
-// Trigger hidden file inputs
-function triggerImportCommon() {
-  if (commonFileInput.value) {
-    commonFileInput.value.value = ''
-    commonFileInput.value.click()
-  }
-}
-
-function triggerImportSchemas() {
-  if (schemaFileInput.value) {
-    schemaFileInput.value.value = ''
-    schemaFileInput.value.click()
-  }
-}
 </script>
 
 <template>
   <!-- ===== Top Toolbar ===== -->
   <div class="toolbar">
     <span class="title">Schema Editor</span>
-    <button class="btn btn-primary" @click="triggerImportCommon">Import common.json</button>
-    <input
-      ref="commonFileInput"
-      type="file"
-      accept=".json"
-      style="display: none"
-      @change="store.handleCommonFile"
-    />
-    <button class="btn btn-primary" @click="triggerImportSchemas">Import Schema JSON</button>
-    <input
-      ref="schemaFileInput"
-      type="file"
-      accept=".json"
-      multiple
-      style="display: none"
-      @change="store.handleSchemaFiles"
-    />
-    <div class="toolbar-separator"></div>
-    <button class="btn" @click="store.exportCurrentSchema" :disabled="!store.currentSchema">Export Current Schema</button>
-    <button class="btn" @click="store.exportAll" :disabled="store.schemas.length === 0">Export All</button>
+
+    <!-- Primary: Open Folder -->
+    <button class="btn btn-primary" @click="store.openProject()">
+      <span class="btn-icon">&#128193;</span> Open Folder
+    </button>
+
+    <span v-if="store.projectOpened" class="sync-badge" title="编辑内容实时同步到本地文件">
+      &#128190; Auto-saving to disk
+    </span>
   </div>
 </template>
 
@@ -92,15 +61,12 @@ function triggerImportSchemas() {
   border-color: #aaa;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .btn-primary {
   background: #4a90d9;
   color: #fff;
   border-color: #4a90d9;
+  padding: 5px 16px;
+  font-weight: 500;
 }
 
 .btn-primary:hover {
@@ -108,10 +74,16 @@ function triggerImportSchemas() {
   border-color: #3a7bc8;
 }
 
-.toolbar-separator {
-  width: 1px;
-  height: 20px;
-  background: #ddd;
-  margin: 0 4px;
+.btn-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.sync-badge {
+  font-size: 11px;
+  color: #888;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 </style>

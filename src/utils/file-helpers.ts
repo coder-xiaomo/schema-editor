@@ -1,41 +1,106 @@
 ﻿import { toRaw } from 'vue'
 
-/**
- * 使用 Blob + URL.createObjectURL 下载 JSON
- */
-export function downloadJson(data: unknown, filename: string) {
-  // Use toRaw to unwrap Vue reactive proxies before serialization
-  const raw = toRaw(data)
-  const jsonStr = JSON.stringify(raw, null, 2)
-  const blob = new Blob([jsonStr], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+const jsonFileIndent = 4
+
+// ===== File System Access API —— 基于 handle 的文件夹读写 =====
+
+/** 检查浏览器是否支持 File System Access API */
+export function isFileSystemAccessSupported(): boolean {
+  return typeof window !== 'undefined' && 'showDirectoryPicker' in window
 }
 
 /**
- * FileReader 封装为 Promise
+ * 弹出文件夹选择器，读取项目结构：
+ *   - common.json（根目录）
+ *   - schema/ 子目录下的所有 .json 文件
+ * 返回 { rootHandle, schemaHandle, commonData, schemaFiles[] }
  */
-export function readJsonFile(file: File): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
+export async function openProjectFolder(): Promise<{
+  rootHandle: any
+  schemaHandle: any
+  commonData: unknown | null
+  schemaFiles: { name: string; data: unknown }[]
+}> {
+  const rootHandle = await (window as any).showDirectoryPicker()
+  let commonData: unknown | null = null
+  let schemaHandle: any = null
+  const schemaFiles: { name: string; data: unknown }[] = []
+
+  // 逐条扫描根目录
+  for await (const entry of rootHandle.values()) {
+    const handle: any = entry
+    const name: string = handle.name
+    console.log(`[openProjectFolder] root entry: "${name}" kind=${handle.kind}`)
+
+    if (name === 'common.json' && handle.kind === 'file') {
       try {
-        const data = JSON.parse(reader.result as string)
-        resolve(data)
-      } catch (err) {
-        reject(err)
+        const file = await handle.getFile()
+        commonData = JSON.parse(await file.text())
+        console.log('[openProjectFolder] common.json loaded')
+      } catch (e) { console.warn('[openProjectFolder] common.json parse error:', e) }
+    }
+
+    if (name === 'schemas' && handle.kind === 'directory') {
+      schemaHandle = handle
+      console.log('[openProjectFolder] schemas/ directory found')
+    }
+  }
+
+  // 读取 schemas/ 子目录
+  try {
+    const sdHandle = await rootHandle.getDirectoryHandle('schemas')
+    schemaHandle = sdHandle
+    console.log('[openProjectFolder] iterating schemas/ entries...')
+    for await (const entry of sdHandle.values()) {
+      const fHandle: any = entry
+      const fName: string = fHandle.name
+      console.log(`[openProjectFolder]   schemas entry: "${fName}" kind=${fHandle.kind}`)
+      if (fName.endsWith('.json') && fHandle.kind === 'file') {
+        try {
+          const file = await fHandle.getFile()
+          schemaFiles.push({ name: fName, data: JSON.parse(await file.text()) })
+          console.log(`[openProjectFolder]   -> loaded "${fName}"`)
+        } catch (e) { console.warn(`[openProjectFolder]   -> failed "${fName}":`, e) }
       }
     }
-    reader.onerror = () => reject(reader.error)
-    reader.readAsText(file)
-  })
+    console.log(`[openProjectFolder] schema files found: ${schemaFiles.length}`)
+  } catch (e) {
+    console.log('[openProjectFolder] no schemas/ directory, creating one')
+    schemaHandle = await rootHandle.getDirectoryHandle('schemas', { create: true })
+  }
+
+  return { rootHandle, schemaHandle, commonData, schemaFiles }
 }
+
+/**
+ * 将数据写入 common.json
+ */
+export async function writeCommonToHandle(rootHandle: any, data: unknown): Promise<void> {
+  const handle = await rootHandle.getFileHandle('common.json', { create: true })
+  const writable = await handle.createWritable()
+  await writable.write(JSON.stringify(toRaw(data), null, jsonFileIndent))
+  await writable.close()
+}
+
+/**
+ * 将 schema 数据写入 schema/<filename>.json
+ */
+export async function writeSchemaToHandle(schemaHandle: any, filename: string, data: unknown): Promise<void> {
+  const handle = await schemaHandle.getFileHandle(filename, { create: true })
+  const writable = await handle.createWritable()
+  await writable.write(JSON.stringify(toRaw(data), null, jsonFileIndent))
+  await writable.close()
+}
+
+/**
+ * 从 schema/ 目录删除文件
+ */
+export async function deleteSchemaFromHandle(schemaHandle: any, filename: string): Promise<void> {
+  await schemaHandle.removeEntry(filename)
+}
+
+// ===== 业务无关的工具函数 =====
+
 
 /**
  * 解析默认值输入

@@ -1,7 +1,13 @@
-﻿import { ref, reactive, computed } from 'vue'
+﻿import { ref, reactive, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { CommonConfig, Schema, Table, Field, Index } from '@/types/schema'
-import { downloadJson, parseFieldLengthInput } from '@/utils/file-helpers'
+import {
+  openProjectFolder,
+  writeCommonToHandle,
+  writeSchemaToHandle,
+  deleteSchemaFromHandle,
+  parseFieldLengthInput
+} from '@/utils/file-helpers'
 
 export const useEditorStore = defineStore('editor', () => {
   // ===== State =====
@@ -15,11 +21,16 @@ export const useEditorStore = defineStore('editor', () => {
   const toastMsg = ref('')
   const toastVisible = ref(false)
   const showAddFieldModal = ref(false)
-  const addFieldMode = ref<'normal' | 'common'>('normal') // 'normal' | 'common'
+  const addFieldMode = ref<'normal' | 'common'>('normal')
   const addFieldSchemaIdx = ref(-1)
   const addFieldTableIdx = ref(-1)
   const newFieldName = ref('')
   const newFieldSelectCommon = ref('')
+
+  // File System Access API handles (in-memory, same session)
+  const rootDirHandle = ref<any>(null)
+  const schemaDirHandle = ref<any>(null)
+  const projectOpened = ref(false)
 
   // ===== Computed =====
   const currentSchema = computed(() => {
@@ -50,65 +61,121 @@ export const useEditorStore = defineStore('editor', () => {
     toastTimer = setTimeout(() => { toastVisible.value = false }, 2000)
   }
 
-  // ===== File Import =====
-  function handleCommonFile(e: Event) {
-    const target = e.target as HTMLInputElement
-    const file = target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target!.result as string)
-        if (!data.default_config || !data.common_used_fields) {
-          showToast('Invalid common.json: missing default_config or common_used_fields')
-          return
+  // ===== Open Project Folder =====
+
+  /** 选择项目文件夹并加载内容，之后所有编辑实时自动同步 */
+  async function openProject() {
+    try {
+      const result = await openProjectFolder()
+      console.log('[openProject] result.schemaFiles.length:', result.schemaFiles.length)
+      console.log('[openProject] result.commonData:', !!result.commonData)
+
+      rootDirHandle.value = result.rootHandle
+      schemaDirHandle.value = result.schemaHandle
+
+      // 加载 common.json
+      if (result.commonData) {
+        const data = result.commonData as any
+        if (data.default_config && data.common_used_fields) {
+          commonConfig.value = data
+          console.log('[openProject] commonConfig set')
         }
-        commonConfig.value = data
-        showToast('common.json imported successfully')
-      } catch (err: any) {
-        showToast('Failed to parse common.json: ' + err.message)
       }
+
+      // 加载 schema JSON
+      schemas.length = 0
+      for (const { name, data: raw } of result.schemaFiles) {
+        const data = raw as any
+        console.log(`[openProject] processing "${name}": schema="${data.schema}", tables=${Array.isArray(data.tables) ? data.tables.length : 'N/A'}`)
+        if (!data.schema || !Array.isArray(data.tables)) {
+          showToast(`Skipping ${name}: invalid format`)
+          continue
+        }
+        data.tables.forEach((t: any) => {
+          if (!t.indexes) t.indexes = []
+          if (!t.fields) t.fields = []
+        })
+        schemas.push(data)
+      }
+
+      console.log('[openProject] schemas loaded:', schemas.length)
+
+      projectOpened.value = true
+
+      const parts: string[] = []
+      if (schemas.length > 0) parts.push(`${schemas.length} schema(s)`)
+      if (commonConfig.value) parts.push('common.json')
+      showToast(`Opened ${parts.join(' + ')}`)
+
+      // Select first schema automatically
+      if (schemas.length > 0) {
+        selectedSchemaIdx.value = 0
+        selectedTableIdx.value = schemas[0]!.tables.length > 0 ? 0 : -1
+      }
+
+      setupAutoSync()
+    } catch {
+      // User cancelled the directory picker — do nothing
     }
-    reader.readAsText(file)
   }
 
-  function handleSchemaFiles(e: Event) {
-    const target = e.target as HTMLInputElement
-    const files = Array.from(target.files || [])
-    if (files.length === 0) return
-    let imported = 0
-    files.forEach(file => {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        try {
-          const data = JSON.parse(ev.target!.result as string)
-          if (!data.schema || !Array.isArray(data.tables)) {
-            showToast('Invalid schema file: missing schema or tables')
-            return
-          }
-          // Ensure tables have indexes array
-          data.tables.forEach((t: any) => {
-            if (!t.indexes) t.indexes = []
-            if (!t.fields) t.fields = []
-          })
-          // Check if schema already exists
-          const existIdx = schemas.findIndex(s => s.schema === data.schema)
-          if (existIdx >= 0) {
-            schemas.splice(existIdx, 1, data)
-          } else {
-            schemas.push(data)
-          }
-          imported++
-          if (imported === files.length) {
-            showToast(`Imported ${imported} schema(s)`)
-          }
-        } catch (err: any) {
-          showToast('Failed to parse: ' + err.message)
-        }
-      }
-      reader.readAsText(file)
-    })
+  // ===== Auto-sync (实时同步到本地文件) =====
+
+  let _syncTimer: ReturnType<typeof setTimeout> | null = null
+  let _autoSyncSetup = false
+
+  function debouncedSync(delay = 400) {
+    if (_syncTimer) clearTimeout(_syncTimer)
+    _syncTimer = setTimeout(() => syncAllToDisk(), delay)
   }
+
+  async function syncAllToDisk() {
+    if (!rootDirHandle.value || !schemaDirHandle.value) return
+    try {
+      if (commonConfig.value) {
+        await writeCommonToHandle(rootDirHandle.value, commonConfig.value)
+      }
+      for (const schema of schemas) {
+        const data = buildSchemaExportData(schema)
+        await writeSchemaToHandle(schemaDirHandle.value, `${schema.schema}.json`, data)
+      }
+    } catch (e) {
+      console.error('Auto-sync failed:', e)
+      showToast('Failed to save changes')
+    }
+  }
+
+  function setupAutoSync() {
+    if (_autoSyncSetup) return
+    _autoSyncSetup = true
+
+    watch(commonConfig, () => {
+      if (projectOpened.value) debouncedSync()
+    }, { deep: true })
+
+    watch(schemas, () => {
+      if (projectOpened.value) debouncedSync()
+    }, { deep: true })
+  }
+
+  // ===== schema CRUD —— 留待下一轮对话实现 =====
+  //
+  // 设计思路：
+  //   async function addSchema(name: string)
+  //     - 创建空 Schema 对象，push 到 schemas[]
+  //     - writeSchemaToHandle(schemaDirHandle, `${name}.json`, data)
+  //     - 文件已通过 auto-sync 自动写入
+  //
+  //   async function deleteSchema(schemaIdx: number)
+  //     - 从 schemas[] splice
+  //     - deleteSchemaFromHandle(schemaDirHandle, `${name}.json`)
+  //     - auto-sync 不再触发（schema 已从数组移除）
+  //
+  //   function renameSchema(schemaIdx: number, newName: string)
+  //     - 删除旧文件，写入新文件
+  //     - 更新 schema.schema = newName
+  //
+  // 这轮对话中暂不实现 UI，但以上注释方法为本轮预留了清晰的接口和状态
 
   // ===== Navigation =====
   function selectTable(schemaIdx: number, tableIdx: number) {
@@ -428,9 +495,9 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  // ===== Export =====
+  // ===== Build export data =====
   function buildSchemaExportData(schema: Schema) {
-    const data = {
+    const data: any = {
       schema: schema.schema,
       tables: schema.tables.map(table => {
         const tableData: any = {
@@ -499,27 +566,6 @@ export const useEditorStore = defineStore('editor', () => {
     return data
   }
 
-  function exportCurrentSchema() {
-    if (!currentSchema.value) {
-      showToast('No schema selected')
-      return
-    }
-    const data = buildSchemaExportData(currentSchema.value)
-    downloadJson(data, `${currentSchema.value.schema}.json`)
-    showToast('Schema exported')
-  }
-
-  function exportAll() {
-    schemas.forEach(schema => {
-      const data = buildSchemaExportData(schema)
-      downloadJson(data, `${schema.schema}.json`)
-    })
-    if (commonConfig.value) {
-      downloadJson(commonConfig.value, 'common.json')
-    }
-    showToast(`Exported ${schemas.length} schema(s)` + (commonConfig.value ? ' + common.json' : ''))
-  }
-
   // ===== Common Config Editing =====
   function getCommonMysqlEngine() {
     return commonConfig.value?.default_config?.mysql?.table?.mysql_engine || ''
@@ -547,6 +593,7 @@ export const useEditorStore = defineStore('editor', () => {
     selectedSchemaIdx,
     selectedTableIdx,
     showCommonPanel,
+    projectOpened,
     toastMsg,
     toastVisible,
     showAddFieldModal,
@@ -558,6 +605,10 @@ export const useEditorStore = defineStore('editor', () => {
     currentSchema,
     currentTable,
     commonFieldNames,
+
+    // Project
+    openProject,
+    syncAllToDisk,
 
     // Navigation
     selectTable,
@@ -611,15 +662,6 @@ export const useEditorStore = defineStore('editor', () => {
     // Index overrides
     getIndexOverrideValue,
     setIndexOverrideValue,
-
-    // Export
-    buildSchemaExportData,
-    exportCurrentSchema,
-    exportAll,
-
-    // Import
-    handleCommonFile,
-    handleSchemaFiles,
 
     // Common config
     getCommonMysqlEngine,

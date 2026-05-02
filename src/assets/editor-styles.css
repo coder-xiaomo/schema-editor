@@ -86,13 +86,6 @@ html, body {
   font-size: 11px;
 }
 
-.toolbar-separator {
-  width: 1px;
-  height: 20px;
-  background: #ddd;
-  margin: 0 4px;
-}
-
 /* ===== Main Layout ===== */
 .main-layout {
   display: flex;
@@ -122,11 +115,6 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.sidebar-header .btn-sm {
-  font-size: 11px;
-  padding: 1px 6px;
 }
 
 .sidebar-tree {
