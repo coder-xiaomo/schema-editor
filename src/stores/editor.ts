@@ -6,8 +6,13 @@ import {
   writeCommonToHandle,
   writeSchemaToHandle,
   deleteSchemaFromHandle,
+  writeSqlToOutput,
   parseFieldLengthInput
 } from '@/utils/file-helpers'
+import {
+  generateSchemaMySQL,
+  generateSchemaPostgreSQL
+} from '@/utils/sql-generator'
 
 export const useEditorStore = defineStore('editor', () => {
   // ===== State =====
@@ -139,9 +144,27 @@ export const useEditorStore = defineStore('editor', () => {
         const data = buildSchemaExportData(schema)
         await writeSchemaToHandle(schemaDirHandle.value, `${schema.schema}.json`, data)
       }
+      // 同时生成 SQL 到 output 目录
+      await syncSqlToOutput()
     } catch (e) {
       console.error('Auto-sync failed:', e)
       showToast('Failed to save changes')
+    }
+  }
+
+  /** 生成 MySQL/PostgreSQL SQL 并写入 output/<dialect>/<schema>.sql */
+  async function syncSqlToOutput() {
+    if (!rootDirHandle.value) return
+    try {
+      for (const schema of schemas) {
+        const mysqlSql = generateSchemaMySQL(schema, commonConfig.value)
+        await writeSqlToOutput(rootDirHandle.value, 'mysql', `${schema.schema}.sql`, mysqlSql)
+
+        const pgsqlSql = generateSchemaPostgreSQL(schema, commonConfig.value)
+        await writeSqlToOutput(rootDirHandle.value, 'postgresql', `${schema.schema}.sql`, pgsqlSql)
+      }
+    } catch (e) {
+      console.error('SQL output sync failed:', e)
     }
   }
 

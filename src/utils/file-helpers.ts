@@ -99,6 +99,24 @@ export async function deleteSchemaFromHandle(schemaHandle: any, filename: string
   await schemaHandle.removeEntry(filename)
 }
 
+/**
+ * 将 SQL 文件写入 output/<dialect>/<filename>.sql
+ * 目录不存在时自动创建
+ */
+export async function writeSqlToOutput(
+  rootHandle: any,
+  dialect: string,
+  filename: string,
+  content: string
+): Promise<void> {
+  const outputHandle = await rootHandle.getDirectoryHandle('output', { create: true })
+  const dialectHandle = await outputHandle.getDirectoryHandle(dialect, { create: true })
+  const fileHandle = await dialectHandle.getFileHandle(filename, { create: true })
+  const writable = await fileHandle.createWritable()
+  await writable.write(content)
+  await writable.close()
+}
+
 // ===== 业务无关的工具函数 =====
 
 

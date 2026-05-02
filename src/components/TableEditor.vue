@@ -2,6 +2,7 @@
 import { useEditorStore } from '@/stores/editor'
 import FieldTable from './FieldTable.vue'
 import IndexTable from './IndexTable.vue'
+import SqlPreview from './SqlPreview.vue'
 
 const store = useEditorStore()
 </script>
@@ -59,6 +60,9 @@ const store = useEditorStore()
 
     <!-- Indexes -->
     <IndexTable />
+
+    <!-- SQL Preview -->
+    <SqlPreview />
   </template>
 </template>
 
