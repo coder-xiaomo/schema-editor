@@ -33,12 +33,22 @@ function copyToClipboard() {
 <template>
   <div class="section-card" v-if="store.currentTable">
     <div class="section-header">
-      <span>SQL Preview</span>
+      <div class="header-tabs">
+        <div style="margin-right: 15px;">
+          <span>SQL Preview</span>
+        </div>
+        <button
+          class="tab-btn"
+          :class="{ active: dialect === 'mysql' }"
+          @click="dialect = 'mysql'"
+        >MySQL</button>
+        <button
+          class="tab-btn"
+          :class="{ active: dialect === 'postgresql' }"
+          @click="dialect = 'postgresql'"
+        >PostgreSQL</button>
+      </div>
       <div class="header-actions">
-        <select class="dialect-select" v-model="dialect">
-          <option value="mysql">MySQL</option>
-          <option value="postgresql">PostgreSQL</option>
-        </select>
         <button class="btn-copy" @click="copyToClipboard" title="Copy SQL">Copy</button>
       </div>
     </div>
@@ -75,19 +85,42 @@ function copyToClipboard() {
   gap: 8px;
 }
 
-.dialect-select {
-  padding: 3px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 11px;
-  color: #333;
-  background: #fff;
-  cursor: pointer;
+.header-tabs {
+  display: flex;
+  gap: 0;
 }
 
-.dialect-select:focus {
-  outline: none;
+.tab-btn {
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #666;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.tab-btn:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.tab-btn:last-child {
+  border-radius: 0 3px 3px 0;
+  border-left: none;
+}
+
+.tab-btn.active {
+  background: #4a90d9;
+  color: #fff;
   border-color: #4a90d9;
+}
+
+.tab-btn.active + .tab-btn {
+  border-left-color: #4a90d9;
+}
+
+.tab-btn:not(.active):hover {
+  background: #e8e8e8;
 }
 
 .btn-copy {
