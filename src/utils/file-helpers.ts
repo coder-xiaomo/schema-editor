@@ -16,19 +16,19 @@ export function isFileSystemAccessSupported(): boolean {
  * 返回 { rootHandle, schemaHandle, commonData, schemaFiles[] }
  */
 export async function openProjectFolder(): Promise<{
-  rootHandle: any
-  schemaHandle: any
+  rootHandle: FileSystemDirectoryHandle
+  schemaHandle: FileSystemDirectoryHandle
   commonData: unknown | null
   schemaFiles: { name: string; data: unknown }[]
 }> {
-  const rootHandle = await (window as any).showDirectoryPicker()
+  const rootHandle: FileSystemDirectoryHandle = await window.showDirectoryPicker()
   let commonData: unknown | null = null
-  let schemaHandle: any = null
+  let schemaHandle: FileSystemDirectoryHandle | null = null
   const schemaFiles: { name: string; data: unknown }[] = []
 
   // 逐条扫描根目录
   for await (const entry of rootHandle.values()) {
-    const handle: any = entry
+    const handle: FileSystemFileHandle | FileSystemDirectoryHandle = entry
     const name: string = handle.name
     console.log(`[openProjectFolder] root entry: "${name}" kind=${handle.kind}`)
 
@@ -52,7 +52,7 @@ export async function openProjectFolder(): Promise<{
     schemaHandle = sdHandle
     console.log('[openProjectFolder] iterating schemas/ entries...')
     for await (const entry of sdHandle.values()) {
-      const fHandle: any = entry
+      const fHandle: FileSystemFileHandle | FileSystemDirectoryHandle = entry
       const fName: string = fHandle.name
       console.log(`[openProjectFolder]   schemas entry: "${fName}" kind=${fHandle.kind}`)
       if (fName.endsWith('.json') && fHandle.kind === 'file') {
@@ -64,7 +64,7 @@ export async function openProjectFolder(): Promise<{
       }
     }
     console.log(`[openProjectFolder] schema files found: ${schemaFiles.length}`)
-  } catch (e) {
+  } catch {
     console.log('[openProjectFolder] no schemas/ directory, creating one')
     schemaHandle = await rootHandle.getDirectoryHandle('schemas', { create: true })
   }
@@ -75,7 +75,7 @@ export async function openProjectFolder(): Promise<{
 /**
  * 将数据写入 common.json
  */
-export async function writeCommonToHandle(rootHandle: any, data: unknown): Promise<void> {
+export async function writeCommonToHandle(rootHandle: FileSystemDirectoryHandle, data: unknown): Promise<void> {
   const handle = await rootHandle.getFileHandle('common.json', { create: true })
   const writable = await handle.createWritable()
   await writable.write(JSON.stringify(toRaw(data), null, jsonFileIndent))
@@ -85,7 +85,7 @@ export async function writeCommonToHandle(rootHandle: any, data: unknown): Promi
 /**
  * 将 schema 数据写入 schema/<filename>.json
  */
-export async function writeSchemaToHandle(schemaHandle: any, filename: string, data: unknown): Promise<void> {
+export async function writeSchemaToHandle(schemaHandle: FileSystemDirectoryHandle, filename: string, data: unknown): Promise<void> {
   const handle = await schemaHandle.getFileHandle(filename, { create: true })
   const writable = await handle.createWritable()
   await writable.write(JSON.stringify(toRaw(data), null, jsonFileIndent))
@@ -95,7 +95,7 @@ export async function writeSchemaToHandle(schemaHandle: any, filename: string, d
 /**
  * 从 schema/ 目录删除文件
  */
-export async function deleteSchemaFromHandle(schemaHandle: any, filename: string): Promise<void> {
+export async function deleteSchemaFromHandle(schemaHandle: FileSystemDirectoryHandle, filename: string): Promise<void> {
   await schemaHandle.removeEntry(filename)
 }
 
@@ -104,7 +104,7 @@ export async function deleteSchemaFromHandle(schemaHandle: any, filename: string
  * 目录不存在时自动创建
  */
 export async function writeSqlToOutput(
-  rootHandle: any,
+  rootHandle: FileSystemDirectoryHandle,
   dialect: string,
   filename: string,
   content: string
@@ -121,7 +121,7 @@ export async function writeSqlToOutput(
  * 从 output/<dialect>/ 目录删除文件
  */
 export async function deleteSqlFromOutput(
-  rootHandle: any,
+  rootHandle: FileSystemDirectoryHandle,
   dialect: string,
   filename: string
 ): Promise<void> {
@@ -141,11 +141,11 @@ export async function deleteSqlFromOutput(
  * 返回 [{ key: "schemaName/tableName", data: [...] }, ...]
  */
 export async function readInitialDataFromHandle(
-  rootHandle: any
+  rootHandle: FileSystemDirectoryHandle
 ): Promise<{ key: string; data: Record<string, any>[] }[]> {
   const result: { key: string; data: Record<string, any>[] }[] = []
 
-  let initialDataHandle: any
+  let initialDataHandle: FileSystemDirectoryHandle
   try {
     initialDataHandle = await rootHandle.getDirectoryHandle('initial-data')
   } catch {
@@ -155,13 +155,13 @@ export async function readInitialDataFromHandle(
 
   // 遍历 schema 子目录
   for await (const schemaEntry of initialDataHandle.values()) {
-    const schemaHandle: any = schemaEntry
+    const schemaHandle: FileSystemDirectoryHandle | FileSystemFileHandle = schemaEntry
     if (schemaHandle.kind !== 'directory') continue
     const schemaName: string = schemaHandle.name
 
     // 遍历每个 schema 目录下的 .json 文件
     for await (const fileEntry of schemaHandle.values()) {
-      const fHandle: any = fileEntry
+      const fHandle: FileSystemFileHandle | FileSystemDirectoryHandle = fileEntry
       const fName: string = fHandle.name
       if (!fName.endsWith('.json') || fHandle.kind !== 'file') continue
 
@@ -188,7 +188,7 @@ export async function readInitialDataFromHandle(
  * 将初始数据写入 initial-data/<schemaName>/<tableName>.json
  */
 export async function writeInitialDataToHandle(
-  rootHandle: any,
+  rootHandle: FileSystemDirectoryHandle,
   schemaName: string,
   tableName: string,
   data: Record<string, any>[]
@@ -205,7 +205,7 @@ export async function writeInitialDataToHandle(
  * 删除 initial-data/<schemaName>/<tableName>.json
  */
 export async function deleteInitialDataFromHandle(
-  rootHandle: any,
+  rootHandle: FileSystemDirectoryHandle,
   schemaName: string,
   tableName: string
 ): Promise<void> {
