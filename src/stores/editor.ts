@@ -1,6 +1,13 @@
 ﻿import { ref, reactive, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import type { CommonConfig, Schema, Table, Field, Index } from '@/types/schema'
+import type {
+  CommonConfig,
+  Schema,
+  Table,
+  Field,
+  Index,
+  TableMysqlConfig,
+} from '@/types/schema'
 import {
   openProjectFolder,
   writeCommonToHandle,
@@ -11,7 +18,7 @@ import {
   readInitialDataFromHandle,
   writeInitialDataToHandle,
   deleteInitialDataFromHandle,
-  parseFieldLengthInput
+  parseFieldLengthInput,
 } from '@/utils/file-helpers'
 import {
   generateSchemaMySQL,
@@ -735,12 +742,12 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Build export data =====
   function buildSchemaExportData(schema: Schema) {
-    const data: any = {
+    const data: Schema = {
       schema: schema.schema,
       tables: schema.tables.map(table => {
-        const tableData: any = {
+        const tableData: Partial<Table> = {
           name: table.name,
-          comment: table.comment
+          comment: table.comment,
         }
 
         // comment_before_table
@@ -758,7 +765,7 @@ export const useEditorStore = defineStore('editor', () => {
 
         // mysql table config
         if (table.mysql && Object.keys(table.mysql).length > 0) {
-          const mysqlData: any = {}
+          const mysqlData: TableMysqlConfig = {}
           if (table.mysql.mysql_engine) mysqlData.mysql_engine = table.mysql.mysql_engine
           if (table.mysql.mysql_charset) mysqlData.mysql_charset = table.mysql.mysql_charset
           if (table.mysql.mysql_collation) mysqlData.mysql_collation = table.mysql.mysql_collation
@@ -767,7 +774,7 @@ export const useEditorStore = defineStore('editor', () => {
 
         // fields
         tableData.fields = table.fields.map(field => {
-          const f: any = { field_name: field.field_name }
+          const f: Field = { field_name: field.field_name }
           if (field.use_common_used_fields) {
             f.use_common_used_fields = true
           } else {
@@ -787,7 +794,7 @@ export const useEditorStore = defineStore('editor', () => {
 
         // indexes
         tableData.indexes = table.indexes.map(index => {
-          const idx: any = {}
+          const idx: Partial<Index> = {}
           if (index.name) idx.name = index.name
           if (index.type) idx.type = index.type
           if (index.using) idx.using = index.using
@@ -795,10 +802,10 @@ export const useEditorStore = defineStore('editor', () => {
           if (index.pre_comment) idx.pre_comment = index.pre_comment
           if (index.mysql && Object.keys(index.mysql).length > 0) idx.mysql = { ...index.mysql }
           if (index.pgsql && Object.keys(index.pgsql).length > 0) idx.pgsql = { ...index.pgsql }
-          return idx
+          return idx as Index
         })
 
-        return tableData
+        return tableData as Table
       })
     }
     return data
