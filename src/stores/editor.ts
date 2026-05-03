@@ -116,6 +116,23 @@ export const useEditorStore = defineStore('editor', () => {
           console.log('[openProject] commonConfig set')
         }
       }
+      // 如果文件夹中没有 common.json，创建默认配置
+      if (!commonConfig.value) {
+        commonConfig.value = {
+          default_config: {
+            mysql: {
+              database: {},
+              table: {
+                mysql_engine: 'InnoDB',
+                mysql_charset: 'utf8mb4',
+                mysql_collation: 'utf8mb4_0900_ai_ci',
+              }
+            }
+          },
+          common_used_fields: {}
+        }
+        console.log('[openProject] default commonConfig created')
+      }
 
       // 加载 schema JSON
       schemas.length = 0

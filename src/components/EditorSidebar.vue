@@ -87,7 +87,7 @@ function handleRenameSchema(sIdx: number) {
     <div class="sidebar-tree">
       <!-- Common Config Entry -->
       <div
-        v-if="store.commonConfig"
+        v-if="store.projectOpened"
         class="sidebar-item common-item"
         :class="{ active: store.showCommonPanel }"
         @click="store.selectCommonConfig()"
