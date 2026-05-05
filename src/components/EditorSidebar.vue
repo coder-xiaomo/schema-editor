@@ -185,9 +185,11 @@ function handleRenameSchema(sIdx: number) {
           <span class="delete-btn" @click.stop="store.deleteTable(sIdx, tIdx)" title="Delete table">&times;</span>
         </div>
         <!-- 尾部 drop 区域：拖到当前 schema 最后一个表之后 -->
+        <!-- 始终占位，用 opacity 控制可见性，避免拖拽开始时布局变化 -->
         <div
-          v-show="isExpanded(sIdx) && dragSchemaIdx >= 0 && schema.tables.length > 0"
+          v-show="isExpanded(sIdx) && schema.tables.length > 0"
           class="drop-tail"
+          :class="{ 'drag-active': dragSchemaIdx >= 0, 'drag-over': false }"
           @dragover="onDropTailOver($event, sIdx)"
           @dragleave="onDragLeave"
           @drop="onDropTail($event, sIdx)"
