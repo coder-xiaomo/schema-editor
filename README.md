@@ -1,5 +1,7 @@
 # schema-editor - 数据库 Schema JSON 可视化编辑器
 
+[GitHub](https://github.com/coder-xiaomo/schema-editor) [Preview](https://coder-xiaomo.github.io/schema-editor/)
+
 通过可视化界面编辑数据库 Schema 的 JSON 配置文件，编辑完成后导出 JSON，配合 `generate-sql.ts` 脚本生成对应方言的 SQL 建表语句。
 
 ## 技术栈
