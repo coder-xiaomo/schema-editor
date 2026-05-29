@@ -479,7 +479,7 @@ function generateInitialDataMySQL(
 
   const valueRows = rows.map(row => {
     const vals = cols.map(col => formatSqlValue(row[col]))
-    return `(${vals.join(', ')})`
+    return `  (${vals.join(', ')})`
   })
 
   return `${comments}INSERT INTO \`${table.name}\` (${colList}) VALUES\n${valueRows.join(',\n')};\n`
@@ -509,7 +509,7 @@ function generateInitialDataPostgreSQL(
 
   const valueRows = rows.map(row => {
     const vals = cols.map(col => formatSqlValue(row[col]))
-    return `(${vals.join(', ')})`
+    return `  (${vals.join(', ')})`
   })
 
   return `${comments}INSERT INTO "${schemaName}"."${table.name}" (${colList}) VALUES\n${valueRows.join(',\n')};\n`
@@ -524,24 +524,37 @@ export function generateInitialDataAllMySQL(
   let sql = ''
 
   sql += '/*\n'
-  sql += ' Initial Data - MySQL\n'
-  sql += '*/\n\n'
-  sql += 'SET NAMES utf8mb4;\n\n'
+  sql += ' Source Server Type    : MySQL\n'
+  sql += '*/\n'
+  sql += '\n'
+  sql += 'SET NAMES utf8mb4;\n'
+  sql += 'SET FOREIGN_KEY_CHECKS = 0;\n'
+  sql += '\n'
 
   for (const schema of schemas) {
+    let isSchemaCommentHeaderPrinted = false
     for (const table of schema.tables) {
       const key = `${schema.schema}/${table.name}`
       const initData = initialDataMap.get(key)
       if (!initData || initData.rows.length === 0) continue
 
-      sql += `-- ----------------------------\n`
-      sql += `-- Initial data for ${schema.schema}.${table.name}\n`
-      sql += `-- ----------------------------\n`
+      if(!isSchemaCommentHeaderPrinted) {
+        sql += `-- ----------------------------\n`
+        sql += `-- Initial data for schema ${schema.schema}\n`
+        sql += `-- ----------------------------\n`
+        sql += `\n`
+        isSchemaCommentHeaderPrinted = true
+      }
+      // sql += `-- ----------------------------\n`
+      // sql += `-- Initial data for ${schema.schema}.${table.name}\n`
+      // sql += `-- ----------------------------\n`
+      sql += `-- Insert data into \`${table.name}\`\n`
       sql += generateInitialDataMySQL(table, initData.rows, initData.row_comments)
       sql += '\n'
     }
   }
 
+  sql += 'SET FOREIGN_KEY_CHECKS = 1;\n'
   return sql
 }
 
@@ -554,18 +567,28 @@ export function generateInitialDataAllPostgreSQL(
   let sql = ''
 
   sql += '/*\n'
-  sql += ' Initial Data - PostgreSQL\n'
-  sql += '*/\n\n'
+  sql += ' Source Server Type    : PostgreSQL\n'
+  sql += '*/\n'
+  sql += '\n'
 
   for (const schema of schemas) {
+    let isSchemaCommentHeaderPrinted = false
     for (const table of schema.tables) {
       const key = `${schema.schema}/${table.name}`
       const initData = initialDataMap.get(key)
       if (!initData || initData.rows.length === 0) continue
 
-      sql += `-- ----------------------------\n`
-      sql += `-- Initial data for ${schema.schema}.${table.name}\n`
-      sql += `-- ----------------------------\n`
+      if(!isSchemaCommentHeaderPrinted) {
+        sql += `-- ----------------------------\n`
+        sql += `-- Initial data for schema ${schema.schema}\n`
+        sql += `-- ----------------------------\n`
+        sql += `\n`
+        isSchemaCommentHeaderPrinted = true
+      }
+      // sql += `-- ----------------------------\n`
+      // sql += `-- Initial data for ${schema.schema}.${table.name}\n`
+      // sql += `-- ----------------------------\n`
+      sql += `-- Insert data into "${schema.schema}"."${table.name}"\n`
       sql += generateInitialDataPostgreSQL(table, schema.schema, initData.rows, initData.row_comments)
       sql += '\n'
     }
