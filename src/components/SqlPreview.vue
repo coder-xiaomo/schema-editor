@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useEditorStore } from '@/stores/editor'
-import {
-  generateTableMySQL,
-  generateTablePostgreSQL,
-  type SqlDialect
-} from '@/utils/sql-generator'
+import { generateTableMySQL } from '@/utils/sql-generator/mysql'
+import { generateTablePostgreSQL } from '@/utils/sql-generator/postgresql'
+import type { SqlDialect } from '@/utils/sql-generator/shared'
 
 const store = useEditorStore()
 const dialect = ref<SqlDialect>('mysql')
@@ -37,16 +35,9 @@ function copyToClipboard() {
         <div style="margin-right: 15px;">
           <span>SQL Preview</span>
         </div>
-        <button
-          class="tab-btn"
-          :class="{ active: dialect === 'mysql' }"
-          @click="dialect = 'mysql'"
-        >MySQL</button>
-        <button
-          class="tab-btn"
-          :class="{ active: dialect === 'postgresql' }"
-          @click="dialect = 'postgresql'"
-        >PostgreSQL</button>
+        <button class="tab-btn" :class="{ active: dialect === 'mysql' }" @click="dialect = 'mysql'">MySQL</button>
+        <button class="tab-btn" :class="{ active: dialect === 'postgresql' }"
+          @click="dialect = 'postgresql'">PostgreSQL</button>
       </div>
       <div class="header-actions">
         <button class="btn-copy" @click="copyToClipboard" title="Copy SQL">Copy</button>
@@ -115,7 +106,7 @@ function copyToClipboard() {
   border-color: #4a90d9;
 }
 
-.tab-btn.active + .tab-btn {
+.tab-btn.active+.tab-btn {
   border-left-color: #4a90d9;
 }
 

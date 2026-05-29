@@ -23,10 +23,12 @@ import {
 } from '@/utils/file-helpers'
 import {
   generateSchemaMySQL,
-  generateSchemaPostgreSQL,
   generateInitialDataAllMySQL,
+} from '@/utils/sql-generator/mysql'
+import {
+  generateSchemaPostgreSQL,
   generateInitialDataAllPostgreSQL,
-} from '@/utils/sql-generator'
+} from '@/utils/sql-generator/postgresql'
 
 export const useEditorStore = defineStore('editor', () => {
   // ===== State =====
