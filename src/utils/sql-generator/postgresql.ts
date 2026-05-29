@@ -6,7 +6,7 @@ import { formatSqlValue, getTableColumnNames, renderCommentBeforeField, renderCo
   纯函数，不依赖 Node.js fs，可在浏览器端运行
 */
 
-// ===== PostgreSQL 字段定义 =====
+// ===== 表字段定义 =====
 
 function getFieldDefinitionPostgreSQL(field: Field): string {
   let fieldDef = `"${field.field_name}"`
@@ -54,7 +54,7 @@ function getFieldDefinitionPostgreSQL(field: Field): string {
   return fieldDef
 }
 
-// ===== 生成单表 PostgreSQL =====
+// ===== 生成单表 SQL =====
 
 export function generateTablePostgreSQL(table: Table, schemaName: string, commonConfig: CommonConfig | null): string {
   let sql = ''
@@ -146,7 +146,7 @@ export function generateTablePostgreSQL(table: Table, schemaName: string, common
   return sql
 }
 
-// ===== 生成整个 schema 的 PostgreSQL SQL =====
+// ===== 生成整个 schema 的 SQL =====
 
 export function generateSchemaPostgreSQL(schema: Schema, commonConfig: CommonConfig | null): string {
   let sql = ''
@@ -176,7 +176,7 @@ export function generateSchemaPostgreSQL(schema: Schema, commonConfig: CommonCon
 
 // ===== Initial Data INSERT 语句生成 =====
 
-/** 生成单表的 PostgreSQL INSERT 语句 */
+/** 生成单表的 INSERT 语句 */
 function generateInitialDataPostgreSQL(
   table: Table,
   schemaName: string,

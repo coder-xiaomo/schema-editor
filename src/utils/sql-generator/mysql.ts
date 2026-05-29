@@ -6,7 +6,7 @@ import { formatSqlValue, getTableColumnNames, renderCommentBeforeField, renderCo
   纯函数，不依赖 Node.js fs，可在浏览器端运行
 */
 
-// ===== MySQL 字段定义 =====
+// ===== 表字段定义 =====
 
 function getFieldDefinitionMySQL(field: Field, commonConfig: CommonConfig | null): string {
   let fieldDef = `\`${field.field_name}\``
@@ -74,7 +74,7 @@ function getFieldDefinitionMySQL(field: Field, commonConfig: CommonConfig | null
   return fieldDef
 }
 
-// ===== MySQL 索引定义 =====
+// ===== 表索引定义 =====
 
 function getMySQLIndexDefinition(index: Index): string {
   // 获取数据库特定的索引名称
@@ -107,7 +107,7 @@ function getMySQLIndexDefinition(index: Index): string {
 }
 
 
-// ===== 生成单表 MySQL =====
+// ===== 生成单表 SQL =====
 
 export function generateTableMySQL(table: Table, commonConfig: CommonConfig | null): string {
   let sql = ''
@@ -185,7 +185,7 @@ export function generateTableMySQL(table: Table, commonConfig: CommonConfig | nu
   return sql
 }
 
-// ===== 生成整个 schema 的 MySQL SQL =====
+// ===== 生成整个 schema 的 SQL =====
 
 export function generateSchemaMySQL(schema: Schema, commonConfig: CommonConfig | null): string {
   let sql = ''
@@ -215,7 +215,7 @@ export function generateSchemaMySQL(schema: Schema, commonConfig: CommonConfig |
 
 // ===== Initial Data INSERT 语句生成 =====
 
-/** 生成单表的 MySQL INSERT 语句 */
+/** 生成单表的 INSERT 语句 */
 function generateInitialDataMySQL(
   table: Table,
   rows: Record<string, any>[],

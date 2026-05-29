@@ -1,4 +1,3 @@
-
 export type SqlDialect = 'mysql' | 'postgresql'
 
 // ===== 解析公共字段 =====
