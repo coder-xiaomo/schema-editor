@@ -52,22 +52,6 @@ export function renderCommentBeforeField(comment: string | (string | null)[]): s
 
 // ===== Initial Data INSERT 语句生成 =====
 
-/** 将 JS 值格式化为 SQL 字面量（适用于 MySQL 和 PostgreSQL） */
-export function formatSqlValue(val: unknown): string {
-  if (val === null || val === undefined) return 'NULL'
-  if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE'
-  if (typeof val === 'number') {
-    if (Number.isNaN(val) || !Number.isFinite(val)) return 'NULL'
-    return String(val)
-  }
-  if (typeof val === 'string') {
-    // 转义单引号：' → ''
-    return `'${val.replace(/'/g, "''")}'`
-  }
-  // 对象/数组等：JSON 序列化后作为字符串
-  return `'${JSON.stringify(val).replace(/'/g, "''")}'`
-}
-
 /** 获取 Table 的有效字段名列表（排除 is_commented_out 的字段），解析 common fields */
 export function getTableColumnNames(table: Table, commonConfig: CommonConfig | null): string[] {
   return table.fields

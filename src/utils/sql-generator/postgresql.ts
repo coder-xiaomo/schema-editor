@@ -1,5 +1,5 @@
 import type { CommonConfig, Schema, Table, Field, InitialData } from '@/types/schema'
-import { formatSqlValue, getTableColumnNames, renderCommentBeforeField, renderCommentBeforeTable, resolveField } from './shared'
+import { getTableColumnNames, renderCommentBeforeField, renderCommentBeforeTable, resolveField } from './shared'
 
 /*
   SQL 生成器
@@ -176,6 +176,24 @@ export function generateSchemaPostgreSQL(schema: Schema, commonConfig: CommonCon
 
 // ===== Initial Data INSERT 语句生成 =====
 
+/** 将 JS 值格式化为 SQL 字面量，根据方言处理差异 */
+export function formatSqlValue(val: unknown): string {
+  if (val === null || val === undefined) return 'NULL'
+  if (typeof val === 'boolean') {
+    return val ? 'TRUE' : 'FALSE'
+  }
+  if (typeof val === 'number') {
+    if (Number.isNaN(val) || !Number.isFinite(val)) return 'NULL'
+    return String(val)
+  }
+  if (typeof val === 'string') {
+    // 转义单引号：' → ''
+    return `'${val.replace(/'/g, "''")}'`
+  }
+  // 对象/数组等：JSON 序列化后作为字符串
+  return `'${JSON.stringify(val).replace(/'/g, "''")}'`
+}
+
 /** 生成单表的 INSERT 语句 */
 function generateInitialDataPostgreSQL(
   table: Table,
@@ -226,7 +244,7 @@ export function generateInitialDataAllPostgreSQL(
       const initData = initialDataMap.get(key)
       if (!initData || initData.rows.length === 0) continue
 
-      if(!isSchemaCommentHeaderPrinted) {
+      if (!isSchemaCommentHeaderPrinted) {
         sql += `-- ----------------------------\n`
         sql += `-- Initial data for schema ${schema.schema}\n`
         sql += `-- ----------------------------\n`
