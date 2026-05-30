@@ -5,7 +5,11 @@ const jsonFileIndent = 4
 
 // ===== File System Access API —— 基于 handle 的文件夹读写 =====
 
-/** 检查浏览器是否支持 File System Access API */
+/**
+ *  检查浏览器是否支持 File System Access API
+ *
+ * see: https://developer.mozilla.org/zh-CN/docs/Web/API/File_System_API
+ */
 export function isFileSystemAccessSupported(): boolean {
   return typeof window !== 'undefined' && 'showDirectoryPicker' in window
 }

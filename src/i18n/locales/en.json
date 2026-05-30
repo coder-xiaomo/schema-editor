@@ -161,7 +161,8 @@
     "commonFieldRenamed": "Common field renamed",
     "indexAdded": "Index added",
     "indexDeleted": "Index deleted",
-    "sqlCopied": "SQL copied"
+    "sqlCopied": "SQL copied",
+    "browserNotSupported": "This feature is unsupported on Firefox, Safari and mobile browsers. Please use Chrome, Edge or Opera"
   },
   "confirm": {
     "deleteSchema": "Delete schema \"{name}\" and ALL its tables? This cannot be undone.",

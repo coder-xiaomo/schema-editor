@@ -12,6 +12,7 @@ import type {
 } from '@/types/schema'
 import {
   openProjectFolder,
+  isFileSystemAccessSupported,
   writeCommonToHandle,
   writeSchemaToHandle,
   deleteSchemaFromHandle,
@@ -108,6 +109,11 @@ export const useEditorStore = defineStore('editor', () => {
 
   /** 选择项目文件夹并加载内容，之后所有编辑实时自动同步 */
   async function openProject() {
+    if (!isFileSystemAccessSupported()) {
+      // showToast(t('toast.browserNotSupported'))
+      alert(t('toast.browserNotSupported'))
+      return
+    }
     try {
       const result = await openProjectFolder()
       console.log('[openProject] result.schemaFiles.length:', result.schemaFiles.length)
