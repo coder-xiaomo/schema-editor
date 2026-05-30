@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Schema 編輯器",
-    "emptyState": "請先匯入 JSON 檔案，然後從側邊欄選擇一個表"
+    "emptyState": "請先匯入 JSON 檔案，然後從側邊欄選擇一個資料夾"
   },
   "toolbar": {
     "openFolder": "開啟資料夾",

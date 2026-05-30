@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Schema Editor",
-    "emptyState": "Please import a JSON file first, then select a table from the sidebar"
+    "emptyState": "Please import a JSON file first, then select a folder from the sidebar"
   },
   "toolbar": {
     "openFolder": "Open Folder",
