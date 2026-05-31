@@ -150,7 +150,7 @@ export function generateTablePostgreSQL(table: Table, schemaName: string, common
     .forEach(field => {
       const fieldConfig = resolveField(field, commonConfig)
       if (fieldConfig.comment) {
-        sql += `COMMENT ON COLUMN ${qSchemaName}.${qTableName}.${quoteIdent(fieldConfig.field_name, commonConfig)} IS '${fieldConfig.comment}';\n`
+        sql += `COMMENT ON COLUMN ${qSchemaName}.${qTableName}.${quoteIdent(fieldConfig.field_name, commonConfig)} IS '${fieldConfig.comment.replace(/'/g, "''")}';\n`
       }
     })
 

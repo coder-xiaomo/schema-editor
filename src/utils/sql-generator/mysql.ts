@@ -64,7 +64,7 @@ function getFieldDefinitionMySQL(field: Field, commonConfig: CommonConfig | null
 
   // COMMENT
   if (field.comment) {
-    fieldDef += ` COMMENT '${field.comment}'`
+    fieldDef += ` COMMENT '${field.comment.replace(/'/g, "''")}'`
   }
 
   if (field.is_commented_out) {
