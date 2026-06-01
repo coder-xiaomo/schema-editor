@@ -594,6 +594,20 @@ export const useEditorStore = defineStore('editor', () => {
       }
     }
 
+    // Delete old SQL output files
+    if (rootDirHandle.value) {
+      try {
+        await deleteSqlFromOutput(rootDirHandle.value, 'mysql', `${oldName}.sql`)
+      } catch (e) {
+        console.warn('Failed to delete old mysql output:', e)
+      }
+      try {
+        await deleteSqlFromOutput(rootDirHandle.value, 'postgresql', `${oldName}.sql`)
+      } catch (e) {
+        console.warn('Failed to delete old postgresql output:', e)
+      }
+    }
+
     schema.schema = newName
     syncSchemaOrder()
 
