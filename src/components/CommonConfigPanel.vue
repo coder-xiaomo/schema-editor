@@ -184,6 +184,18 @@ function handleDelete(name: string) {
   store.showToast(t('toast.commonFieldDeleted'))
 }
 
+/** 选择统一类型时清除旧的 field_type/field_length，让 unified_type 映射生效 */
+function handleUnifiedTypeChange(field: Field, value: string) {
+  if (value) {
+    field.unified_type = value
+    field.field_type = ''
+    field.field_length = null
+    field.field_scale = null
+  } else {
+    field.unified_type = undefined
+  }
+}
+
 // ===== Override helpers =====
 function formatOverride(override: Record<string, any> | undefined): string {
   if (!override || Object.keys(override).length === 0) return ''
@@ -661,7 +673,7 @@ function handleDeleteUnifiedType(idx: number) {
                   <select
                     class="table-input unified-type-select"
                     :value="field.unified_type ?? ''"
-                    @change="field.unified_type = ($event.target as HTMLSelectElement).value || undefined"
+                    @change="handleUnifiedTypeChange(field, ($event.target as HTMLSelectElement).value)"
                     style="min-width:80px;"
                   >
                     <option value="">{{ $t('fieldTable.customType') }}</option>
