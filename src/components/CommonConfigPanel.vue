@@ -357,6 +357,28 @@ function handleDeleteUnifiedType(idx: number) {
       </div>
     </div>
 
+    <!-- Field Type Case -->
+    <div class="section-card">
+      <div class="section-header">{{ $t('commonConfig.typeCaseTitle') }}</div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group medium">
+            <label class="form-label">{{ $t('commonConfig.typeCaseLabel') }}</label>
+            <select
+              class="form-input"
+              :value="store.getCommonTypeCase()"
+              @change="store.setCommonTypeCase(($event.target as HTMLSelectElement).value as any)"
+            >
+              <option value="keep">{{ $t('commonConfig.typeCaseOptions.keep') }}</option>
+              <option value="lowercase">{{ $t('commonConfig.typeCaseOptions.lowercase') }}</option>
+              <option value="uppercase">{{ $t('commonConfig.typeCaseOptions.uppercase') }}</option>
+              <option value="pascal">{{ $t('commonConfig.typeCaseOptions.pascal') }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Common Used Fields -->
     <div class="section-card">
       <div class="section-header">

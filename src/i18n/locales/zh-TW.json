@@ -69,6 +69,14 @@
       "mysqlLength": "MySQL 長度",
       "pgsqlType": "PGSQL 類型",
       "pgsqlLength": "PGSQL 長度"
+    },
+    "typeCaseTitle": "欄位類型大小寫",
+    "typeCaseLabel": "類型名稱格式",
+    "typeCaseOptions": {
+      "keep": "保持預設大小寫",
+      "lowercase": "統一轉換為小寫",
+      "uppercase": "統一轉換為大寫",
+      "pascal": "統一轉換為大駝峰"
     }
   },
   "tableEditor": {

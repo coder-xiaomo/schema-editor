@@ -1,3 +1,6 @@
+/** 字段类型大小写转换模式 */
+export type TypeCaseMode = 'keep' | 'lowercase' | 'uppercase' | 'pascal'
+
 // 统一顶层类型 — 数据库方言映射
 export interface UnifiedTypeDbMapping {
   type: string
@@ -108,6 +111,8 @@ export interface CommonConfig {
   common_used_fields: Record<string, Field>
   /** 统一顶层类型定义 — 每个顶层类型映射到各数据库方言的具体类型 */
   unified_types?: UnifiedTypeDefinition[]
+  /** 字段类型大小写：keep=保持原样, lowercase=全小写, uppercase=全大写, pascal=大驼峰 */
+  type_case?: TypeCaseMode
 }
 
 export interface InitialData {

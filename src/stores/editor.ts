@@ -9,6 +9,7 @@ import type {
   Index,
   TableMysqlConfig,
   InitialData,
+  TypeCaseMode,
 } from '@/types/schema'
 import {
   openProjectFolder,
@@ -171,7 +172,8 @@ export const useEditorStore = defineStore('editor', () => {
               quote_identifiers: true,
             }
           },
-          common_used_fields: {}
+          common_used_fields: {},
+          type_case: 'keep',
         }
         console.log('[openProject] default commonConfig created')
       }
@@ -300,7 +302,8 @@ export const useEditorStore = defineStore('editor', () => {
               quote_identifiers: true
             }
           },
-          common_used_fields: {}
+          common_used_fields: {},
+          type_case: 'keep',
         }
       }
 
@@ -1234,6 +1237,15 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function getCommonTypeCase(): TypeCaseMode {
+    return commonConfig.value?.type_case ?? 'keep'
+  }
+  function setCommonTypeCase(val: TypeCaseMode) {
+    if (commonConfig.value) {
+      commonConfig.value.type_case = val
+    }
+  }
+
   // ===== Common Used Fields CRUD =====
   function addCommonUsedField(name: string) {
     if (!commonConfig.value) return
@@ -1467,6 +1479,8 @@ export const useEditorStore = defineStore('editor', () => {
     setCommonMysqlCollation,
     getCommonPgsqlQuoteIdentifiers,
     setCommonPgsqlQuoteIdentifiers,
+    getCommonTypeCase,
+    setCommonTypeCase,
 
     // Common Used Fields CRUD
     addCommonUsedField,

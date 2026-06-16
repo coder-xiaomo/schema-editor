@@ -69,6 +69,14 @@
       "mysqlLength": "MySQL Length",
       "pgsqlType": "PGSQL Type",
       "pgsqlLength": "PGSQL Length"
+    },
+    "typeCaseTitle": "Field Type Case",
+    "typeCaseLabel": "Type Name Format",
+    "typeCaseOptions": {
+      "keep": "Keep Default Case",
+      "lowercase": "Convert to Lowercase",
+      "uppercase": "Convert to Uppercase",
+      "pascal": "Convert to PascalCase"
     }
   },
   "tableEditor": {

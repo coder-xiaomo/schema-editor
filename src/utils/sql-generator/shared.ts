@@ -2,7 +2,7 @@ export type SqlDialect = 'mysql' | 'postgresql'
 
 // ===== 解析公共字段 =====
 
-import type { CommonConfig, Field, Table } from "@/types/schema"
+import type { CommonConfig, Field, Table, TypeCaseMode } from "@/types/schema"
 
 export function resolveField(field: Field, commonConfig: CommonConfig | null): Field {
   if (field.use_common_used_fields && commonConfig) {
@@ -64,7 +64,26 @@ export function resolveFieldTypeForDialect(
     }
   }
 
+  // 应用全局类型大小写转换
+  type = applyTypeCase(type, commonConfig?.type_case)
+
   return { type: type || '', length }
+}
+
+/** 根据 type_case 配置转换类型名大小写 */
+export function applyTypeCase(type: string, mode: TypeCaseMode | undefined): string {
+  if (!type || !mode || mode === 'keep') return type
+  switch (mode) {
+    case 'lowercase':
+      return type.toLowerCase()
+    case 'uppercase':
+      return type.toUpperCase()
+    case 'pascal':
+      // 大驼峰（PascalCase）：首字母大写，其余小写
+      return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+    default:
+      return type
+  }
 }
 
 // ===== comment_before_table 输出 =====
