@@ -104,6 +104,7 @@
   },
   "indexColumnsEditor": {
     "columnName": "Column",
+    "selectColumn": "-- Select Column --",
     "sortDirection": "Sort",
     "noDirection": "None",
     "asc": "ASC",

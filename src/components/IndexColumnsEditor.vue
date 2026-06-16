@@ -4,6 +4,7 @@ import type { IndexColumn } from '@/types/schema'
 
 const props = defineProps<{
   modelValue: IndexColumn[]
+  availableFields: string[]
 }>()
 
 const emit = defineEmits<{
@@ -75,12 +76,27 @@ watch(() => props.modelValue, () => {
   <div class="index-columns-editor">
     <div class="column-row" v-for="(col, idx) in modelValue" :key="idx">
       <div class="column-main">
-        <input
-          class="table-input column-name-input"
+        <select
+          class="form-input column-name-select"
           v-model="col.name"
-          @input="emitChange"
-          :placeholder="$t('indexColumnsEditor.columnName')"
-        />
+          @change="emitChange"
+        >
+          <option value="">{{ $t('indexColumnsEditor.selectColumn') }}</option>
+          <option
+            v-for="fieldName in availableFields"
+            :key="fieldName"
+            :value="fieldName"
+          >
+            {{ fieldName }}
+          </option>
+          <!-- 保留不在当前字段列表中的已选值 -->
+          <option
+            v-if="col.name && !availableFields.includes(col.name)"
+            :value="col.name"
+          >
+            {{ col.name }}
+          </option>
+        </select>
         <select
           class="form-input sort-select"
           v-model="col.sort_order"
@@ -155,7 +171,7 @@ watch(() => props.modelValue, () => {
   gap: 3px;
 }
 
-.column-name-input {
+.column-name-select {
   flex: 1;
   min-width: 80px;
 }

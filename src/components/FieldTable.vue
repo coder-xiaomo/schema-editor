@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import { useEditorStore } from '@/stores/editor'
 import { displayDefault, displayFieldLength, parseDefaultInput, parseFieldLengthInput } from '@/utils/file-helpers'
+import type { Field } from '@/types/schema'
 
 const store = useEditorStore()
+
+function handleFieldNameChange(field: Field, newName: string) {
+  const oldName = field.field_name
+  const trimmed = newName.trim()
+  if (!trimmed || oldName === trimmed) return
+  field.field_name = trimmed
+  if (store.currentTable) {
+    store.syncFieldNameInIndexes(store.currentTable, oldName, trimmed)
+  }
+}
 </script>
 
 <template>
@@ -46,7 +57,7 @@ const store = useEditorStore()
                 <div class="field-name-cell">
                   <span v-if="store.isCommonField(field)" class="common-badge">C</span>
                   <span v-if="store.getResolvedField(field).is_commented_out" class="commented-badge">~</span>
-                  <input v-if="!store.isCommonField(field)" class="table-input" v-model="field.field_name" style="min-width:80px;">
+                  <input v-if="!store.isCommonField(field)" class="table-input" :value="field.field_name" @change="handleFieldNameChange(field, ($event.target as HTMLInputElement).value)" style="min-width:80px;">
                   <span v-else style="font-weight:500;">{{ field.field_name }}</span>
                 </div>
               </td>

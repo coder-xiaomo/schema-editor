@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 import IndexColumnsEditor from './IndexColumnsEditor.vue'
 
 const store = useEditorStore()
+
+const availableFieldNames = computed(() => {
+  if (!store.currentTable) return []
+  return store.currentTable.fields.map(f => f.field_name)
+})
 </script>
 
 <template>
@@ -42,7 +48,7 @@ const store = useEditorStore()
                 </select>
               </td>
               <td style="min-width:240px;">
-                <IndexColumnsEditor v-model="index.columns" />
+                <IndexColumnsEditor v-model="index.columns" :available-fields="availableFieldNames" />
               </td>
               <td>
                 <input class="table-input" v-model="index.using" style="width:60px;">

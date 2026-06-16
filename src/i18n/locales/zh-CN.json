@@ -104,6 +104,7 @@
   },
   "indexColumnsEditor": {
     "columnName": "列名",
+    "selectColumn": "-- 选择列 --",
     "sortDirection": "排序",
     "noDirection": "无",
     "asc": "ASC",
