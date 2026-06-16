@@ -153,7 +153,13 @@ function setOverride(field: Field, db: 'mysql' | 'pgsql', text: string) {
 // ===== Unified Types 本地数组 =====
 function readUnifiedTypes(): UnifiedTypeDefinition[] {
   if (!store.commonConfig?.unified_types) return []
-  return store.commonConfig.unified_types
+  // 深拷贝避免 v-model 编辑直接污染 store，确保 sync 时能检测到名称变更
+  return store.commonConfig.unified_types.map(ut => ({
+    name: ut.name,
+    description: ut.description,
+    mysql: { type: ut.mysql.type, length: ut.mysql.length },
+    pgsql: { type: ut.pgsql.type, length: ut.pgsql.length },
+  }))
 }
 
 const localUnifiedTypes = ref<UnifiedTypeDefinition[]>(readUnifiedTypes())
@@ -164,6 +170,17 @@ watch(() => store.commonConfig, () => {
 
 // 同步回 store
 function syncUnifiedTypes() {
+  // 检测类型名变更并同步更新所有引用
+  const oldTypes = store.commonConfig?.unified_types ?? []
+  const newTypes = localUnifiedTypes.value
+  const compareLen = Math.min(oldTypes.length, newTypes.length)
+  for (let i = 0; i < compareLen; i++) {
+    const oldName = oldTypes[i]!.name
+    const newName = newTypes[i]!.name
+    if (oldName !== newName) {
+      store.renameUnifiedType(oldName, newName)
+    }
+  }
   store.rebuildUnifiedTypesFromArray([...localUnifiedTypes.value])
 }
 

@@ -1328,6 +1328,30 @@ export const useEditorStore = defineStore('editor', () => {
     showToast(t('toast.unifiedTypeDeleted'))
   }
 
+  /** 重命名统一类型时同步更新所有引用该类型的字段 */
+  function renameUnifiedType(oldName: string, newName: string) {
+    if (oldName === newName || !oldName || !newName) return
+    // 遍历所有 schema 中的表字段
+    for (const schema of schemas) {
+      for (const table of schema.tables) {
+        for (const field of table.fields) {
+          if (field.unified_type === oldName) {
+            field.unified_type = newName
+          }
+        }
+      }
+    }
+    // 遍历 common_used_fields
+    if (commonConfig.value?.common_used_fields) {
+      for (const key of Object.keys(commonConfig.value.common_used_fields)) {
+        const field = commonConfig.value.common_used_fields[key]
+        if (field?.unified_type === oldName) {
+          field.unified_type = newName
+        }
+      }
+    }
+  }
+
   function rebuildUnifiedTypesFromArray(types: UnifiedTypeDefinition[]) {
     if (!commonConfig.value) return
     commonConfig.value.unified_types = types
@@ -1453,6 +1477,7 @@ export const useEditorStore = defineStore('editor', () => {
     // Unified Types CRUD
     addUnifiedType,
     deleteUnifiedType,
+    renameUnifiedType,
     rebuildUnifiedTypesFromArray,
 
     // Toast
