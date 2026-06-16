@@ -6,7 +6,7 @@
  * 零分 → Unknown
  */
 
-import { lex, Token, TokenType } from './tokenizer'
+import { lex, type Token, TokenType } from './tokenizer'
 
 export type DetectedDialect = 'mysql' | 'pgsql' | 'unknown'
 

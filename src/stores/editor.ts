@@ -38,8 +38,7 @@ import { DEFAULT_UNIFIED_TYPES } from '@/utils/unified-types'
 import { resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
 import type { UnifiedTypeDefinition } from '@/types/schema'
 import { parseCreateTableStatements, detectDialect, convertColumnToField } from '@/utils/sql-parser'
-import type { ParsedTable, ParseMessage, ParsedConstraint } from '@/utils/sql-parser'
-import type { DetectedDialect } from '@/utils/sql-parser'
+import type { ParsedTable, ParseMessage } from '@/utils/sql-parser'
 
 export const useEditorStore = defineStore('editor', () => {
   const { t } = useI18n()
@@ -1456,8 +1455,7 @@ export const useEditorStore = defineStore('editor', () => {
     unifiedTypes: UnifiedTypeDefinition[],
   ): Table {
     const fields: Field[] = parsed.columns.map(col => {
-      const field = convertColumnToField(col, dialect, unifiedTypes) as Field
-      return field
+      return convertColumnToField(col, dialect, unifiedTypes)
     })
 
     const indexes: Index[] = []

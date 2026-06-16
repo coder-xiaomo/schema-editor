@@ -5,7 +5,7 @@
  * 支持 MySQL 和 PostgreSQL 两种方言的 CREATE TABLE 语法。
  */
 
-import { lex, Token, TokenType } from './tokenizer'
+import { lex, type Token, TokenType } from './tokenizer'
 
 // ===== 中间表示类型 =====
 

@@ -7,7 +7,7 @@
  * Level 3: 无匹配时回退到原始 SQL 类型
  */
 
-import type { UnifiedTypeDefinition } from '@/types/schema'
+import type { UnifiedTypeDefinition, Field } from '@/types/schema'
 import type { ParsedColumn } from './create-table-parser'
 
 /** 类型映射结果 */
@@ -265,10 +265,10 @@ export function convertColumnToField(
   column: ParsedColumn,
   dialect: 'mysql' | 'pgsql',
   unifiedTypes: UnifiedTypeDefinition[],
-) {
+): Field {
   const typeInfo = mapSqlTypeToField(column, dialect, unifiedTypes)
 
-  const field: Record<string, unknown> = {
+  const field: Field = {
     field_name: column.name,
   }
 
