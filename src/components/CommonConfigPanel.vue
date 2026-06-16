@@ -191,6 +191,8 @@ function handleUnifiedTypeChange(field: Field, value: string) {
   if (value) {
     field.unified_type = value
     field.field_type = ''
+    // 统一类型字段的 quote_default 由类型定义决定，清除字段级设置
+    field.quote_default = undefined
   } else {
     field.unified_type = undefined
   }
