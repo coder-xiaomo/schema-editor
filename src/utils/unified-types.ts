@@ -1,14 +1,4 @@
-export interface UnifiedTypeDbMapping {
-  type: string
-  length?: number | null
-}
-
-export interface UnifiedTypeDefinition {
-  name: string
-  description?: string
-  mysql: UnifiedTypeDbMapping
-  pgsql: UnifiedTypeDbMapping
-}
+import type { UnifiedTypeDefinition } from '@/types/schema'
 
 /** 内置默认统一类型集 — 首次加载时若 common.json 中无 unified_types 则自动填充 */
 export const DEFAULT_UNIFIED_TYPES: UnifiedTypeDefinition[] = [
