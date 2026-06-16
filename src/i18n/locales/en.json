@@ -13,7 +13,8 @@
     "language": "Language",
     "github": "GitHub",
     "importSql": "Import SQL",
-    "importSqlTitle": "Paste CREATE TABLE statements, auto-parse and import"
+    "importSqlTitle": "Paste CREATE TABLE statements, auto-parse and import",
+    "about": "About"
   },
   "sidebar": {
     "navigation": "Navigation",
@@ -256,5 +257,10 @@
     "imported": "Imported {count} table(s)",
     "noValidTables": "No valid table definitions found"
   },
-  "github": "View GitHub Repository"
+  "github": "View GitHub Repository",
+  "about": {
+    "title": "About Schema Editor",
+    "version": "Version",
+    "close": "OK"
+  }
 }

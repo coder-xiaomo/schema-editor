@@ -1,11 +1,15 @@
 ﻿<script setup lang="ts">
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import { availableLocales, persistLocale } from '@/i18n/detection'
 import type { SupportedLocale } from '@/i18n/detection'
+import AboutModal from '@/components/AboutModal.vue'
 
 const store = useEditorStore()
 const { t, locale } = useI18n()
+
+const showAboutModal = ref(false)
 
 function switchLocale(newLocale: SupportedLocale) {
   locale.value = newLocale
@@ -73,8 +77,14 @@ function switchLocale(newLocale: SupportedLocale) {
       >
         GitHub
       </a>
+
+      <button class="btn btn-about" :title="$t('toolbar.about')" @click="showAboutModal = true">
+        {{ $t('toolbar.about') }}
+      </button>
     </div>
   </div>
+
+  <AboutModal :visible="showAboutModal" @close="showAboutModal = false" />
 </template>
 
 <style scoped>

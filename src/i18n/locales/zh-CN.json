@@ -13,7 +13,8 @@
     "language": "语言",
     "github": "GitHub",
     "importSql": "导入 SQL",
-    "importSqlTitle": "粘贴 SQL 建表语句，自动解析并导入"
+    "importSqlTitle": "粘贴 SQL 建表语句，自动解析并导入",
+    "about": "关于"
   },
   "sidebar": {
     "navigation": "导航",
@@ -256,5 +257,10 @@
     "imported": "已导入 {count} 张表",
     "noValidTables": "没有找到有效的表定义"
   },
-  "github": "查看 GitHub 仓库"
+  "github": "查看 GitHub 仓库",
+  "about": {
+    "title": "关于 Schema 编辑器",
+    "version": "版本",
+    "close": "确定"
+  }
 }
