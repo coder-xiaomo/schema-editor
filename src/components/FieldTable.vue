@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 import { displayDefault, displayFieldLength, parseDefaultInput, parseFieldLengthInput } from '@/utils/file-helpers'
 import type { Field } from '@/types/schema'
@@ -13,6 +14,75 @@ function handleFieldNameChange(field: Field, newName: string) {
   if (store.currentTable) {
     store.syncFieldNameInIndexes(store.currentTable, oldName, trimmed)
   }
+}
+
+// ===== Drag-and-drop for Fields =====
+const dragFieldIdx = ref(-1)
+
+function onDragStart(e: DragEvent, idx: number) {
+  dragFieldIdx.value = idx
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('row-dragging')
+}
+
+function onDragOver(e: DragEvent) {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('drag-over-row')
+}
+
+function onDragLeave(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-row')
+}
+
+function onDrop(e: DragEvent, toIdx: number) {
+  e.preventDefault()
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-row')
+  const fromIdx = dragFieldIdx.value
+  if (fromIdx < 0 || fromIdx === toIdx || !store.currentTable) return
+  const arr = store.currentTable.fields
+  const [item] = arr.splice(fromIdx, 1)
+  if (item) {
+    const insertIdx = toIdx > fromIdx ? toIdx - 1 : toIdx
+    arr.splice(insertIdx, 0, item)
+  }
+  dragFieldIdx.value = -1
+}
+
+function onDragEnd(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('row-dragging')
+  document.querySelectorAll('.drag-over-row, .drag-over-tail').forEach(el => el.classList.remove('drag-over-row', 'drag-over-tail'))
+  dragFieldIdx.value = -1
+}
+
+function onDropTailOver(e: DragEvent) {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('drag-over-tail')
+}
+
+function onDropTailLeave(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-tail')
+}
+
+function onDropTail(e: DragEvent) {
+  e.preventDefault()
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-tail')
+  const fromIdx = dragFieldIdx.value
+  if (fromIdx < 0 || !store.currentTable) return
+  const arr = store.currentTable.fields
+  if (fromIdx === arr.length - 1) return
+  const [item] = arr.splice(fromIdx, 1)
+  if (item) {
+    arr.push(item)
+  }
+  dragFieldIdx.value = -1
 }
 </script>
 
@@ -30,6 +100,7 @@ function handleFieldNameChange(field: Field, newName: string) {
       <table class="fields-table">
         <thead>
           <tr>
+            <th style="width:24px;"></th>
             <th style="width:30px;"></th>
             <th>{{ $t('fieldTable.fieldName') }}</th>
             <th>{{ $t('fieldTable.type') }}</th>
@@ -44,10 +115,22 @@ function handleFieldNameChange(field: Field, newName: string) {
         </thead>
         <tbody>
           <template v-for="(field, fIdx) in store.currentTable.fields" :key="field.field_name + fIdx">
-            <tr :class="{
-              'common-field-row': store.isCommonField(field),
-              'commented-out-row': store.getResolvedField(field).is_commented_out
-            }">
+            <tr
+              :class="{
+                'common-field-row': store.isCommonField(field),
+                'commented-out-row': store.getResolvedField(field).is_commented_out
+              }"
+              draggable="true"
+              @dragstart="onDragStart($event, fIdx)"
+              @dragover="onDragOver"
+              @dragleave="onDragLeave"
+              @drop="onDrop($event, fIdx)"
+              @dragend="onDragEnd"
+            >
+              <!-- drag handle -->
+              <td class="drag-handle-cell">
+                <span class="drag-handle">⋮⋮</span>
+              </td>
               <td>
                 <span class="expand-toggle" @click="store.toggleFieldExpand(store.fieldKey(store.currentSchema!, store.currentTable!, field))">
                   {{ store.expandedFields.has(store.fieldKey(store.currentSchema!, store.currentTable!, field)) ? '▼' : '▶' }}
@@ -133,7 +216,7 @@ function handleFieldNameChange(field: Field, newName: string) {
             </tr>
             <!-- Expanded Field Detail -->
             <tr v-if="store.expandedFields.has(store.fieldKey(store.currentSchema!, store.currentTable!, field))">
-              <td colspan="10">
+              <td colspan="11">
                 <div class="field-expand-content">
                   <!-- 解析后类型预览 -->
                   <div class="expand-section" v-if="!store.isCommonField(field)">
@@ -176,6 +259,16 @@ function handleFieldNameChange(field: Field, newName: string) {
               </td>
             </tr>
           </template>
+          <!-- 尾部 drop 区域 -->
+          <tr
+            v-if="store.currentTable.fields.length > 0"
+            class="drop-tail-row"
+            @dragover="onDropTailOver"
+            @dragleave="onDropTailLeave"
+            @drop="onDropTail"
+          >
+            <td :colspan="11"></td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -488,5 +581,46 @@ function handleFieldNameChange(field: Field, newName: string) {
   border-radius: 3px;
   font-size: 11px;
   font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* Drag-and-drop styles */
+.drag-handle-cell {
+  cursor: grab;
+  text-align: center;
+  padding: 2px 4px !important;
+  user-select: none;
+}
+
+.drag-handle {
+  color: #ccc;
+  font-size: 14px;
+  letter-spacing: -2px;
+  line-height: 1;
+  transition: color .15s;
+}
+
+.drag-handle-cell:hover .drag-handle {
+  color: #999;
+}
+
+.row-dragging {
+  opacity: 0.4;
+}
+
+.drag-over-row {
+  border-top: 2px solid #4a90d9 !important;
+}
+
+.drop-tail-row {
+  height: 8px;
+}
+
+.drop-tail-row td {
+  padding: 0 !important;
+  border-bottom: none;
+}
+
+.drop-tail-row.drag-over-tail {
+  border-top: 2px solid #4a90d9;
 }
 </style>

@@ -93,6 +93,77 @@ function moveCommonFieldDown(idx: number) {
   store.rebuildCommonUsedFieldsFromArray(arr)
 }
 
+// ===== Drag-and-drop for Common Fields =====
+const dragCommonFieldIdx = ref(-1)
+
+function onCommonFieldDragStart(e: DragEvent, idx: number) {
+  dragCommonFieldIdx.value = idx
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('row-dragging')
+}
+
+function onCommonFieldDragOver(e: DragEvent) {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('drag-over-row')
+}
+
+function onCommonFieldDragLeave(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-row')
+}
+
+function onCommonFieldDrop(e: DragEvent, toIdx: number) {
+  e.preventDefault()
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-row')
+  const fromIdx = dragCommonFieldIdx.value
+  if (fromIdx < 0 || fromIdx === toIdx) return
+  const arr = localFields.value
+  const [item] = arr.splice(fromIdx, 1)
+  if (item) {
+    const insertIdx = toIdx > fromIdx ? toIdx - 1 : toIdx
+    arr.splice(insertIdx, 0, item)
+    store.rebuildCommonUsedFieldsFromArray(arr)
+  }
+  dragCommonFieldIdx.value = -1
+}
+
+function onCommonFieldDragEnd(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('row-dragging')
+  document.querySelectorAll('.drag-over-row, .drag-over-tail').forEach(el => el.classList.remove('drag-over-row', 'drag-over-tail'))
+  dragCommonFieldIdx.value = -1
+}
+
+function onCommonFieldDropTailOver(e: DragEvent) {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('drag-over-tail')
+}
+
+function onCommonFieldDropTailLeave(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-tail')
+}
+
+function onCommonFieldDropTail(e: DragEvent) {
+  e.preventDefault()
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-tail')
+  const fromIdx = dragCommonFieldIdx.value
+  if (fromIdx < 0) return
+  const arr = localFields.value
+  if (fromIdx === arr.length - 1) return
+  const [item] = arr.splice(fromIdx, 1)
+  if (item) {
+    arr.push(item)
+    store.rebuildCommonUsedFieldsFromArray(arr)
+  }
+  dragCommonFieldIdx.value = -1
+}
+
 // ===== Delete =====
 function handleDelete(name: string) {
   const refs: string[] = []
@@ -148,6 +219,92 @@ function setOverride(field: Field, db: 'mysql' | 'pgsql', text: string) {
   } else {
     delete field[db]
   }
+}
+
+// ===== Unified Types sort (move up/down) =====
+function moveUnifiedTypeUp(idx: number) {
+  if (idx <= 0) return
+  const arr = localUnifiedTypes.value;
+  [arr[idx - 1], arr[idx]] = [arr[idx]!, arr[idx - 1]!]
+  syncUnifiedTypes()
+}
+
+function moveUnifiedTypeDown(idx: number) {
+  if (idx >= localUnifiedTypes.value.length - 1) return
+  const arr = localUnifiedTypes.value;
+  [arr[idx], arr[idx + 1]] = [arr[idx + 1]!, arr[idx]!]
+  syncUnifiedTypes()
+}
+
+// ===== Drag-and-drop for Unified Types =====
+const dragUnifiedTypeIdx = ref(-1)
+
+function onUnifiedTypeDragStart(e: DragEvent, idx: number) {
+  dragUnifiedTypeIdx.value = idx
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('row-dragging')
+}
+
+function onUnifiedTypeDragOver(e: DragEvent) {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('drag-over-row')
+}
+
+function onUnifiedTypeDragLeave(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-row')
+}
+
+function onUnifiedTypeDrop(e: DragEvent, toIdx: number) {
+  e.preventDefault()
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-row')
+  const fromIdx = dragUnifiedTypeIdx.value
+  if (fromIdx < 0 || fromIdx === toIdx) return
+  const arr = localUnifiedTypes.value
+  const [item] = arr.splice(fromIdx, 1)
+  if (item) {
+    const insertIdx = toIdx > fromIdx ? toIdx - 1 : toIdx
+    arr.splice(insertIdx, 0, item)
+    syncUnifiedTypes()
+  }
+  dragUnifiedTypeIdx.value = -1
+}
+
+function onUnifiedTypeDragEnd(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('row-dragging')
+  document.querySelectorAll('.drag-over-row, .drag-over-tail').forEach(el => el.classList.remove('drag-over-row', 'drag-over-tail'))
+  dragUnifiedTypeIdx.value = -1
+}
+
+function onUnifiedTypeDropTailOver(e: DragEvent) {
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  ;(e.currentTarget as HTMLElement)?.classList.add('drag-over-tail')
+}
+
+function onUnifiedTypeDropTailLeave(e: DragEvent) {
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-tail')
+}
+
+function onUnifiedTypeDropTail(e: DragEvent) {
+  e.preventDefault()
+  ;(e.currentTarget as HTMLElement)?.classList.remove('drag-over-tail')
+  const fromIdx = dragUnifiedTypeIdx.value
+  if (fromIdx < 0) return
+  const arr = localUnifiedTypes.value
+  if (fromIdx === arr.length - 1) return
+  const [item] = arr.splice(fromIdx, 1)
+  if (item) {
+    arr.push(item)
+    syncUnifiedTypes()
+  }
+  dragUnifiedTypeIdx.value = -1
 }
 
 // ===== Unified Types 本地数组 =====
@@ -224,17 +381,31 @@ function handleDeleteUnifiedType(idx: number) {
         <table class="common-fields-table">
           <thead>
             <tr>
+              <th style="width:24px;"></th>
               <th>{{ $t('commonConfig.unifiedTypes.name') }}</th>
               <th>{{ $t('commonConfig.unifiedTypes.description') }}</th>
               <th>{{ $t('commonConfig.unifiedTypes.mysqlType') }}</th>
               <th>{{ $t('commonConfig.unifiedTypes.mysqlLength') }}</th>
               <th>{{ $t('commonConfig.unifiedTypes.pgsqlType') }}</th>
               <th>{{ $t('commonConfig.unifiedTypes.pgsqlLength') }}</th>
-              <th style="width:40px;"></th>
+              <th style="width:90px;"></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(ut, idx) in localUnifiedTypes" :key="idx">
+            <tr
+              v-for="(ut, idx) in localUnifiedTypes"
+              :key="idx"
+              draggable="true"
+              @dragstart="onUnifiedTypeDragStart($event, idx)"
+              @dragover="onUnifiedTypeDragOver"
+              @dragleave="onUnifiedTypeDragLeave"
+              @drop="onUnifiedTypeDrop($event, idx)"
+              @dragend="onUnifiedTypeDragEnd"
+            >
+              <!-- drag handle -->
+              <td class="drag-handle-cell" :title="$t('commonConfig.dragToSort')">
+                <span class="drag-handle">⋮⋮</span>
+              </td>
               <td>
                 <input
                   class="table-input"
@@ -283,7 +454,11 @@ function handleDeleteUnifiedType(idx: number) {
                   style="width:60px;"
                 />
               </td>
-              <td>
+              <td style="min-width: 90px;">
+                <div class="move-btns" style="display:inline-flex; margin-right:2px;">
+                  <button class="move-btn" @click="moveUnifiedTypeUp(idx)" :disabled="idx === 0">↑</button>
+                  <button class="move-btn" @click="moveUnifiedTypeDown(idx)" :disabled="idx === localUnifiedTypes.length - 1">↓</button>
+                </div>
                 <button
                   class="btn btn-sm btn-danger"
                   @click="handleDeleteUnifiedType(idx)"
@@ -291,8 +466,18 @@ function handleDeleteUnifiedType(idx: number) {
                 >&times;</button>
               </td>
             </tr>
+            <!-- 尾部 drop 区域 -->
+            <tr
+              v-if="localUnifiedTypes.length > 0"
+              class="drop-tail-row"
+              @dragover="onUnifiedTypeDropTailOver"
+              @dragleave="onUnifiedTypeDropTailLeave"
+              @drop="onUnifiedTypeDropTail"
+            >
+              <td :colspan="8"></td>
+            </tr>
             <tr v-if="localUnifiedTypes.length === 0">
-              <td colspan="7" style="text-align:center; color:#aaa; padding:16px;">
+              <td colspan="8" style="text-align:center; color:#aaa; padding:16px;">
                 {{ $t('commonConfig.emptyTypes') }}
               </td>
             </tr>
@@ -400,6 +585,7 @@ function handleDeleteUnifiedType(idx: number) {
         <table class="common-fields-table">
           <thead>
             <tr>
+              <th style="width:24px;"></th>
               <th>{{ $t('commonConfig.fields.fieldName') }}</th>
               <th>{{ $t('commonConfig.fields.fieldType') }}</th>
               <th>{{ $t('commonConfig.fields.length') }}</th>
@@ -409,11 +595,24 @@ function handleDeleteUnifiedType(idx: number) {
               <th>{{ $t('commonConfig.fields.comment') }}</th>
               <th>{{ $t('commonConfig.fields.mysql') }}</th>
               <th>{{ $t('commonConfig.fields.pgsql') }}</th>
-              <th style="width:70px;"></th>
+              <th style="width:90px;"></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="field in localFields" :key="field.field_name">
+            <tr
+              v-for="field in localFields"
+              :key="field.field_name"
+              draggable="true"
+              @dragstart="onCommonFieldDragStart($event, localFields.indexOf(field))"
+              @dragover="onCommonFieldDragOver"
+              @dragleave="onCommonFieldDragLeave"
+              @drop="onCommonFieldDrop($event, localFields.indexOf(field))"
+              @dragend="onCommonFieldDragEnd"
+            >
+              <!-- drag handle -->
+              <td class="drag-handle-cell" :title="$t('commonConfig.dragToSort')">
+                <span class="drag-handle">⋮⋮</span>
+              </td>
               <!-- field_name -->
               <td>
                 <input
@@ -518,8 +717,18 @@ function handleDeleteUnifiedType(idx: number) {
                 >&times;</button>
               </td>
             </tr>
+            <!-- 尾部 drop 区域 -->
+            <tr
+              v-if="localFields.length > 0"
+              class="drop-tail-row"
+              @dragover="onCommonFieldDropTailOver"
+              @dragleave="onCommonFieldDropTailLeave"
+              @drop="onCommonFieldDropTail"
+            >
+              <td :colspan="11"></td>
+            </tr>
             <tr v-if="localFields.length === 0">
-              <td colspan="10" style="text-align:center; color:#aaa; padding:16px;">
+              <td colspan="11" style="text-align:center; color:#aaa; padding:16px;">
                 {{ $t('commonConfig.emptyFields') }}
               </td>
             </tr>
@@ -820,5 +1029,46 @@ function handleDeleteUnifiedType(idx: number) {
 .resolved-length {
   color: #666;
   font-size: 12px;
+}
+
+/* Drag-and-drop styles */
+.drag-handle-cell {
+  cursor: grab;
+  text-align: center;
+  padding: 2px 4px !important;
+  user-select: none;
+}
+
+.drag-handle {
+  color: #ccc;
+  font-size: 14px;
+  letter-spacing: -2px;
+  line-height: 1;
+  transition: color .15s;
+}
+
+.drag-handle-cell:hover .drag-handle {
+  color: #999;
+}
+
+.row-dragging {
+  opacity: 0.4;
+}
+
+.drag-over-row {
+  border-top: 2px solid #4a90d9 !important;
+}
+
+.drop-tail-row {
+  height: 8px;
+}
+
+.drop-tail-row td {
+  padding: 0 !important;
+  border-bottom: none;
+}
+
+.drop-tail-row.drag-over-tail {
+  border-top: 2px solid #4a90d9;
 }
 </style>

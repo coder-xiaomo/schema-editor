@@ -58,6 +58,7 @@
     "emptyFields": "暂无公共字段，请在上方添加。",
     "clickToRename": "点击重命名",
     "deleteField": "删除公共字段",
+    "dragToSort": "拖拽排序",
     "badge": "{n} 个字段",
     "defaultPgsqlConfig": "默认 PostgreSQL 配置",
     "quoteIdentifiers": "标识符加双引号",
