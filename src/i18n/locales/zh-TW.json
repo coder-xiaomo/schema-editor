@@ -9,7 +9,8 @@
     "autoSavingTitle": "編輯內容即時同步到本機檔案",
     "reloadFromDisk": "從磁碟重新載入",
     "reloadFromDiskTitle": "放棄網頁修改，從本機檔案重新載入",
-    "language": "語言"
+    "language": "語言",
+    "github": "GitHub"
   },
   "sidebar": {
     "navigation": "導覽",

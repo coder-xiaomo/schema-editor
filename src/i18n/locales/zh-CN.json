@@ -9,7 +9,8 @@
     "autoSavingTitle": "编辑内容实时同步到本地文件",
     "reloadFromDisk": "从磁盘重新加载",
     "reloadFromDiskTitle": "放弃网页修改，从本地文件重新加载",
-    "language": "语言"
+    "language": "语言",
+    "github": "GitHub"
   },
   "sidebar": {
     "navigation": "导航",

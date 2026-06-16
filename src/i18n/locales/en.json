@@ -9,7 +9,8 @@
     "autoSavingTitle": "Edits are synced to local files in real-time",
     "reloadFromDisk": "Reload from Disk",
     "reloadFromDiskTitle": "Discard web changes and reload from local files",
-    "language": "Language"
+    "language": "Language",
+    "github": "GitHub"
   },
   "sidebar": {
     "navigation": "Navigation",
