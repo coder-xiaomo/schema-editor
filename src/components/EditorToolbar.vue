@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import { availableLocales, persistLocale } from '@/i18n/detection'
@@ -10,6 +10,20 @@ const store = useEditorStore()
 const { t, locale } = useI18n()
 
 const showAboutModal = ref(false)
+const openMenu = ref<string | null>(null)
+
+function toggleMenu(menu: string) {
+  openMenu.value = openMenu.value === menu ? null : menu
+}
+
+function closeMenu() {
+  openMenu.value = null
+}
+
+function menuAction(fn: () => void) {
+  closeMenu()
+  fn()
+}
 
 function switchLocale(newLocale: SupportedLocale) {
   locale.value = newLocale
@@ -17,71 +31,111 @@ function switchLocale(newLocale: SupportedLocale) {
   document.documentElement.lang = newLocale
   document.title = t('app.title')
 }
+
+// Close menu when clicking outside the menu bar
+function onDocumentClick(e: MouseEvent) {
+  const target = e.target as HTMLElement
+  if (!target.closest('.menu-bar')) {
+    closeMenu()
+  }
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && openMenu.value) {
+    closeMenu()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+  document.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <template>
-  <!-- ===== Top Toolbar ===== -->
-  <div class="toolbar">
-    <img src="/logo.png" alt="Logo" class="toolbar-logo-img" />
-    <span class="title">{{ $t('app.title') }}</span>
+  <!-- ===== Menu Bar ===== -->
+  <div class="menu-bar">
+    <img src="/logo.png" alt="Logo" class="menu-bar-logo" />
+    <span class="menu-bar-title">{{ $t('app.title') }}</span>
 
-    <!-- Primary: Open / Close Folder -->
-    <button v-if="!store.projectOpened" class="btn btn-primary" @click="store.openProject()">
-      <span class="btn-icon">&#128193;&#xFE0E;</span> {{ $t('toolbar.openFolder') }}
-    </button>
-    <button v-if="store.projectOpened" class="btn btn-close-folder" @click="store.closeProject()">
-      <span class="btn-icon">&#128193;&#xFE0E;</span> {{ $t('toolbar.closeFolder') }}
-    </button>
-
-    <span v-if="store.projectOpened" class="sync-badge" :title="$t('toolbar.autoSavingTitle')">
-      &#128190;&#xFE0E; {{ $t('toolbar.autoSaving') }}
-    </span>
-
-    <button
-      v-if="store.projectOpened"
-      class="btn btn-reload"
-      :title="$t('toolbar.reloadFromDiskTitle')"
-      @click="store.reloadFromDisk()"
-    >
-      &#8635;&#xFE0E; {{ $t('toolbar.reloadFromDisk') }}
-    </button>
-
-    <button
-      v-if="store.projectOpened"
-      class="btn btn-import-sql"
-      :title="$t('toolbar.importSqlTitle')"
-      @click="store.openImportSqlModal()"
-    >
-      &#128196;&#xFE0E; {{ $t('toolbar.importSql') }}
-    </button>
-
-    <div class="toolbar-right">
-      <!-- Language Switch -->
-      <div class="locale-switch" :title="$t('toolbar.language')">
-        <select
-          class="locale-select"
-          :value="locale"
-          @change="switchLocale(($event.target as HTMLSelectElement).value as SupportedLocale)"
+    <!-- File Menu -->
+    <div class="menu-item" :class="{ open: openMenu === 'file' }" @click.stop="toggleMenu('file')">
+      {{ $t('menu.file') }}
+      <div v-if="openMenu === 'file'" class="menu-dropdown" @click.stop>
+        <div
+          class="menu-dropdown-item"
+          :class="{ disabled: store.projectOpened }"
+          @click="menuAction(() => store.openProject())"
         >
-          <option v-for="loc in availableLocales" :key="loc" :value="loc">
-            {{ loc.toUpperCase() }}
-          </option>
-        </select>
+          {{ $t('toolbar.openFolder') }}
+        </div>
+        <div
+          class="menu-dropdown-item"
+          :class="{ disabled: !store.projectOpened }"
+          @click="store.projectOpened && menuAction(() => store.closeProject())"
+        >
+          {{ $t('toolbar.closeFolder') }}
+        </div>
+        <div class="menu-separator"></div>
+        <div
+          class="menu-dropdown-item"
+          :class="{ disabled: !store.projectOpened }"
+          @click="store.projectOpened && menuAction(() => store.openImportSqlModal())"
+        >
+          {{ $t('toolbar.importSql') }}
+        </div>
+        <div class="menu-separator"></div>
+        <div
+          class="menu-dropdown-item"
+          :class="{ disabled: !store.projectOpened }"
+          @click="store.projectOpened && menuAction(() => store.reloadFromDisk())"
+        >
+          {{ $t('toolbar.reloadFromDisk') }}
+        </div>
       </div>
+    </div>
 
-      <a
-        href="https://github.com/coder-xiaomo/schema-editor"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-github"
-        :title="$t('toolbar.github')"
+    <!-- Help Menu -->
+    <div class="menu-item" :class="{ open: openMenu === 'help' }" @click.stop="toggleMenu('help')">
+      {{ $t('menu.help') }}
+      <div v-if="openMenu === 'help'" class="menu-dropdown" @click.stop>
+        <a
+          class="menu-dropdown-item"
+          href="https://github.com/coder-xiaomo/schema-editor"
+          target="_blank"
+          rel="noopener noreferrer"
+          @click="closeMenu()"
+        >
+          {{ $t('toolbar.github') }}
+        </a>
+        <div class="menu-separator"></div>
+        <div class="menu-dropdown-item" @click="menuAction(() => { showAboutModal = true })">
+          {{ $t('toolbar.about') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="menu-bar-right">
+      <span v-if="store.projectOpened" class="sync-badge" :title="$t('toolbar.autoSavingTitle')">
+        &#128190;&#xFE0E; {{ $t('toolbar.autoSaving') }}
+      </span>
+
+      <select
+        class="locale-select"
+        :title="$t('toolbar.language')"
+        :value="locale"
+        @change="switchLocale(($event.target as HTMLSelectElement).value as SupportedLocale)"
       >
-        GitHub
-      </a>
-
-      <button class="btn btn-about" :title="$t('toolbar.about')" @click="showAboutModal = true">
-        {{ $t('toolbar.about') }}
-      </button>
+        <option v-for="loc in availableLocales" :key="loc" :value="loc">
+          {{ loc.toUpperCase() }}
+        </option>
+      </select>
     </div>
   </div>
 
@@ -89,111 +143,108 @@ function switchLocale(newLocale: SupportedLocale) {
 </template>
 
 <style scoped>
-/* ===== Top Toolbar ===== */
-.toolbar {
+.menu-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+  padding: 0;
+  background: #f3f3f3;
+  border-bottom: 1px solid #d0d0d0;
   flex-shrink: 0;
-  flex-wrap: wrap;
+  height: 30px;
+  user-select: none;
 }
 
-.toolbar .toolbar-logo-img {
-  height: 2em;
+.menu-bar-logo {
+  height: 18px;
   aspect-ratio: 1;
-  margin-top: 0.1em;
+  margin: 0 6px 0 10px;
 }
 
-.toolbar .title {
-  font-size: 15px;
+.menu-bar-title {
+  font-size: 12px;
   font-weight: 600;
   color: #4a90d9;
   margin-right: 16px;
   white-space: nowrap;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  color: #333;
+.menu-item {
+  position: relative;
+  padding: 4px 9px;
+  margin-right: 2px;
   font-size: 12px;
+  color: #333;
   cursor: pointer;
+  border-radius: 4px;
   white-space: nowrap;
-  transition: all .15s;
+  transition: background .1s;
 }
 
-.btn:hover {
-  background: #e8e8e8;
-  border-color: #aaa;
+.menu-item:hover,
+.menu-item.open {
+  background: #d0d0d0;
 }
 
-.btn-primary {
-  background: #4a90d9;
-  color: #fff;
-  border-color: #4a90d9;
-  /* padding: 5px 16px; */
-  font-weight: 500;
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  min-width: 200px;
+  z-index: 200;
+  padding: 4px 0;
 }
 
-.btn-primary:hover {
-  background: #3a7bc8;
-  border-color: #3a7bc8;
-}
-
-.btn-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.sync-badge {
-  font-size: 11px;
-  /* color: #888; */
-  display: inline-flex;
+.menu-dropdown-item {
+  display: flex;
   align-items: center;
-  gap: 3px;
-  opacity: 0.618;
-}
-
-.btn-github {
+  justify-content: space-between;
+  padding: 5px 24px 5px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
   text-decoration: none;
 }
 
-.btn-reload {
+.menu-dropdown-item:hover {
+  background: #e8e8e8;
 }
 
-.btn-close-folder {
-  border-color: #d94a4a;
-  color: #d94a4a;
+.menu-dropdown-item.disabled {
+  color: #bbb;
+  cursor: default;
+  pointer-events: none;
 }
 
-.btn-close-folder:hover {
-  background: #d94a4a;
-  color: #fff;
-  border-color: #d94a4a;
+.menu-separator {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 4px 0;
 }
 
-.toolbar-right {
+.menu-bar-right {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  padding-right: 8px;
 }
 
-.locale-switch {
-  display: flex;
+.sync-badge {
+  font-size: 11px;
+  display: inline-flex;
   align-items: center;
+  gap: 3px;
+  opacity: 0.618;
+  white-space: nowrap;
 }
 
 .locale-select {
-  padding: 3px 6px;
+  padding: 2px 4px;
   border: 1px solid #ccc;
   border-radius: 3px;
   background: #fff;
