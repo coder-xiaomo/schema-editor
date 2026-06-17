@@ -1,7 +1,11 @@
 ﻿<script setup lang="ts">
+import { computed } from 'vue'
 import { useEditorStore } from '@/stores/editor'
+import { displayFieldLength, displayFieldScale } from '@/utils/file-helpers'
 
 const store = useEditorStore()
+
+const orderedCommonFields = computed(() => store.getOrderedCommonUsedFields())
 </script>
 
 <template>
@@ -27,20 +31,28 @@ const store = useEditorStore()
       </div>
       <div v-else class="form-group">
         <label class="form-label">{{ $t('addFieldModal.selectCommonField') }}</label>
-        <select class="form-input" v-model="store.newFieldSelectCommon">
-          <option value="">{{ $t('addFieldModal.selectPlaceholder') }}</option>
-          <option
-            v-for="name in store.commonFieldNames"
-            :key="name"
-            :value="name"
+        <div class="common-field-list" v-if="orderedCommonFields.length > 0">
+          <label
+            v-for="field in orderedCommonFields"
+            :key="field.field_name"
+            class="common-field-item"
           >
-            {{ name }} - {{ store.commonConfig!.common_used_fields[name]?.comment || '' }}
-          </option>
-        </select>
+            <input
+              type="checkbox"
+              :value="field.field_name"
+              v-model="store.newFieldSelectCommons"
+              class="common-field-checkbox"
+            />
+            <span class="common-field-name">{{ field.field_name }}</span>
+            <span class="common-field-type">{{ field.unified_type || (field.field_type ? field.field_type + (field.field_length !== undefined ? '(' + displayFieldLength(field.field_length) + (field.field_scale !== undefined ? ',' + displayFieldScale(field.field_scale) : '') + ')' : '') : '') }}</span>
+            <span class="common-field-comment" v-if="field.comment">{{ field.comment }}</span>
+          </label>
+        </div>
+        <div v-else class="common-field-empty">{{ $t('addFieldModal.noCommonFields') }}</div>
       </div>
       <div class="modal-actions">
         <button class="btn" @click="store.showAddFieldModal = false">{{ $t('addFieldModal.cancel') }}</button>
-        <button class="btn btn-primary" @click="store.confirmAddField()">{{ $t('addFieldModal.add') }}</button>
+        <button class="btn btn-primary" @click="store.confirmAddField()">{{ store.addFieldMode === 'common' ? $t('addFieldModal.confirm') : $t('addFieldModal.add') }}</button>
       </div>
     </div>
   </div>
@@ -66,7 +78,7 @@ const store = useEditorStore()
   border-radius: 8px;
   padding: 20px 24px;
   min-width: 360px;
-  max-width: 500px;
+  max-width: 560px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
@@ -141,5 +153,76 @@ const store = useEditorStore()
 .btn-primary:hover {
   background: #3a7bc8;
   border-color: #3a7bc8;
+}
+
+/* ===== Common Field List ===== */
+.common-field-list {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+.common-field-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  user-select: none;
+  transition: background .1s;
+}
+
+.common-field-item:last-child {
+  border-bottom: none;
+}
+
+.common-field-item:hover {
+  background: #e8f0fe;
+}
+
+.common-field-checkbox {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: #4a90d9;
+}
+
+.common-field-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.common-field-type {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.common-field-comment {
+  font-size: 11px;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.common-field-empty {
+  padding: 16px;
+  text-align: center;
+  color: #aaa;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fafafa;
 }
 </style>

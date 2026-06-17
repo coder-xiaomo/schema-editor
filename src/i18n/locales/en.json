@@ -167,7 +167,9 @@
     "namePlaceholder": "e.g. user_code",
     "selectPlaceholder": "-- Select --",
     "cancel": "Cancel",
-    "add": "Add"
+    "add": "Add",
+    "confirm": "Confirm",
+    "noCommonFields": "No common fields. Please add some in Common Config first"
   },
   "sqlPreview": {
     "title": "SQL Preview",
@@ -219,6 +221,10 @@
     "commonFieldAdded": "Common field added",
     "commonFieldDeleted": "Common field deleted",
     "commonFieldRenamed": "Common field renamed",
+    "commonFieldsUpdated": "Added {added}, removed {removed} common field reference(s)",
+    "commonFieldsAdded": "Added {n} common field reference(s)",
+    "commonFieldsRemoved": "Removed {n} common field reference(s)",
+    "noChange": "No changes",
     "unifiedTypeAdded": "Unified type added",
     "unifiedTypeDeleted": "Unified type deleted",
     "unifiedTypeExists": "Unified type \"{name}\" already exists",

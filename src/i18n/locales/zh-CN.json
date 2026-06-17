@@ -167,7 +167,9 @@
     "namePlaceholder": "例如 user_code",
     "selectPlaceholder": "-- 选择 --",
     "cancel": "取消",
-    "add": "添加"
+    "add": "添加",
+    "confirm": "确认",
+    "noCommonFields": "暂无公共字段，请先在公共配置中添加"
   },
   "sqlPreview": {
     "title": "SQL 预览",
@@ -219,6 +221,10 @@
     "commonFieldAdded": "公共字段已添加",
     "commonFieldDeleted": "公共字段已删除",
     "commonFieldRenamed": "公共字段已重命名",
+    "commonFieldsUpdated": "已添加 {added} 个、移除 {removed} 个公共字段引用",
+    "commonFieldsAdded": "已添加 {n} 个公共字段引用",
+    "commonFieldsRemoved": "已移除 {n} 个公共字段引用",
+    "noChange": "无变化",
     "unifiedTypeAdded": "统一类型已添加",
     "unifiedTypeDeleted": "统一类型已删除",
     "unifiedTypeExists": "统一类型 \"{name}\" 已存在",

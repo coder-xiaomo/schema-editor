@@ -59,6 +59,7 @@ export const useEditorStore = defineStore('editor', () => {
   const addFieldTableIdx = ref(-1)
   const newFieldName = ref('')
   const newFieldSelectCommon = ref('')
+  const newFieldSelectCommons = ref<string[]>([])
   const newFieldUnifiedType = ref('')
 
   // File System Access API handles (in-memory, same session)
@@ -947,6 +948,13 @@ export const useEditorStore = defineStore('editor', () => {
     addFieldMode.value = mode
     newFieldName.value = ''
     newFieldSelectCommon.value = ''
+    if (mode === 'common') {
+      // 初始化勾选状态：当前表中已引用的公共字段默认勾选
+      const table = schemas[schemaIdx]?.tables[tableIdx]
+      newFieldSelectCommons.value = table
+        ? table.fields.filter(f => f.use_common_used_fields).map(f => f.field_name)
+        : []
+    }
     showAddFieldModal.value = true
   }
 
@@ -959,17 +967,39 @@ export const useEditorStore = defineStore('editor', () => {
     if (!table) return
 
     if (addFieldMode.value === 'common') {
-      const name = newFieldSelectCommon.value
-      if (!name) { showToast(t('toast.pleaseSelectCommonField')); return }
-      // Check duplicate
-      if (table.fields.some(f => f.field_name === name)) {
-        showToast(t('toast.fieldExistsInTable', { name }))
-        return
+      const selectedNames = newFieldSelectCommons.value
+      const existingCommonNames = table.fields
+        .filter(f => f.use_common_used_fields)
+        .map(f => f.field_name)
+      // 删除：表中存在但未被勾选的公共字段引用
+      let removedCount = 0
+      for (let i = table.fields.length - 1; i >= 0; i--) {
+        const f = table.fields[i]!
+        if (f.use_common_used_fields && !selectedNames.includes(f.field_name)) {
+          table.fields.splice(i, 1)
+          removedCount++
+        }
       }
-      table.fields.push({
-        field_name: name,
-        use_common_used_fields: true
-      })
+      // 添加：勾选了但表中不存在的公共字段引用
+      let addedCount = 0
+      for (const name of selectedNames) {
+        if (!existingCommonNames.includes(name)) {
+          table.fields.push({
+            field_name: name,
+            use_common_used_fields: true
+          })
+          addedCount++
+        }
+      }
+      if (addedCount > 0 && removedCount > 0) {
+        showToast(t('toast.commonFieldsUpdated', { added: addedCount, removed: removedCount }))
+      } else if (addedCount > 0) {
+        showToast(t('toast.commonFieldsAdded', { n: addedCount }))
+      } else if (removedCount > 0) {
+        showToast(t('toast.commonFieldsRemoved', { n: removedCount }))
+      } else {
+        showToast(t('toast.noChange'))
+      }
     } else {
       const name = newFieldName.value.trim()
       if (!name) { showToast(t('toast.pleaseEnterFieldName')); return }
@@ -988,10 +1018,10 @@ export const useEditorStore = defineStore('editor', () => {
         primary_key: false,
         comment: ''
       })
+      showToast(t('toast.fieldAdded'))
     }
 
     showAddFieldModal.value = false
-    showToast(t('toast.fieldAdded'))
   }
 
   function directAddField(schemaIdx: number, tableIdx: number) {
@@ -1650,6 +1680,7 @@ export const useEditorStore = defineStore('editor', () => {
     addFieldMode,
     newFieldName,
     newFieldSelectCommon,
+    newFieldSelectCommons,
     newFieldUnifiedType,
 
     // Import SQL State
