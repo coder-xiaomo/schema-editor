@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 import { displayDefault, displayFieldLength, displayFieldScale, parseDefaultInput, parseFieldLengthInput, parseFieldScaleInput } from '@/utils/file-helpers'
 import type { Field } from '@/types/schema'
@@ -14,6 +14,20 @@ function handleFieldNameChange(field: Field, newName: string) {
   if (store.currentTable) {
     store.syncFieldNameInIndexes(store.currentTable, oldName, trimmed)
   }
+}
+
+// ===== Direct add field (no modal) =====
+const fieldNameInputRefs: (HTMLInputElement | null)[] = []
+
+function setFieldNameInputRef(el: any, idx: number) {
+  fieldNameInputRefs[idx] = el as HTMLInputElement | null
+}
+
+async function handleDirectAddField() {
+  const newIdx = store.currentTable!.fields.length
+  store.directAddField(store.selectedSchemaIdx, store.selectedTableIdx)
+  await nextTick()
+  fieldNameInputRefs[newIdx]?.focus()
 }
 
 /** 切换字段是否有默认值 */
@@ -132,7 +146,7 @@ function onDropTail(e: DragEvent) {
       {{ $t('fieldTable.fields') }}
       <span class="badge">{{ $t('fieldTable.badge', { n: store.currentTable.fields.length }) }}</span>
       <div style="margin-left:auto; display:flex; gap:6px;">
-        <button class="btn btn-sm btn-primary" @click="store.openAddFieldModal(store.selectedSchemaIdx, store.selectedTableIdx, 'normal')">{{ $t('fieldTable.addField') }}</button>
+        <button class="btn btn-sm btn-primary" @click="handleDirectAddField">{{ $t('fieldTable.addField') }}</button>
         <button class="btn btn-sm" @click="store.openAddFieldModal(store.selectedSchemaIdx, store.selectedTableIdx, 'common')" :disabled="!store.commonConfig">{{ $t('fieldTable.addCommonField') }}</button>
       </div>
     </div>
@@ -187,7 +201,7 @@ function onDropTail(e: DragEvent) {
                 <div class="field-name-cell">
                   <span v-if="store.isCommonField(field)" class="common-badge">C</span>
                   <span v-if="store.getResolvedField(field).is_commented_out" class="commented-badge">~</span>
-                  <input v-if="!store.isCommonField(field)" class="table-input" :value="field.field_name" @change="handleFieldNameChange(field, ($event.target as HTMLInputElement).value)" style="min-width:80px;">
+                  <input v-if="!store.isCommonField(field)" class="table-input" :value="field.field_name" @change="handleFieldNameChange(field, ($event.target as HTMLInputElement).value)" style="min-width:80px;" :ref="(el: any) => setFieldNameInputRef(el, fIdx)">
                   <span v-else style="font-weight:500;">{{ field.field_name }}</span>
                 </div>
               </td>

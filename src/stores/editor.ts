@@ -994,13 +994,28 @@ export const useEditorStore = defineStore('editor', () => {
     showToast(t('toast.fieldAdded'))
   }
 
+  function directAddField(schemaIdx: number, tableIdx: number) {
+    if (schemaIdx < 0 || tableIdx < 0) return
+    const table = schemas[schemaIdx]?.tables[tableIdx]
+    if (!table) return
+    table.fields.push({
+      field_name: '',
+      field_type: 'varchar',
+      field_length: 255,
+      not_null: false,
+      primary_key: false,
+      comment: ''
+    })
+    showToast(t('toast.fieldAdded'))
+  }
+
   function deleteField(table: Table, fieldIdx: number) {
     const fieldName = table.fields[fieldIdx]?.field_name
-    if (!fieldName) return
-    if (!confirm(t('confirm.deleteField', { name: fieldName }))) return
+    // 空字段名直接删除，不限确认
+    if (fieldName && !confirm(t('confirm.deleteField', { name: fieldName }))) return
     table.fields.splice(fieldIdx, 1)
     // Clean up comment_before_fields
-    if (table.comment_before_fields && table.comment_before_fields[fieldName]) {
+    if (fieldName && table.comment_before_fields && table.comment_before_fields[fieldName]) {
       delete table.comment_before_fields[fieldName]
       if (Object.keys(table.comment_before_fields).length === 0) {
         delete table.comment_before_fields
@@ -1708,6 +1723,7 @@ export const useEditorStore = defineStore('editor', () => {
     // Field CRUD
     openAddFieldModal,
     confirmAddField,
+    directAddField,
     deleteField,
     moveFieldUp,
     moveFieldDown,
