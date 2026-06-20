@@ -32,7 +32,7 @@ const store = useEditorStore()
         <TableEditor v-else-if="store.currentTable" />
 
         <!-- 空状态 -->
-        <div v-else class="empty-state">
+        <div v-else class="global-empty-state">
           <p>{{ $t('app.emptyState') }}</p>
         </div>
       </div>

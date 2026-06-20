@@ -12,6 +12,7 @@
   "editor.defaultFormatter": "oxc.oxc-vscode",
 
   // i18n
+  "i18n-ally.keystyle": "nested",
   "i18n-ally.localesPaths": [
     "src/i18n/locales"
   ],

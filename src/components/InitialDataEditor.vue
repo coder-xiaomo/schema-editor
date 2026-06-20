@@ -298,7 +298,6 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 
   <!-- 有初始数据：显示数据板块 + pre/post SQL 板块 -->
   <template v-if="initialData !== undefined">
-    <button class="btn btn-sm btn-danger" @click="clearAllData">{{ $t('initialData.clearAll') }}</button>
     <div class="section-card">
       <div class="section-header">
         <span>{{ $t('initialData.title') }}</span>
@@ -389,6 +388,10 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
         <button class="btn btn-sm btn-danger" @click="clearPrePostSql">{{ $t('initialData.clear') }}</button>
       </template>
     </PrePostSqlEditor>
+
+    <div class="empty-state">
+      <button class="btn btn-sm btn-danger" @click="clearAllData">{{ $t('initialData.clearAll') }}</button>
+    </div>
   </template>
 </template>
 

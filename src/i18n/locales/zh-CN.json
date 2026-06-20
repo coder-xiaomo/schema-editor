@@ -202,7 +202,7 @@
     "table": "表格",
     "json": "JSON",
     "clear": "清空",
-    "clearAll": "清除当前标签页以下所有配置",
+    "clearAll": "清除当前标签页以上所有配置",
     "clearRowsConfirm": "确认清空当前数据行？",
     "addData": "添加数据",
     "addRow": "添加行",
