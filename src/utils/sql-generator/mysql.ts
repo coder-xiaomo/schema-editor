@@ -341,7 +341,7 @@ export function generateInitialDataAllMySQL(
         // sql += `-- Initial data for ${schema.schema}.${table.name}\n`
         // sql += `-- ----------------------------\n`
         sql += `-- Insert data into \`${table.name}\`\n`
-        sql += generateInitialDataMySQL(table, initData.rows, initData.row_comments)
+        sql += generateInitialDataMySQL(table, initData.rows!, initData.row_comments)
         sql += '\n'
       }
 

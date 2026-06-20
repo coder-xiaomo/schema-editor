@@ -316,7 +316,7 @@ export function generateInitialDataAllPostgreSQL(
         const qSchema = quoteIdent(schema.schema, commonConfig)
         const qTable = quoteIdent(table.name, commonConfig)
         sql += `-- Insert data into ${qSchema}.${qTable}\n`
-        sql += generateInitialDataPostgreSQL(table, schema.schema, initData.rows, initData.row_comments, commonConfig)
+        sql += generateInitialDataPostgreSQL(table, schema.schema, initData.rows!, initData.row_comments, commonConfig)
         sql += '\n'
       }
 

@@ -214,26 +214,26 @@ function deleteRow(rowIdx: number) {
 }
 
 function moveRowUp(rowIdx: number) {
-  if (!initialData.value || rowIdx <= 0) return
-  const data = initialData.value
-    ;[data.rows[rowIdx - 1], data.rows[rowIdx]] = [data.rows[rowIdx]!, data.rows[rowIdx - 1]!]
-  if (data.row_comments) {
-    ;[data.row_comments[rowIdx - 1], data.row_comments[rowIdx]] = [data.row_comments[rowIdx]!, data.row_comments[rowIdx - 1]!]
+  const wrapper = initialData.value
+  if (!wrapper?.rows || rowIdx <= 0) return
+    ;[wrapper.rows[rowIdx - 1], wrapper.rows[rowIdx]] = [wrapper.rows[rowIdx]!, wrapper.rows[rowIdx - 1]!]
+  if (wrapper.row_comments) {
+    ;[wrapper.row_comments[rowIdx - 1], wrapper.row_comments[rowIdx]] = [wrapper.row_comments[rowIdx]!, wrapper.row_comments[rowIdx - 1]!]
   }
-  if (data.field_comments) {
-    ;[data.field_comments[rowIdx - 1], data.field_comments[rowIdx]] = [data.field_comments[rowIdx]!, data.field_comments[rowIdx - 1]!]
+  if (wrapper.field_comments) {
+    ;[wrapper.field_comments[rowIdx - 1], wrapper.field_comments[rowIdx]] = [wrapper.field_comments[rowIdx]!, wrapper.field_comments[rowIdx - 1]!]
   }
 }
 
 function moveRowDown(rowIdx: number) {
-  if (!initialData.value || rowIdx >= initialData.value.rows.length - 1) return
-  const data = initialData.value
-    ;[data.rows[rowIdx], data.rows[rowIdx + 1]] = [data.rows[rowIdx + 1]!, data.rows[rowIdx]!]
-  if (data.row_comments) {
-    ;[data.row_comments[rowIdx], data.row_comments[rowIdx + 1]] = [data.row_comments[rowIdx + 1]!, data.row_comments[rowIdx]!]
+  const wrapper = initialData.value
+  if (!wrapper?.rows || rowIdx >= wrapper.rows.length - 1) return
+    ;[wrapper.rows[rowIdx], wrapper.rows[rowIdx + 1]] = [wrapper.rows[rowIdx + 1]!, wrapper.rows[rowIdx]!]
+  if (wrapper.row_comments) {
+    ;[wrapper.row_comments[rowIdx], wrapper.row_comments[rowIdx + 1]] = [wrapper.row_comments[rowIdx + 1]!, wrapper.row_comments[rowIdx]!]
   }
-  if (data.field_comments) {
-    ;[data.field_comments[rowIdx], data.field_comments[rowIdx + 1]] = [data.field_comments[rowIdx + 1]!, data.field_comments[rowIdx]!]
+  if (wrapper.field_comments) {
+    ;[wrapper.field_comments[rowIdx], wrapper.field_comments[rowIdx + 1]] = [wrapper.field_comments[rowIdx + 1]!, wrapper.field_comments[rowIdx]!]
   }
 }
 
@@ -271,21 +271,23 @@ function setCellValue(row: Record<string, any>, fieldName: string, val: string) 
 
 // ===== Row Comment =====
 function setRowComment(rowIdx: number, val: string) {
-  if (!initialData.value) return
+  const wrapper = initialData.value
+  if (!wrapper) return
   const trimmed = val.trim()
   if (!trimmed) {
-    if (initialData.value.row_comments) {
-      initialData.value.row_comments[rowIdx] = null
+    if (wrapper.row_comments) {
+      wrapper.row_comments[rowIdx] = null
       // 清理全 null 数组
-      if (initialData.value.row_comments.every(c => c === null)) {
-        delete initialData.value.row_comments
+      if (wrapper.row_comments.every(c => c === null)) {
+        delete wrapper.row_comments
       }
     }
   } else {
-    if (!initialData.value.row_comments) {
-      initialData.value.row_comments = Array(initialData.value.rows.length).fill(null)
+    if (!wrapper.row_comments) {
+      if (!wrapper.rows) return
+      wrapper.row_comments = Array(wrapper.rows.length).fill(null)
     }
-    initialData.value.row_comments[rowIdx] = trimmed
+    wrapper.row_comments[rowIdx] = trimmed
   }
 }
 
@@ -295,27 +297,29 @@ function getFieldComment(rowIdx: number, fieldName: string): string {
 }
 
 function setFieldComment(rowIdx: number, fieldName: string, val: string) {
-  if (!initialData.value) return
+  const wrapper = initialData.value
+  if (!wrapper) return
   const trimmed = val.trim()
   if (!trimmed) {
-    if (initialData.value.field_comments?.[rowIdx]) {
-      delete initialData.value.field_comments[rowIdx]![fieldName]
-      if (Object.keys(initialData.value.field_comments[rowIdx]!).length === 0) {
-        initialData.value.field_comments[rowIdx] = null
+    if (wrapper.field_comments?.[rowIdx]) {
+      delete wrapper.field_comments[rowIdx]![fieldName]
+      if (Object.keys(wrapper.field_comments[rowIdx]!).length === 0) {
+        wrapper.field_comments[rowIdx] = null
       }
       // 清理全 null 数组
-      if (initialData.value.field_comments.every(c => c === null)) {
-        delete initialData.value.field_comments
+      if (wrapper.field_comments.every(c => c === null)) {
+        delete wrapper.field_comments
       }
     }
   } else {
-    if (!initialData.value.field_comments) {
-      initialData.value.field_comments = Array(initialData.value.rows.length).fill(null)
+    if (!wrapper.field_comments) {
+      if (!wrapper.rows) return
+      wrapper.field_comments = Array(wrapper.rows.length).fill(null)
     }
-    if (!initialData.value.field_comments[rowIdx] || initialData.value.field_comments[rowIdx] === null) {
-      initialData.value.field_comments[rowIdx] = {}
+    if (!wrapper.field_comments[rowIdx] || wrapper.field_comments[rowIdx] === null) {
+      wrapper.field_comments[rowIdx] = {}
     }
-    initialData.value.field_comments[rowIdx]![fieldName] = trimmed
+    wrapper.field_comments[rowIdx]![fieldName] = trimmed
   }
 }
 </script>
