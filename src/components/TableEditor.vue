@@ -65,9 +65,6 @@ function setTablePostSql(dialect: 'mysql' | 'pgsql', val: string) {
       <!-- Indexes -->
       <IndexTable />
 
-      <!-- SQL Preview -->
-      <SqlPreview />
-
       <!-- Table Pre/Post SQL -->
       <PrePostSqlEditor
         :title="$t('tableEditor.prePostSql')"
@@ -83,6 +80,9 @@ function setTablePostSql(dialect: 'mysql' | 'pgsql', val: string) {
         @update:pgsql-pre="setTablePreSql('pgsql', $event)"
         @update:pgsql-post="setTablePostSql('pgsql', $event)"
       />
+
+      <!-- SQL Preview -->
+      <SqlPreview />
     </template>
 
     <!-- Tab: Initial Data -->
