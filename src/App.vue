@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { useEditorStore } from '@/stores/editor'
+import { useDropFolder } from '@/composables/useDropFolder'
 import EditorToolbar from '@/components/EditorToolbar.vue'
 import EditorSidebar from '@/components/EditorSidebar.vue'
 import CommonConfigPanel from '@/components/CommonConfigPanel.vue'
@@ -9,10 +10,18 @@ import AddFieldModal from '@/components/AddFieldModal.vue'
 import ImportSqlModal from '@/components/ImportSqlModal.vue'
 
 const store = useEditorStore()
+const { dragOver, onDragOver, onDragEnter, onDragLeave, onDrop } = useDropFolder()
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" @dragover="onDragOver" @dragenter="onDragEnter" @dragleave="onDragLeave" @drop="onDrop">
+    <!-- 拖拽文件夹时的视觉覆盖层 -->
+    <div v-if="dragOver" class="drop-overlay">
+      <div class="drop-overlay-box">
+        <span class="drop-overlay-icon">&#128193;</span>
+        <span class="drop-overlay-text">{{ $t('app.dropHint') }}</span>
+      </div>
+    </div>
     <!-- 顶部工具栏 -->
     <EditorToolbar />
 

@@ -1,8 +1,8 @@
 doing:
 
-refactor: pgsql 改为 postgresql
+refactor: editor-styles.css 中大部分是非全局样式，请帮忙将非全局样式移至相关组件内部 (有多处使用到的样式保留在这个文件中)
 
-feat: 支持将文件夹拖进网页以打开
+refactor: pgsql 改为 postgresql
 
 initial data 不填时的默认值问题（允许选择某行不生成）
 

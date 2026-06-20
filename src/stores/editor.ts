@@ -177,6 +177,42 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /** 接收拖入的文件夹 handle 直接打开项目（跳过目录选择器） */
+  async function openProjectFromHandle(handle: FileSystemDirectoryHandle) {
+    if (!isFileSystemAccessSupported()) {
+      alert(t('toast.browserNotSupported'))
+      return
+    }
+    try {
+      const result = await openProjectFolder(handle)
+      console.log('[openProjectFromHandle] result.schemaFiles.length:', result.schemaFiles.length)
+      console.log('[openProjectFromHandle] result.commonData:', !!result.commonData)
+
+      rootDirHandle.value = result.rootHandle
+      schemaDirHandle.value = result.schemaHandle
+
+      const ok = await _loadProjectFromHandles(
+        result.rootHandle,
+        result.schemaHandle,
+        result.commonData,
+        result.schemaFiles,
+      )
+      if (!ok) return
+
+      projectOpened.value = true
+
+      const parts: string[] = []
+      if (schemas.length > 0) parts.push(`${schemas.length} schema(s)`)
+      if (commonConfig.value) parts.push('common.json')
+      showToast(t('toast.opened', { summary: parts.join(' + ') }))
+
+      setupAutoSync()
+    } catch (e) {
+      console.error('[openProjectFromHandle] Failed:', e)
+      showToast(t('toast.dropNotSupported'))
+    }
+  }
+
   // ===== Close Project =====
 
   /** 关闭当前项目文件夹，清空所有编辑状态 */
@@ -1886,6 +1922,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     // Project
     openProject,
+    openProjectFromHandle,
     closeProject,
     reloadFromDisk,
     syncAllToDisk,

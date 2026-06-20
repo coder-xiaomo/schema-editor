@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "Schema 编辑器",
-    "emptyState": "请先导入 JSON 文件，然后从侧边栏选择一个文件夹"
+    "emptyState": "拖入文件夹，或从上方菜单选择「文件 → 打开文件夹」以继续",
+    "dropHint": "释放以打开文件夹"
   },
   "menu": {
     "file": "文件",
@@ -257,7 +258,9 @@
     "indexDeleted": "索引已删除",
     "sqlCopied": "SQL 已复制",
     "browserNotSupported": "此功能不支持 Firefox、Safari 和移动端浏览器，请使用 Chrome / Edge / Opera",
-    "projectClosed": "项目已关闭"
+    "projectClosed": "项目已关闭",
+    "dropNotSupported": "拖拽打开不支持当前浏览器，请使用 Chrome / Edge",
+    "dropFolderOnly": "请拖拽文件夹而非文件"
   },
   "confirm": {
     "deleteSchema": "确认删除 Schema \"{name}\" 及其所有表？此操作不可撤销。",

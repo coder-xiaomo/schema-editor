@@ -15,24 +15,24 @@ export function isFileSystemAccessSupported(): boolean {
 }
 
 /**
- * 弹出文件夹选择器，读取项目结构：
+ * 弹出文件夹选择器（或接收已拖入的 handle），读取项目结构：
  *   - common.json（根目录）
  *   - schema/ 子目录下的所有 .json 文件
  * 返回 { rootHandle, schemaHandle, commonData, schemaFiles[] }
  */
-export async function openProjectFolder(): Promise<{
+export async function openProjectFolder(rootHandle?: FileSystemDirectoryHandle): Promise<{
   rootHandle: FileSystemDirectoryHandle
   schemaHandle: FileSystemDirectoryHandle
   commonData: unknown | null
   schemaFiles: { name: string; data: unknown }[]
 }> {
-  const rootHandle: FileSystemDirectoryHandle = await window.showDirectoryPicker()
+  const resolvedRootHandle: FileSystemDirectoryHandle = rootHandle ?? await window.showDirectoryPicker()
   let commonData: unknown | null = null
   let schemaHandle: FileSystemDirectoryHandle | null = null
   const schemaFiles: { name: string; data: unknown }[] = []
 
   // 逐条扫描根目录
-  for await (const entry of rootHandle.values()) {
+  for await (const entry of resolvedRootHandle.values()) {
     const handle: FileSystemFileHandle | FileSystemDirectoryHandle = entry
     const name: string = handle.name
     console.log(`[openProjectFolder] root entry: "${name}" kind=${handle.kind}`)
@@ -53,7 +53,7 @@ export async function openProjectFolder(): Promise<{
 
   // 读取 schemas/ 子目录
   try {
-    const sdHandle = await rootHandle.getDirectoryHandle('schemas')
+    const sdHandle = await resolvedRootHandle.getDirectoryHandle('schemas')
     schemaHandle = sdHandle
     console.log('[openProjectFolder] iterating schemas/ entries...')
     for await (const entry of sdHandle.values()) {
@@ -71,10 +71,10 @@ export async function openProjectFolder(): Promise<{
     console.log(`[openProjectFolder] schema files found: ${schemaFiles.length}`)
   } catch {
     console.log('[openProjectFolder] no schemas/ directory, creating one')
-    schemaHandle = await rootHandle.getDirectoryHandle('schemas', { create: true })
+    schemaHandle = await resolvedRootHandle.getDirectoryHandle('schemas', { create: true })
   }
 
-  return { rootHandle, schemaHandle, commonData, schemaFiles }
+  return { rootHandle: resolvedRootHandle, schemaHandle, commonData, schemaFiles }
 }
 
 /**

@@ -1,7 +1,8 @@
 {
   "app": {
     "title": "Schema Editor",
-    "emptyState": "Please import a JSON file first, then select a folder from the sidebar"
+    "emptyState": "Drop a folder here, or choose File → Open Folder from the menu to continue",
+    "dropHint": "Drop to open folder"
   },
   "menu": {
     "file": "File",
@@ -257,7 +258,9 @@
     "indexDeleted": "Index deleted",
     "sqlCopied": "SQL copied",
     "browserNotSupported": "This feature is unsupported on Firefox, Safari and mobile browsers. Please use Chrome, Edge or Opera",
-    "projectClosed": "Project closed"
+    "projectClosed": "Project closed",
+    "dropNotSupported": "Drag-and-drop is unsupported in this browser. Please use Chrome or Edge",
+    "dropFolderOnly": "Please drop a folder, not a file"
   },
   "confirm": {
     "deleteSchema": "Delete schema \"{name}\" and ALL its tables? This cannot be undone.",
