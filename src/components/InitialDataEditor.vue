@@ -131,8 +131,11 @@ function switchMode(mode: 'json' | 'table') {
         return
       }
       jsonError.value = ''
-      if (store.currentSchema && store.currentTable) {
-        store.setInitialDataObject(store.currentSchema.schema, store.currentTable.name, parsed)
+      // 仅当解析结果包含实际数据时才同步到 store，避免空对象覆盖导致已初始化的条目被误删
+      if ((parsed.rows?.length ?? 0) > 0 || parsed.pre_sql || parsed.post_sql) {
+        if (store.currentSchema && store.currentTable) {
+          store.setInitialDataObject(store.currentSchema.schema, store.currentTable.name, parsed)
+        }
       }
     } catch (e: any) {
       jsonError.value = (e.message || t('initialData.jsonError.invalidSyntax')) + t('initialData.jsonError.fixBeforeSwitch')
@@ -165,6 +168,7 @@ function addRow() {
   if (initialData.value.field_comments) {
     initialData.value.field_comments.push(null)
   }
+  syncJsonText()
 }
 
 function deleteRow(rowIdx: number) {
