@@ -220,7 +220,8 @@
       "invalidStructure": "JSON 必须为数组或 {{ rows: [...], ... }}",
       "invalidSyntax": "JSON 格式无效",
       "fixBeforeSwitch": " — 修复后再切换到表格模式"
-    }
+    },
+    "formatJson": "格式化"
   },
   "toast": {
     "skipping": "跳过 {name}：格式无效",

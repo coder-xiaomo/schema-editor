@@ -220,7 +220,8 @@
       "invalidStructure": "JSON must be an array or {{ rows: [...], ... }}",
       "invalidSyntax": "Invalid JSON",
       "fixBeforeSwitch": " — fix before switching to table mode"
-    }
+    },
+    "formatJson": "Format"
   },
   "toast": {
     "skipping": "Skipping {name}: invalid format",

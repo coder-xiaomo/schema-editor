@@ -32,6 +32,16 @@ const fieldComments = computed(() => initialData.value?.field_comments)
 const hasData = computed(() => rows.value !== undefined && rows.value.length > 0)
 const rowCount = computed(() => rows.value?.length ?? 0)
 
+/** JSON 文本是否为合法 JSON（语法有效） */
+const isJsonValid = computed(() => {
+  try {
+    JSON.parse(jsonText.value)
+    return true
+  } catch {
+    return false
+  }
+})
+
 // 监听当前表切换，重新同步 JSON 文本
 watch(() => store.currentInitialDataKey, () => {
   syncJsonText()
@@ -51,6 +61,22 @@ function syncJsonText() {
     jsonText.value = JSON.stringify(wrapper, null, 4)
   } else {
     jsonText.value = '{}'
+  }
+}
+
+/** 格式化 JSON 文本（4 空格缩进） */
+function formatJson() {
+  try {
+    const parsed = JSON.parse(jsonText.value)
+    jsonText.value = JSON.stringify(parsed, null, 4)
+    jsonError.value = ''
+    // 格式化后同步到 store
+    const result = parseJsonInput(jsonText.value)
+    if (result && store.currentSchema && store.currentTable) {
+      store.setInitialDataObject(store.currentSchema.schema, store.currentTable.name, result)
+    }
+  } catch {
+    // 不可达：按钮禁用时不会触发
   }
 }
 
@@ -326,6 +352,11 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 
         <!-- JSON 编辑模式 -->
         <template v-else-if="editorMode === 'json'">
+          <div class="json-toolbar">
+            <button class="btn btn-sm" :disabled="!isJsonValid" @click="formatJson">
+              {{ $t('initialData.formatJson') }}
+            </button>
+          </div>
           <textarea class="json-editor" :value="jsonText"
             @input="onJsonInput(($event.target as HTMLTextAreaElement).value)" spellcheck="false"></textarea>
           <div v-if="jsonError" class="json-error">{{ jsonError }}</div>
@@ -483,6 +514,15 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 }
 
 /* JSON Editor */
+.json-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-bottom: 1px solid #333;
+  background: #16162a;
+}
+
 .json-editor {
   width: 100%;
   min-height: 150px;
@@ -645,6 +685,15 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 
 .btn:hover {
   background: #f5f5f5;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background: #fff;
 }
 
 .btn-primary {
