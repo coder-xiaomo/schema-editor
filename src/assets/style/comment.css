@@ -1,0 +1,42 @@
+/* ===== Comment Editor ===== */
+.comment-editor {
+  width: 100%;
+  min-height: 40px;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: "Consolas", "Monaco", monospace;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.comment-editor:focus {
+  outline: none;
+  border-color: #4a90d9;
+}
+
+.comment-hint {
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+/* ===== Field Comment Editor ===== */
+.field-comment-editor {
+  width: 100%;
+  min-height: 40px;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: "Consolas", "Monaco", monospace;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.field-comment-editor:focus {
+  outline: none;
+  border-color: #4a90d9;
+}

@@ -1,0 +1,58 @@
+/* ===== Table Styles ===== */
+.fields-table,
+.indexes-table,
+.common-fields-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.fields-table th,
+.indexes-table th,
+.common-fields-table th {
+  background: #f5f5f5;
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.fields-table td,
+.indexes-table td,
+.common-fields-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+/* ===== Table Input ===== */
+.table-input {
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-size: 12px;
+  font-family: inherit;
+  background: transparent;
+  color: inherit;
+}
+
+.table-input:focus {
+  outline: none;
+  border-color: #4a90d9;
+  background: #fff;
+}
+
+.table-input:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== Table Checkbox ===== */
+.table-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}

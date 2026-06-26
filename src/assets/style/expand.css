@@ -1,0 +1,49 @@
+/* ===== Expand Toggle ===== */
+.expand-toggle {
+  cursor: pointer;
+  font-size: 10px;
+  color: #888;
+  user-select: none;
+}
+
+/* ===== Field Expanded Content ===== */
+.field-expand-content {
+  padding: 10px 14px;
+  background: #fafafa;
+  border-top: 1px solid #eee;
+}
+
+.expand-section {
+  margin-bottom: 12px;
+}
+
+.expand-section:last-child {
+  margin-bottom: 0;
+}
+
+.expand-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.db-override-grid {
+  display: flex;
+  gap: 16px;
+}
+
+.db-override-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.db-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}

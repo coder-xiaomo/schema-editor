@@ -70,26 +70,6 @@ function copyToClipboard() {
 </template>
 
 <style scoped>
-.section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-  font-weight: 600;
-  font-size: 13px;
-  color: #444;
-}
-
 .header-tabs {
   display: flex;
   gap: 0;
@@ -159,10 +139,6 @@ function copyToClipboard() {
   font-size: 11px;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .section-body {
   padding: 0;

@@ -1,0 +1,47 @@
+/* ===== Form Styles ===== */
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.form-group.narrow {
+  flex: 0 0 120px;
+}
+
+.form-group.medium {
+  flex: 0 0 200px;
+}
+
+.form-label {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
+}
+
+.form-input {
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #333;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4a90d9;
+}

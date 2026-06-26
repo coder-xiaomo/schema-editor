@@ -53,30 +53,4 @@ function setPostSql(dialect: 'mysql' | 'pgsql', val: string) {
 </template>
 
 <style scoped>
-.section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-  font-weight: 600;
-  font-size: 13px;
-  color: #444;
-}
-
-.section-header .badge {
-  font-weight: 400;
-  font-size: 11px;
-  color: #888;
-  margin-left: 8px;
-}
 </style>

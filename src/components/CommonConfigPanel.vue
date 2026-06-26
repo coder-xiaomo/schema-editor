@@ -921,34 +921,6 @@ function handleDeleteUnifiedType(idx: number) {
 </template>
 
 <style scoped>
-/* ===== Section Card ===== */
-.section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-  font-weight: 600;
-  font-size: 13px;
-  color: #444;
-}
-
-.section-header .badge {
-  font-weight: 400;
-  font-size: 11px;
-  color: #888;
-  margin-left: 8px;
-}
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -959,78 +931,6 @@ function handleDeleteUnifiedType(idx: number) {
   width: 150px;
   padding: 3px 6px;
   font-size: 11px;
-}
-
-.section-body {
-  padding: 14px;
-}
-
-/* ===== Form Row ===== */
-.form-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.form-row:last-child {
-  margin-bottom: 0;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-}
-
-.form-group.medium {
-  flex: 0 0 200px;
-}
-
-.form-label {
-  font-size: 11px;
-  color: #888;
-  font-weight: 500;
-}
-
-.form-input {
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 12px;
-  font-family: inherit;
-  color: #333;
-  transition: border-color .15s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #4a90d9;
-}
-
-/* ===== Common Fields Table ===== */
-.common-fields-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.common-fields-table th {
-  background: #f5f5f5;
-  padding: 6px 8px;
-  text-align: left;
-  font-weight: 600;
-  color: #666;
-  border-bottom: 1px solid #ddd;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.common-fields-table td {
-  padding: 4px 8px;
-  border-bottom: 1px solid #eee;
-  vertical-align: middle;
 }
 
 .common-fields-table tbody tr:hover {
@@ -1105,34 +1005,9 @@ function handleDeleteUnifiedType(idx: number) {
   border-color: #4a90d9;
 }
 
-.table-checkbox {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-}
-
 .move-btns {
   display: inline-flex;
   margin-right: 4px;
-}
-
-.move-btn {
-  padding: 2px 5px;
-  font-size: 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  border-radius: 2px;
-  margin-right: 2px;
-}
-
-.move-btn:hover:not(:disabled) {
-  background: #f0f0f0;
-}
-
-.move-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /* Toggle switch */
@@ -1325,55 +1200,6 @@ function handleDeleteUnifiedType(idx: number) {
   color: #4a90d9;
 }
 
-/* Expand toggle */
-.expand-toggle {
-  cursor: pointer;
-  font-size: 10px;
-  color: #888;
-  user-select: none;
-}
-
-/* Expand content */
-.field-expand-content {
-  padding: 10px 14px;
-  background: #fafafa;
-  border-top: 1px solid #eee;
-}
-
-.expand-section {
-  margin-bottom: 12px;
-}
-
-.expand-section:last-child {
-  margin-bottom: 0;
-}
-
-.expand-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 6px;
-}
-
-.db-override-grid {
-  display: flex;
-  gap: 16px;
-}
-
-.db-override-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.db-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
 
 .resolved-type-row {
   display: flex;

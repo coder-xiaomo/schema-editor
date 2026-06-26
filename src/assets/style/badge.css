@@ -1,0 +1,22 @@
+/* ===== Badge Styles ===== */
+.common-badge {
+  display: inline-block;
+  background: #4a90d9;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.commented-badge {
+  display: inline-block;
+  background: #999;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1;
+}

@@ -463,12 +463,6 @@ function onDropTail(e: DragEvent) {
   background: #e8e8e8 !important;
 }
 
-.expand-toggle {
-  cursor: pointer;
-  font-size: 10px;
-  color: #888;
-  user-select: none;
-}
 
 .field-name-cell {
   display: flex;
@@ -476,27 +470,7 @@ function onDropTail(e: DragEvent) {
   gap: 4px;
 }
 
-.common-badge {
-  display: inline-block;
-  background: #4a90d9;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  line-height: 1;
-}
 
-.commented-badge {
-  display: inline-block;
-  background: #999;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  line-height: 1;
-}
 
 .table-input {
   padding: 3px 5px;
@@ -513,34 +487,10 @@ function onDropTail(e: DragEvent) {
   border-color: #4a90d9;
 }
 
-.table-checkbox {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-}
 
-.move-btns {
-  display: inline-flex;
-}
 
-.move-btn {
-  padding: 2px 5px;
-  font-size: 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  border-radius: 2px;
-  margin-right: 2px;
-}
 
-.move-btn:hover:not(:disabled) {
-  background: #f0f0f0;
-}
 
-.move-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 .btn {
   padding: 4px 10px;
@@ -585,110 +535,20 @@ function onDropTail(e: DragEvent) {
   cursor: not-allowed;
 }
 
-.section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
 
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-  font-weight: 600;
-  font-size: 13px;
-  color: #444;
-}
 
-.section-header .badge {
-  font-weight: 400;
-  font-size: 11px;
-  color: #888;
-  margin-left: 8px;
-}
 
-.section-body {
-  padding: 14px;
-}
 
-.field-expand-content {
-  padding: 10px 14px;
-  background: #fafafa;
-  border-top: 1px solid #eee;
-}
 
-.expand-section {
-  margin-bottom: 12px;
-}
 
-.expand-section:last-child {
-  margin-bottom: 0;
-}
 
-.expand-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 6px;
-}
 
-.db-override-grid {
-  display: flex;
-  gap: 16px;
-}
 
-.db-override-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
 
-.db-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
 
-.form-input {
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 12px;
-  font-family: inherit;
-  color: #333;
-  transition: border-color .15s;
-}
 
-.form-input:focus {
-  outline: none;
-  border-color: #4a90d9;
-}
 
-.field-comment-editor {
-  width: 100%;
-  min-height: 40px;
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 12px;
-  font-family: 'Consolas', 'Monaco', monospace;
-  line-height: 1.5;
-  resize: vertical;
-  box-sizing: border-box;
-}
 
-.field-comment-editor:focus {
-  outline: none;
-  border-color: #4a90d9;
-}
 
 /* Type cell with unified type select + custom input */
 .type-cell {

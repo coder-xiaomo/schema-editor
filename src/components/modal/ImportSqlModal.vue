@@ -324,20 +324,6 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 </template>
 
 <style scoped>
-/* Modal 基础样式 — 复用项目现有风格 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
 .modal-box {
   background: #fff;
   border-radius: 8px;
@@ -348,12 +334,6 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.modal-box h3 {
-  margin-bottom: 12px;
-  font-size: 15px;
-  color: #333;
 }
 
 .modal-header {
@@ -394,27 +374,6 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   flex-direction: column;
   gap: 3px;
   margin-bottom: 12px;
-}
-
-.form-label {
-  font-size: 11px;
-  color: #888;
-  font-weight: 500;
-}
-
-.form-input {
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 12px;
-  font-family: inherit;
-  color: #333;
-  transition: border-color .15s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #4a90d9;
 }
 
 /* 方言选择器 */
@@ -720,43 +679,6 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 }
 
 /* 操作按钮 */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  color: #333;
-  font-size: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all .15s;
-}
-
-.btn:hover {
-  background: #e8e8e8;
-  border-color: #aaa;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: #4a90d9;
-  color: #fff;
-  border-color: #4a90d9;
-}
 
 .btn-primary:hover:not(:disabled) {
   background: #3a7bc8;

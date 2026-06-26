@@ -57,19 +57,6 @@ useEscClose(computed(() => props.visible), () => emit('close'))
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
 .modal-box {
   background: #fff;
   border-radius: 8px;
@@ -150,34 +137,4 @@ useEscClose(computed(() => props.visible), () => emit('close'))
   gap: 8px;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  color: #333;
-  font-size: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all .15s;
-}
-
-.btn:hover {
-  background: #e8e8e8;
-  border-color: #aaa;
-}
-
-.btn-primary {
-  background: #4a90d9;
-  color: #fff;
-  border-color: #4a90d9;
-}
-
-.btn-primary:hover {
-  background: #3a7bc8;
-  border-color: #3a7bc8;
-}
 </style>

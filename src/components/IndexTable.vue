@@ -129,13 +129,6 @@ const availableFieldNames = computed(() => {
   background: #f5f5f5;
 }
 
-.expand-toggle {
-  cursor: pointer;
-  font-size: 10px;
-  color: #888;
-  user-select: none;
-}
-
 .table-input {
   padding: 3px 5px;
   border: 1px solid #ddd;
@@ -189,90 +182,4 @@ const availableFieldNames = computed(() => {
   font-size: 11px;
 }
 
-.section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-  font-weight: 600;
-  font-size: 13px;
-  color: #444;
-}
-
-.section-header .badge {
-  font-weight: 400;
-  font-size: 11px;
-  color: #888;
-  margin-left: 8px;
-}
-
-.section-body {
-  padding: 14px;
-}
-
-.field-expand-content {
-  padding: 10px 14px;
-  background: #fafafa;
-  border-top: 1px solid #eee;
-}
-
-.expand-section {
-  margin-bottom: 12px;
-}
-
-.expand-section:last-child {
-  margin-bottom: 0;
-}
-
-.expand-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 6px;
-}
-
-.db-override-grid {
-  display: flex;
-  gap: 16px;
-}
-
-.db-override-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.db-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.form-input {
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 12px;
-  font-family: inherit;
-  color: #333;
-  transition: border-color .15s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #4a90d9;
-}
 </style>

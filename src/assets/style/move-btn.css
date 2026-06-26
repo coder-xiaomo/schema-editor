@@ -1,0 +1,23 @@
+/* ===== Move Buttons ===== */
+.move-btns {
+  display: inline-flex;
+}
+
+.move-btn {
+  padding: 2px 5px;
+  font-size: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 2px;
+  margin-right: 2px;
+}
+
+.move-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.move-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

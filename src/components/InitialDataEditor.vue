@@ -439,14 +439,6 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 </template>
 
 <style scoped>
-.section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
 .section-header {
   display: flex;
   align-items: center;
@@ -500,10 +492,6 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 
 .mode-btn:not(.active):hover {
   background: #f0f0f0;
-}
-
-.section-body {
-  padding: 14px;
 }
 
 /* Empty State */
@@ -725,26 +713,4 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
 }
 
 /* Move Buttons */
-.move-btns {
-  display: inline-flex;
-}
-
-.move-btn {
-  padding: 2px 5px;
-  font-size: 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  cursor: pointer;
-  border-radius: 2px;
-  margin-right: 2px;
-}
-
-.move-btn:hover:not(:disabled) {
-  background: #f0f0f0;
-}
-
-.move-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 </style>
