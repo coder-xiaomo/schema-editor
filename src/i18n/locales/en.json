@@ -265,7 +265,8 @@
     "browserNotSupported": "This feature is unsupported on Firefox, Safari and mobile browsers. Please use Chrome, Edge or Opera",
     "projectClosed": "Project closed",
     "dropNotSupported": "Drag-and-drop is unsupported in this browser. Please use Chrome or Edge",
-    "dropFolderOnly": "Please drop a folder, not a file"
+    "dropFolderOnly": "Please drop a folder, not a file",
+    "diskFileChanged": "The disk file has changed. Reload?"
   },
   "confirm": {
     "deleteSchema": "Delete schema \"{name}\" and ALL its tables? This cannot be undone.",

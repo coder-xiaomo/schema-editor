@@ -176,6 +176,7 @@ export const useEditorStore = defineStore('editor', () => {
       showToast(t('toast.opened', { summary: parts.join(' + ') }))
 
       setupAutoSync()
+      await _startFileObserver()
     } catch {
       // User cancelled the directory picker — do nothing
     }
@@ -211,6 +212,7 @@ export const useEditorStore = defineStore('editor', () => {
       showToast(t('toast.opened', { summary: parts.join(' + ') }))
 
       setupAutoSync()
+      await _startFileObserver()
     } catch (e) {
       console.error('[openProjectFromHandle] Failed:', e)
       showToast(t('toast.dropNotSupported'))
@@ -221,6 +223,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   /** 关闭当前项目文件夹，清空所有编辑状态 */
   function closeProject() {
+    _stopFileObserver()
     rootDirHandle.value = null
     schemaDirHandle.value = null
     projectOpened.value = false
@@ -378,6 +381,7 @@ export const useEditorStore = defineStore('editor', () => {
     const rootH = rootDirHandle.value
     const schemaH = schemaDirHandle.value
 
+    _enterWriteScope()
     _reloading = true
     if (_syncTimer) {
       clearTimeout(_syncTimer)
@@ -420,6 +424,77 @@ export const useEditorStore = defineStore('editor', () => {
       showToast(t('toast.failedReloadFromDisk'))
     } finally {
       _reloading = false
+      _leaveWriteScope()
+    }
+  }
+
+  // ===== External file change detection (FileSystemObserver) =====
+  let _fileObserver: FileSystemObserver | null = null
+  let _observerSetup = false
+  let _writeDepth = 0
+  let _popupDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+  /** 进入写保护作用域：observer 检查此计数器，大于 0 时忽略所有文件变更事件 */
+  function _enterWriteScope() {
+    _writeDepth++
+  }
+
+  /** 离开写保护作用域 */
+  function _leaveWriteScope() {
+    if (_writeDepth > 0) _writeDepth--
+  }
+
+  /** 启动 FileSystemObserver 监听根目录文件变化 */
+  async function _startFileObserver() {
+    if (_observerSetup) return
+    _observerSetup = true
+
+    if (typeof FileSystemObserver === 'undefined' || !rootDirHandle.value) {
+      console.log('[FileSystemObserver] not supported in this browser, disk file change detection is not available')
+      return
+    }
+
+    try {
+      _fileObserver = new FileSystemObserver((records) => {
+        if (_reloading || !projectOpened.value || !rootDirHandle.value) return
+        // 自身写入期间忽略所有文件变更
+        if (_writeDepth > 0) return
+
+        const changedNames = records
+          .map(r => r.changedHandle?.name || '')
+          .filter(Boolean)
+        console.log('[FileSystemObserver] detected changes in:', changedNames.join(', '))
+
+        // 防抖：同一次外部修改可能触发多次回调，只弹一次窗
+        if (_popupDebounceTimer) clearTimeout(_popupDebounceTimer)
+        _popupDebounceTimer = setTimeout(() => {
+          if (_writeDepth > 0 || _reloading || !projectOpened.value) return
+          if (confirm(t('toast.diskFileChanged'))) {
+            reloadFromDisk()
+          }
+        }, 400)
+      })
+
+      // recursive: true 确保监听 schemas/ 等子目录下的文件变更
+      await _fileObserver.observe(rootDirHandle.value, { recursive: true })
+      console.log('[FileSystemObserver] now observing root directory (recursive)')
+    } catch (e) {
+      console.warn('[FileSystemObserver] failed to observe:', e)
+      _fileObserver = null
+    }
+  }
+
+  /** 停止 FileSystemObserver */
+  function _stopFileObserver() {
+    if (_fileObserver) {
+      _fileObserver.disconnect()
+      _fileObserver = null
+    }
+    _observerSetup = false
+    _writeDepth = 0
+    if (_popupDebounceTimer) {
+      clearTimeout(_popupDebounceTimer)
+      _popupDebounceTimer = null
     }
   }
 
@@ -437,6 +512,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   async function syncAllToDisk() {
     if (!rootDirHandle.value || !schemaDirHandle.value) return
+    _enterWriteScope()
     try {
       if (commonConfig.value) {
         await writeCommonToHandle(rootDirHandle.value, commonConfig.value)
@@ -452,6 +528,8 @@ export const useEditorStore = defineStore('editor', () => {
     } catch (e) {
       console.error('Auto-sync failed:', e)
       showToast(t('toast.failedSaveChanges'))
+    } finally {
+      _leaveWriteScope()
     }
   }
 
@@ -709,51 +787,56 @@ export const useEditorStore = defineStore('editor', () => {
     if (!schema) return
     if (!confirm(t('confirm.deleteSchema', { name: schema.schema }))) return
 
-    // Clean up initial data
-    for (const table of schema.tables) {
-      const key = initialDataKey(schema.schema, table.name)
-      if (initialDataMap.has(key)) {
-        initialDataMap.delete(key)
-        initialDataDeletedKeys.add(key)
+    _enterWriteScope()
+    try {
+      // Clean up initial data
+      for (const table of schema.tables) {
+        const key = initialDataKey(schema.schema, table.name)
+        if (initialDataMap.has(key)) {
+          initialDataMap.delete(key)
+          initialDataDeletedKeys.add(key)
+        }
       }
-    }
 
-    // Delete file from disk
-    if (schemaDirHandle.value) {
-      try {
-        await deleteSchemaFromHandle(schemaDirHandle.value, `${schema.schema}.json`)
-      } catch (e) {
-        console.warn('Failed to delete schema file:', e)
+      // Delete file from disk
+      if (schemaDirHandle.value) {
+        try {
+          await deleteSchemaFromHandle(schemaDirHandle.value, `${schema.schema}.json`)
+        } catch (e) {
+          console.warn('Failed to delete schema file:', e)
+        }
       }
-    }
 
-    schemas.splice(schemaIdx, 1)
-    syncSchemaOrder()
+      schemas.splice(schemaIdx, 1)
+      syncSchemaOrder()
 
-    // Delete SQL output files and regenerate aggregate files
-    if (rootDirHandle.value) {
-      const schemaName = schema.schema
-      try {
-        await deleteSqlFromOutput(rootDirHandle.value, 'mysql', `${schemaName}.sql`)
-      } catch (e) {
-        console.warn('Failed to delete mysql output:', e)
+      // Delete SQL output files and regenerate aggregate files
+      if (rootDirHandle.value) {
+        const schemaName = schema.schema
+        try {
+          await deleteSqlFromOutput(rootDirHandle.value, 'mysql', `${schemaName}.sql`)
+        } catch (e) {
+          console.warn('Failed to delete mysql output:', e)
+        }
+        try {
+          await deleteSqlFromOutput(rootDirHandle.value, 'postgresql', `${schemaName}.sql`)
+        } catch (e) {
+          console.warn('Failed to delete postgresql output:', e)
+        }
+        await syncSqlToOutput()
       }
-      try {
-        await deleteSqlFromOutput(rootDirHandle.value, 'postgresql', `${schemaName}.sql`)
-      } catch (e) {
-        console.warn('Failed to delete postgresql output:', e)
-      }
-      await syncSqlToOutput()
-    }
 
-    // Update selection
-    if (schemas.length === 0) {
-      selectedSchemaIdx.value = -1
-      selectedTableIdx.value = -1
-    } else if (selectedSchemaIdx.value >= schemas.length) {
-      selectedSchemaIdx.value = schemas.length - 1
+      // Update selection
+      if (schemas.length === 0) {
+        selectedSchemaIdx.value = -1
+        selectedTableIdx.value = -1
+      } else if (selectedSchemaIdx.value >= schemas.length) {
+        selectedSchemaIdx.value = schemas.length - 1
+      }
+      showToast(t('toast.schemaDeleted'))
+    } finally {
+      _leaveWriteScope()
     }
-    showToast(t('toast.schemaDeleted'))
   }
 
   async function renameSchema(schemaIdx: number, newName: string) {
@@ -768,45 +851,50 @@ export const useEditorStore = defineStore('editor', () => {
 
     const oldName = schema.schema
 
-    // Delete old file from disk
-    if (schemaDirHandle.value) {
-      try {
-        await deleteSchemaFromHandle(schemaDirHandle.value, `${oldName}.json`)
-      } catch (e) {
-        console.warn('Failed to delete old schema file:', e)
+    _enterWriteScope()
+    try {
+      // Delete old file from disk
+      if (schemaDirHandle.value) {
+        try {
+          await deleteSchemaFromHandle(schemaDirHandle.value, `${oldName}.json`)
+        } catch (e) {
+          console.warn('Failed to delete old schema file:', e)
+        }
       }
+
+      // Delete old SQL output files
+      if (rootDirHandle.value) {
+        try {
+          await deleteSqlFromOutput(rootDirHandle.value, 'mysql', `${oldName}.sql`)
+        } catch (e) {
+          console.warn('Failed to delete old mysql output:', e)
+        }
+        try {
+          await deleteSqlFromOutput(rootDirHandle.value, 'postgresql', `${oldName}.sql`)
+        } catch (e) {
+          console.warn('Failed to delete old postgresql output:', e)
+        }
+      }
+
+      schema.schema = newName
+      syncSchemaOrder()
+
+      // Update initial data keys and mark old files for deletion
+      for (const table of schema.tables) {
+        const oldKey = initialDataKey(oldName, table.name)
+        const newKey = initialDataKey(newName, table.name)
+        const data = initialDataMap.get(oldKey)
+        if (data !== undefined) {
+          initialDataMap.delete(oldKey)
+          initialDataMap.set(newKey, data)
+        }
+        initialDataDeletedKeys.add(oldKey)
+      }
+
+      showToast(t('toast.schemaRenamed'))
+    } finally {
+      _leaveWriteScope()
     }
-
-    // Delete old SQL output files
-    if (rootDirHandle.value) {
-      try {
-        await deleteSqlFromOutput(rootDirHandle.value, 'mysql', `${oldName}.sql`)
-      } catch (e) {
-        console.warn('Failed to delete old mysql output:', e)
-      }
-      try {
-        await deleteSqlFromOutput(rootDirHandle.value, 'postgresql', `${oldName}.sql`)
-      } catch (e) {
-        console.warn('Failed to delete old postgresql output:', e)
-      }
-    }
-
-    schema.schema = newName
-    syncSchemaOrder()
-
-    // Update initial data keys and mark old files for deletion
-    for (const table of schema.tables) {
-      const oldKey = initialDataKey(oldName, table.name)
-      const newKey = initialDataKey(newName, table.name)
-      const data = initialDataMap.get(oldKey)
-      if (data !== undefined) {
-        initialDataMap.delete(oldKey)
-        initialDataMap.set(newKey, data)
-      }
-      initialDataDeletedKeys.add(oldKey)
-    }
-
-    showToast(t('toast.schemaRenamed'))
   }
 
   // ===== Navigation =====
