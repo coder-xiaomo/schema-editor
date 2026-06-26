@@ -330,6 +330,7 @@ function handleRenameSchema(sIdx: number) {
 .sidebar-tree {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 4px 0;
 }
 

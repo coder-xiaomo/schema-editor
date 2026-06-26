@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 
 import { i18n } from './i18n'
 import App from './App.vue'
-import './assets/editor-styles.css'
+import './assets/style/index.css'
 
 const app = createApp(App)
 app.use(createPinia())
