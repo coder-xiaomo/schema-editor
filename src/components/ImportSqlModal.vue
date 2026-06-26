@@ -441,7 +441,7 @@ function onTableNameEdit(idx: number, val: string) {
   font-size: 12px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   color: #333;
-  resize: vertical;
+  resize: none;
   tab-size: 2;
   line-height: 1.6;
   outline: none;
