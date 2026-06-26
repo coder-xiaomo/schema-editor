@@ -303,7 +303,8 @@
     "cancel": "Cancel",
     "importBtn": "Import",
     "imported": "Imported {count} table(s)",
-    "noValidTables": "No valid table definitions found"
+    "noValidTables": "No valid table definitions found",
+    "editTableName": "Click to edit table name"
   },
   "github": "View GitHub Repository",
   "about": {

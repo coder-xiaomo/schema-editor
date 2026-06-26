@@ -303,7 +303,8 @@
     "cancel": "取消",
     "importBtn": "確認匯入",
     "imported": "已匯入 {count} 張表",
-    "noValidTables": "沒有找到有效的表定義"
+    "noValidTables": "沒有找到有效的表定義",
+    "editTableName": "點擊修改表名"
   },
   "github": "查看 GitHub 倉庫",
   "about": {

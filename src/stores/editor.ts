@@ -82,6 +82,8 @@ export const useEditorStore = defineStore('editor', () => {
   const importSqlTargetSchemaIdx = ref(-1)
   const importSqlNewSchemaName = ref('')
   const importSqlDetectedSchema = ref<string | null>(null)
+  /** 用户修改后的表名，key 为 parsedTables 中的索引 */
+  const importSqlTableNameEdits = reactive<Record<number, string>>({})
 
   // ===== Computed =====
   const currentSchema = computed(() => {
@@ -1814,6 +1816,10 @@ export const useEditorStore = defineStore('editor', () => {
     importSqlTargetMode.value = targetSchemaIdx !== undefined ? 'existing' : 'new'
     importSqlTargetSchemaIdx.value = targetSchemaIdx ?? -1
     importSqlNewSchemaName.value = 'imported'
+    // 清空表名编辑
+    for (const key of Object.keys(importSqlTableNameEdits)) {
+      delete importSqlTableNameEdits[Number(key)]
+    }
   }
 
   function parseImportSql() {
@@ -1874,10 +1880,17 @@ export const useEditorStore = defineStore('editor', () => {
     const dialect: 'mysql' | 'pgsql' = importSqlDialect.value === 'auto' ? 'mysql' : importSqlDialect.value
     const unifiedTypes = commonConfig.value?.unified_types ?? DEFAULT_UNIFIED_TYPES
 
-    // 转换每个解析后的表
+    // 转换每个解析后的表（应用用户编辑的表名）
     const tables = importSqlParsedTables.value
       .filter(pt => pt.columns.length > 0 || pt.constraints.length > 0)
-      .map(pt => parsedTableToTable(pt, dialect, unifiedTypes))
+      .map((pt, i) => {
+        const table = parsedTableToTable(pt, dialect, unifiedTypes)
+        const editedName = importSqlTableNameEdits[i]
+        if (editedName && editedName.trim()) {
+          table.name = editedName.trim()
+        }
+        return table
+      })
 
     if (tables.length === 0) {
       showToast(t('importSqlModal.noValidTables'))
@@ -1946,6 +1959,7 @@ export const useEditorStore = defineStore('editor', () => {
     importSqlTargetSchemaIdx,
     importSqlNewSchemaName,
     importSqlDetectedSchema,
+    importSqlTableNameEdits,
 
     // Computed
     currentSchema,

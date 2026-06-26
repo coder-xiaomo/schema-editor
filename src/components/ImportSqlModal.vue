@@ -104,6 +104,24 @@ const detectedSchemaHint = computed(() => {
   const matched = store.schemas.some(s => s.schema === schema)
   return { schema, matched }
 })
+
+/** 获取第 idx 个解析表的有效显示表名（编辑名或原始解析名） */
+function getEffectiveTableName(idx: number): string {
+  const edited = store.importSqlTableNameEdits[idx]
+  if (edited !== undefined && edited.trim()) return edited.trim()
+  return store.importSqlParsedTables[idx]?.name ?? ''
+}
+
+/** 处理用户编辑表名 */
+function onTableNameEdit(idx: number, val: string) {
+  const trimmed = val.trim()
+  const originalName = store.importSqlParsedTables[idx]?.name ?? ''
+  if (trimmed && trimmed !== originalName) {
+    store.importSqlTableNameEdits[idx] = trimmed
+  } else {
+    delete store.importSqlTableNameEdits[idx]
+  }
+}
 </script>
 
 <template>
@@ -176,7 +194,13 @@ const detectedSchemaHint = computed(() => {
           >
             <div class="table-card-header" @click="toggleTableExpand(ti)">
               <span class="table-card-toggle">{{ expandedTables.has(ti) ? '▾' : '▸' }}</span>
-              <span class="table-card-name">{{ table.schema ? table.schema + '.' : '' }}{{ table.name }}</span>
+              <input
+                class="table-name-input"
+                :value="getEffectiveTableName(ti)"
+                @input="onTableNameEdit(ti, ($event.target as HTMLInputElement).value)"
+                @click.stop
+                :title="$t('importSqlModal.editTableName')"
+              />
               <span class="table-card-meta">
                 {{ table.columns.length }} {{ $t('importSqlModal.fields') }}
                 <template v-if="table.constraints.length">
@@ -518,6 +542,34 @@ const detectedSchemaHint = computed(() => {
   font-size: 13px;
   font-weight: 600;
   color: #2c3e50;
+}
+
+/* 表名编辑输入框 */
+.table-name-input {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 2px 4px;
+  border-radius: 3px;
+  width: auto;
+  min-width: 80px;
+  max-width: 200px;
+  font-family: inherit;
+  transition: border-color .15s, background .15s;
+}
+
+.table-name-input:hover {
+  border-color: #d0d0d0;
+  background: #fff;
+}
+
+.table-name-input:focus {
+  outline: none;
+  border-color: #4a90d9;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(74, 144, 217, 0.2);
 }
 
 .table-card-meta {
