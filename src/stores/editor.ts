@@ -460,10 +460,15 @@ export const useEditorStore = defineStore('editor', () => {
         // 自身写入期间忽略所有文件变更
         if (_writeDepth > 0) return
 
-        const changedNames = records
-          .map(r => r.changedHandle?.name || '')
-          .filter(Boolean)
-        console.log('[FileSystemObserver] detected changes in:', changedNames.join(', '))
+        // 只关注 common.json、schemas/*、initial-data/*，忽略 output/ 等
+        const relevantRecords = records.filter(r => {
+          const path = r.relativePathComponents.join('/')
+          return path === 'common.json' || path.startsWith('schemas/') || path.startsWith('initial-data/')
+        })
+        if (relevantRecords.length === 0) return
+
+        const changedNames = relevantRecords.map(r => r.relativePathComponents.join('/'))
+        console.log('[FileSystemObserver] relevant changes:', changedNames.join(', '))
 
         // 防抖：同一次外部修改可能触发多次回调，只弹一次窗
         if (_popupDebounceTimer) clearTimeout(_popupDebounceTimer)
