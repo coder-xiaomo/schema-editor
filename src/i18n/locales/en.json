@@ -25,6 +25,7 @@
     "navigation": "Navigation",
     "commonConfig": "Common Config",
     "addSchema": "Add schema",
+    "importSqlTitle": "Import via SQL CREATE TABLE",
     "renameSchema": "Rename schema",
     "deleteSchema": "Delete schema",
     "addTable": "Add table",

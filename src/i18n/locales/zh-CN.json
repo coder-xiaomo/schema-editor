@@ -25,6 +25,7 @@
     "navigation": "导航",
     "commonConfig": "公共配置",
     "addSchema": "添加 Schema",
+    "importSqlTitle": "通过 SQL 建表语句导入",
     "renameSchema": "重命名 Schema",
     "deleteSchema": "删除 Schema",
     "addTable": "添加表",

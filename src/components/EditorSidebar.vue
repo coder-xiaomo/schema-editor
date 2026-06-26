@@ -2,6 +2,7 @@
 import { ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
+import ImportIcon from './icon/ImportIcon.vue'
 
 const store = useEditorStore()
 const { t } = useI18n()
@@ -199,7 +200,14 @@ function handleRenameSchema(sIdx: number) {
   <div class="sidebar">
     <div class="sidebar-header">
       <span>{{ $t('sidebar.navigation') }}</span>
-      <span v-if="store.projectOpened" class="add-schema-btn" @click="handleAddSchema" :title="$t('sidebar.addSchema')">+</span>
+      <span v-if="store.projectOpened" class="sidebar-header-actions">
+        <span class="sidebar-header-btn" @click="store.openImportSqlModal()" :title="$t('sidebar.importSqlTitle')">
+          <ImportIcon style="transform: translateY(1.8px);" />
+        </span>
+        <span class="sidebar-header-btn add-schema-btn" @click="handleAddSchema" :title="$t('sidebar.addSchema')">
+          <span style="transform: scale(1.1);">+</span>
+        </span>
+      </span>
     </div>
     <div class="sidebar-tree">
       <!-- Common Config Entry -->
@@ -228,10 +236,14 @@ function handleRenameSchema(sIdx: number) {
         >
           <span class="sidebar-icon arrow-icon" :class="{ rotated: isExpanded(sIdx) }" @click.stop="toggleExpand(sIdx)">&#9654;</span>
           <span class="schema-label">{{ schema.schema }}</span>
-          <span class="schema-table-count">{{ schema.tables.length }}</span>
-          <span class="schema-action-btn" @click.stop="handleRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">&#9998;</span>
+
+          <span style="margin-left: auto;"></span>
+          <span class="schema-action-btn" @click.stop="handleRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">
+            <span style="transform: scaleX(-1); display: inline-block;">&#9998;</span>
+          </span>
           <span class="schema-action-btn schema-action-delete" @click.stop="store.deleteSchema(sIdx)" :title="$t('sidebar.deleteSchema')">&times;</span>
           <span class="add-table-btn" @click.stop="store.addTable(sIdx)" :title="$t('sidebar.addTable')">+</span>
+          <span class="schema-table-count">{{ schema.tables.length }}</span>
         </div>
         <div
           v-for="(table, tIdx) in schema.tables"
@@ -482,20 +494,27 @@ function handleRenameSchema(sIdx: number) {
 }
 
 /* ===== Schema Actions ===== */
-.add-schema-btn {
+.sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-header-btn {
   cursor: pointer;
   font-size: 16px;
   color: #4a90d9;
   font-weight: bold;
   padding: 0 4px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
-.add-schema-btn:hover {
+.sidebar-header-btn:hover {
   color: #3a7bc8;
 }
 
 .schema-table-count {
-  margin-left: auto;
   font-size: 10px;
   color: #aaa;
 }
