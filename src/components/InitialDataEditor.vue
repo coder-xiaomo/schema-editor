@@ -635,29 +635,6 @@ function setFieldComment(rowIdx: number, fieldName: string, val: string) {
   cursor: pointer;
 }
 
-/* Quote help icon (参考 FieldTable.vue) */
-.quote-help-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid #999;
-  color: #999;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: help;
-  margin-left: 2px;
-  vertical-align: middle;
-  transition: border-color .15s, color .15s;
-}
-
-.quote-help-icon:hover {
-  border-color: #4a90d9;
-  color: #4a90d9;
-}
-
 .table-input {
   padding: 3px 5px;
   border: 1px solid #ddd;
