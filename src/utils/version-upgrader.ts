@@ -5,6 +5,20 @@ import { upgradeIndexColumns } from './index-column-utils'
 /** 当前编辑器支持的最高结构版本 */
 export const CURRENT_STRUCT_VERSION = '0.4'
 
+/**
+ * 读取旧字段名（历史兼容）。
+ * 内部做一次 as 断言，把散落的 @ts-expect-error 收敛到这一处，
+ * 对外返回 any，不改变运行时行为。
+ */
+export function readLegacyField<T = any>(
+  obj: Record<string, any>,
+  legacyKey: string,
+  fallback?: T,
+): T {
+  const v = (obj as Record<string, any>)[legacyKey]
+  return (v === undefined ? fallback : v) as T
+}
+
 export interface VersionCheckResult {
   ok: boolean           // 可以继续加载
   needsUpgrade: boolean  // 需要执行升级
@@ -77,74 +91,60 @@ const UPGRADE_STEPS: UpgradeStep[] = [
       for (const schema of schemas) {
         // 迁移 schema 级别的前/后置 SQL
         if (schema.pre_sql) {
-          // @ts-expect-error
-          if (schema.pre_sql.pgsql) {
-            // @ts-expect-error
-            schema.pre_sql.postgresql = schema.pre_sql.pgsql
-            // @ts-expect-error
-            delete schema.pre_sql.pgsql
+          const legacy = readLegacyField(schema.pre_sql, 'pgsql')
+          if (legacy) {
+            schema.pre_sql.postgresql = legacy
+            delete (schema.pre_sql as Record<string, any>).pgsql
           }
         }
         if (schema.post_sql) {
-          // @ts-expect-error
-          if (schema.post_sql.pgsql) {
-            // @ts-expect-error
-            schema.post_sql.postgresql = schema.post_sql.pgsql
-            // @ts-expect-error
-            delete schema.post_sql.pgsql
+          const legacy = readLegacyField(schema.post_sql, 'pgsql')
+          if (legacy) {
+            schema.post_sql.postgresql = legacy
+            delete (schema.post_sql as Record<string, any>).pgsql
           }
         }
 
-        // 迁移表配置
-        for (const table of schema.tables) {
-          if (table.pre_sql) {
-            // @ts-expect-error
-            if (table.pre_sql.pgsql) {
-              // @ts-expect-error
-              table.pre_sql.postgresql = table.pre_sql.pgsql
-              // @ts-expect-error
-              delete table.pre_sql.pgsql
+          // 迁移表配置
+          for (const table of schema.tables) {
+            if (table.pre_sql) {
+              const legacy = readLegacyField(table.pre_sql, 'pgsql')
+              if (legacy) {
+                table.pre_sql.postgresql = legacy
+                delete (table.pre_sql as Record<string, any>).pgsql
+              }
             }
-          }
-          if (table.post_sql) {
-            // @ts-expect-error
-            if (table.post_sql.pgsql) {
-              // @ts-expect-error
-              table.post_sql.postgresql = table.post_sql.pgsql
-              // @ts-expect-error
-              delete table.post_sql.pgsql
+            if (table.post_sql) {
+              const legacy = readLegacyField(table.post_sql, 'pgsql')
+              if (legacy) {
+                table.post_sql.postgresql = legacy
+                delete (table.post_sql as Record<string, any>).pgsql
+              }
             }
-          }
 
-          // 迁移字段配置
-          for (const field of table.fields) {
-            // @ts-expect-error
-            if (field.pgsql) {
-              // @ts-expect-error
-              field.postgresql = field.pgsql
-              // @ts-expect-error
-              delete field.pgsql
+            // 迁移字段配置
+            for (const field of table.fields) {
+              const legacy = readLegacyField(field, 'pgsql')
+              if (legacy) {
+                field.postgresql = legacy
+                delete (field as Record<string, any>).pgsql
+              }
             }
-          }
 
           // 迁移索引配置（包含索引列级别的 pgsql）
           for (const index of table.indexes) {
-            // @ts-expect-error
-            if (index.pgsql) {
-              // @ts-expect-error
-              index.postgresql = index.pgsql
-              // @ts-expect-error
-              delete index.pgsql
+            const legacy = readLegacyField(index, 'pgsql')
+            if (legacy) {
+              index.postgresql = legacy
+              delete (index as Record<string, any>).pgsql
             }
             // 迁移索引列的 pgsql
             if (index.columns) {
               for (const col of index.columns) {
-                // @ts-expect-error
-                if (col.pgsql) {
-                  // @ts-expect-error
-                  col.postgresql = col.pgsql
-                  // @ts-expect-error
-                  delete col.pgsql
+                const colLegacy = readLegacyField(col, 'pgsql')
+                if (colLegacy) {
+                  col.postgresql = colLegacy
+                  delete (col as Record<string, any>).pgsql
                 }
               }
             }
@@ -153,25 +153,22 @@ const UPGRADE_STEPS: UpgradeStep[] = [
       }
 
       // 迁移全局配置
-      // @ts-expect-error
-      if (_commonConfig?.default_config?.pgsql) {
-        if (!_commonConfig.default_config.postgresql) {
-          _commonConfig.default_config.postgresql = { quote_identifiers: true }
+      if (readLegacyField(_commonConfig?.default_config ?? {}, 'pgsql')) {
+        if (!_commonConfig!.default_config.postgresql) {
+          _commonConfig!.default_config.postgresql = { quote_identifiers: true }
         }
-        // @ts-expect-error
-        delete _commonConfig.default_config.pgsql
+        delete (_commonConfig!.default_config as Record<string, any>).pgsql
       }
 
       // 迁移 common_used_fields 中的 pgsql
       if (_commonConfig?.common_used_fields) {
         for (const fieldName of Object.keys(_commonConfig.common_used_fields)) {
           const field = _commonConfig.common_used_fields[fieldName]
-          // @ts-expect-error
-          if (field.pgsql) {
-            // @ts-expect-error
-            field.postgresql = field.pgsql
-            // @ts-expect-error
-            delete field.pgsql
+          if (!field) continue
+          const legacy = readLegacyField(field, 'pgsql')
+          if (legacy) {
+            field.postgresql = legacy
+            delete (field as Record<string, any>).pgsql
           }
         }
       }
@@ -179,12 +176,10 @@ const UPGRADE_STEPS: UpgradeStep[] = [
       // 迁移 unified_types 中的 pgsql
       if (_commonConfig?.unified_types) {
         for (const ut of _commonConfig.unified_types) {
-          // @ts-expect-error
-          if (ut.pgsql) {
-            // @ts-expect-error
-            ut.postgresql = ut.pgsql
-            // @ts-expect-error
-            delete ut.pgsql
+          const legacy = readLegacyField(ut, 'pgsql')
+          if (legacy) {
+            ut.postgresql = legacy
+            delete (ut as Record<string, any>).pgsql
           }
         }
       }

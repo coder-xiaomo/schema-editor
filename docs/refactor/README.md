@@ -41,6 +41,5 @@
 | 文档 | 范围 | 状态 |
 |------|------|------|
 | [`00-background.md`](./00-background.md) | 公共基础：分支策略 / 提交规范 / 代码风格 / 现有架构 / 方言约定 / 版本升级 | 已产出 |
-| [`03-version-upgrader-cleanup.md`](./03-version-upgrader-cleanup.md) | `version-upgrader.ts` 消除 `@ts-expect-error` | 已产出 |
 | [`04-docs-cleanup.md`](./04-docs-cleanup.md) | 过时文档清理 + DEVELOPMENT/README 更新 | 已产出 |
 | [`05-console-normalize.md`](./05-console-normalize.md) | `console.log` 规范化原则 | 已产出 |
