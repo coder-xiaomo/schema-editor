@@ -17,12 +17,10 @@ import {
   writeCommonToHandle,
   deleteSqlFromOutput,
   writeSqlToOutput,
-  readInitialDataFromHandle,
   parseFieldLengthInput,
   // ===== 新结构（current/）读写 =====
   openProjectFolderNew,
   isNewStructure,
-  migrateOldToNewStructure,
   writeDatabaseToHandle,
   writeSchemaJsonToHandle,
   writeTableToHandle,
@@ -30,7 +28,6 @@ import {
   deleteTableDirFromHandle,
   deleteSchemaDirFromHandle,
   deleteInitialDataFromNewStructure,
-  readOldSchemasFromHandle,
 } from '@/utils/file-helpers'
 import {
   generateSchemaMySQL,
@@ -40,13 +37,14 @@ import {
   generateSchemaPostgreSQL,
   generateInitialDataAllPostgreSQL,
 } from '@/utils/sql-generator/postgresql'
-import { checkVersion, CURRENT_STRUCT_VERSION, upgradeSchemaData } from '@/utils/version-upgrader'
+import { checkVersion } from '@/utils/structure-migrations/version-utils'
+import { runStructureMigrations } from '@/utils/structure-migrations'
 import { formatIndexColumn } from '@/utils/index-column-utils'
 import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { DEFAULT_UNIFIED_TYPES } from '@/utils/unified-types'
 import { getCommonFileHandle, getCurrentDir } from '@/core/workspace/paths'
 import { readJsonFile } from '@/core/workspace/handles'
-import { COMMON_FILE, CURRENT_DIR } from '@/core/workspace/layout'
+import { COMMON_FILE, CURRENT_DIR, CURRENT_STRUCT_VERSION } from '@/core/workspace/layout'
 import { fmtPrePostSql, getGlobalPostSql, getGlobalPreSql, resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
 import type { SqlDialect } from '@/utils/sql-generator/shared'
 import type { UnifiedTypeDefinition } from '@/types/schema'
@@ -160,6 +158,9 @@ export const useEditorStore = defineStore('editor', () => {
   /** 升级确认弹窗状态（打开旧结构项目时由用户手动触发迁移） */
   const showUpgradeModal = ref(false)
   const pendingUpgradeRootHandle = ref<any>(null)
+  /** 全局加载遮罩：升级旧结构 / 打开项目加载期间展示，全局唯一实例 */
+  const overlayVisible = ref(false)
+  const overlayText = ref('')
 
   /** 选择项目文件夹并加载内容，之后所有编辑实时自动同步 */
   async function openProject() {
@@ -170,9 +171,13 @@ export const useEditorStore = defineStore('editor', () => {
     }
     try {
       const rootHandle: FileSystemDirectoryHandle = await window.showDirectoryPicker()
+      overlayText.value = t('app.loadingOpenProject')
+      overlayVisible.value = true
       await _openRootHandle(rootHandle)
     } catch {
       // User cancelled the directory picker — do nothing
+    } finally {
+      overlayVisible.value = false
     }
   }
 
@@ -183,10 +188,14 @@ export const useEditorStore = defineStore('editor', () => {
       return
     }
     try {
+      overlayText.value = t('app.loadingOpenProject')
+      overlayVisible.value = true
       await _openRootHandle(handle)
     } catch (e) {
       console.error('[openProjectFromHandle] Failed:', e)
       showToast(t('toast.dropNotSupported'))
+    } finally {
+      overlayVisible.value = false
     }
   }
 
@@ -211,25 +220,29 @@ export const useEditorStore = defineStore('editor', () => {
     if (!rootHandle) return
     showUpgradeModal.value = false
     pendingUpgradeRootHandle.value = null
+    overlayText.value = t('upgrade.loading')
+    overlayVisible.value = true
     try {
       await _migrateAndLoad(rootHandle)
     } catch (e) {
       console.error('[confirmUpgradeStructure] migration failed:', e)
       showToast(t('toast.upgradeFailed'))
+    } finally {
+      overlayVisible.value = false
     }
   }
 
-  /** 取消升级：保持未打开状态 */
+  /** 取消升级：关闭项目，返回空状态（不再保留旧结构打开态，不弹关闭提示） */
   function cancelUpgradeStructure() {
     showUpgradeModal.value = false
     pendingUpgradeRootHandle.value = null
-    rootDirHandle.value = null
+    closeProject(true)
   }
 
   // ===== Close Project =====
 
-  /** 关闭当前项目文件夹，清空所有编辑状态 */
-  function closeProject() {
+  /** 关闭当前项目文件夹，清空所有编辑状态。silent=true 时不弹「项目已关闭」提示（如取消升级场景） */
+  function closeProject(silent = false) {
     _stopFileObserver()
     rootDirHandle.value = null
     currentDirHandle.value = null
@@ -248,7 +261,7 @@ export const useEditorStore = defineStore('editor', () => {
       _syncTimer = null
     }
     _autoSyncSetup = false
-    showToast(t('toast.projectClosed'))
+    if (!silent) showToast(t('toast.projectClosed'))
   }
 
   // ===== Load New Structure (current/) =====
@@ -322,7 +335,7 @@ export const useEditorStore = defineStore('editor', () => {
       return false
     }
     if (versionResult.needsUpgrade) {
-      cc.struct_version = CURRENT_STRUCT_VERSION
+      return false
     }
 
     // 加载 schema_order 与各表定义
@@ -360,11 +373,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * 旧结构项目升级：读旧盘 → 经升级器处理 → 写新结构 → 加载新结构。
-   * 旧文件保留不删除（便于回退）。
+   * 旧结构项目升级：读旧盘 → 经升级器处理 → 写新结构 → 清理已迁移的旧文件 → 加载新结构。
+   * 升级后不允许回退旧结构（新结构新增字段回退会丢失），迁移脚本内部会清理对应的旧文件。
    */
   async function _migrateAndLoad(rootHandle: FileSystemDirectoryHandle): Promise<void> {
-    // 读取旧 common.json 用于版本检查与升级
+    // 读取根 common.json 用于版本判定
     let oldCommon: any = null
     try {
       const commonHandle = await getCommonFileHandle(rootHandle, false)
@@ -378,38 +391,27 @@ export const useEditorStore = defineStore('editor', () => {
       alert(versionResult.error)
       return
     }
-
-    // 读取旧 schemas/*.json
-    const oldSchemas = await readOldSchemasFromHandle(rootHandle)
-
-    // 升级旧数据结构（pgsql → postgresql 等）
-    if (versionResult.needsUpgrade) {
-      await upgradeSchemaData(oldSchemas, versionResult.fromVersion!, oldCommon, rootHandle)
-    }
-    // 升级后对齐 struct_version（升级器不写新结构，这里仅更新内存态标记）
-    if (oldCommon) oldCommon.struct_version = CURRENT_STRUCT_VERSION
-
-    // 读取旧 initial-data/*
-    const oldInitialData = await readInitialDataFromHandle(rootHandle)
-
-    // 构造新结构写盘数据
-    const newCommon = oldCommon ?? _createDefaultCommonConfig()
-    // 从根 common.json 移除 schema_order（迁入 database.json）
-    delete newCommon.schema_order
-    const databaseData = {
-      schema_order: (oldCommon?.schema_order as string[] | undefined) ?? oldSchemas.map(s => s.schema),
+    if (!versionResult.needsUpgrade) {
+      // 无需升级（理论不会走到这里，因为 _openRootHandle 已按版本分流）
+      await _loadNewStructure(rootHandle)
+      return
     }
 
-    await migrateOldToNewStructure(rootHandle, {
-      commonConfig: newCommon,
-      databaseData,
-      schemas: oldSchemas,
-      transformTable: (_schema, table) =>
-        buildSchemaExportData({ schema: _schema.schema, tables: [table] }).tables[0]!,
-      initialData: oldInitialData,
-    })
+    console.log('[migrateAndLoad] upgrading structure', versionResult.fromVersion, '→', CURRENT_STRUCT_VERSION)
 
-    console.log('[migrateAndLoad] old structure migrated to new structure on disk')
+    // 按注册表逐版本执行结构迁移（落后者会依次跑 1.0→2.0、2.0→3.0……）
+    await runStructureMigrations(
+      rootHandle,
+      versionResult.fromVersion!,
+      {
+        transformTable: (_schema, table) =>
+          buildSchemaExportData({ schema: _schema.schema, tables: [table] }).tables[0]!,
+      },
+      CURRENT_STRUCT_VERSION,
+    )
+
+    console.log('[migrateAndLoad] structure migrated to latest on disk')
+
     await _loadNewStructure(rootHandle)
   }
 
@@ -430,7 +432,14 @@ export const useEditorStore = defineStore('editor', () => {
 
     try {
       const ok = await _loadNewStructure(rootH)
-      if (!ok) return
+      if (!ok) {
+        // 版本不匹配（磁盘结构版本高于/低于当前编辑器支持版本）：
+        // 重新加载本质等价于「关闭项目后重新打开」，因此关闭后重新走打开流程，
+        // 由 _openRootHandle 自然分流——旧结构弹升级窗、版本过高则提示升级编辑器。
+        closeProject(true)
+        await _openRootHandle(rootH)
+        return
+      }
       showToast(t('toast.reloadedFromDisk'))
     } catch (e) {
       console.error('[reloadFromDisk] Failed:', e)
@@ -2121,6 +2130,8 @@ export const useEditorStore = defineStore('editor', () => {
     reloadFromDisk,
     syncAllToDisk,
     showUpgradeModal,
+    overlayVisible,
+    overlayText,
     confirmUpgradeStructure,
     cancelUpgradeStructure,
 
