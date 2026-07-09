@@ -1,4 +1,5 @@
 import type { IndexColumn } from '@/types/schema'
+import { resolveDialectOverride } from '@/utils/dialect-resolver'
 
 /**
  * 解析旧版纯字符串列格式 → 新版 IndexColumn
@@ -44,11 +45,8 @@ export function formatIndexColumn(col: IndexColumn): string {
  * @returns { name: "create_time", sortPart: " DESC" } （sortPart 带前导空格）
  */
 export function splitColumnForSql(col: IndexColumn, db?: 'mysql' | 'postgresql'): { name: string; sortPart: string } {
-  let sort = col.sort_order
-  if (db === 'mysql' && col.mysql?.sort_order) {
-    sort = col.mysql.sort_order
-  } else if (db === 'postgresql' && col.postgresql?.sort_order) {
-    sort = col.postgresql.sort_order
-  }
+  const sort = db === undefined
+    ? col.sort_order
+    : resolveDialectOverride(col, db, 'sort_order', col.sort_order)
   return { name: col.name, sortPart: sort ? ` ${sort}` : '' }
 }
