@@ -325,11 +325,10 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   </div>
 </template>
 
+<style scoped src="@/assets/style/modal.css"></style>
+<style scoped src="@/assets/style/btn.css"></style>
+<style scoped src="@/assets/style/form.css"></style>
 <style scoped>
-@import '../../assets/style/modal.css';
-@import '../../assets/style/btn.css';
-@import '../../assets/style/form.css';
-
 .modal-box {
   background: #fff;
   border-radius: 8px;

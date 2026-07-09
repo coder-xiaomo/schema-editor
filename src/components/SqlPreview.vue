@@ -51,10 +51,9 @@ function copyToClipboard() {
   </div>
 </template>
 
+<style scoped src="@/assets/style/section.css"></style>
+<style scoped src="@/assets/style/btn.css"></style>
 <style scoped>
-@import '../assets/style/section.css';
-@import '../assets/style/btn.css';
-
 .header-actions {
   display: flex;
   align-items: center;

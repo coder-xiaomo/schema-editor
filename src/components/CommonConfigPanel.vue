@@ -920,15 +920,14 @@ function handleDeleteUnifiedType(idx: number) {
   </template>
 </template>
 
+<style scoped src="@/assets/style/section.css"></style>
+<style scoped src="@/assets/style/table.css"></style>
+<style scoped src="@/assets/style/form.css"></style>
+<style scoped src="@/assets/style/btn.css"></style>
+<style scoped src="@/assets/style/expand.css"></style>
+<style scoped src="@/assets/style/help.css"></style>
+<style scoped src="@/assets/style/move-btn.css"></style>
 <style scoped>
-@import '../assets/style/section.css';
-@import '../assets/style/table.css';
-@import '../assets/style/form.css';
-@import '../assets/style/btn.css';
-@import '../assets/style/expand.css';
-@import '../assets/style/help.css';
-@import '../assets/style/move-btn.css';
-
 .header-actions {
   display: flex;
   align-items: center;

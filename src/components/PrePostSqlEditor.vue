@@ -86,10 +86,9 @@ const dialect = ref<SqlDialect>('mysql')
   </div>
 </template>
 
+<style scoped src="@/assets/style/section.css"></style>
+<style scoped src="@/assets/style/btn.css"></style>
 <style scoped>
-@import '../assets/style/section.css';
-@import '../assets/style/btn.css';
-
 .header-tabs {
   display: flex;
   gap: 0;

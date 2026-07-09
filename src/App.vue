@@ -62,11 +62,12 @@ const { dragOver, onDragOver, onDragEnter, onDragLeave, onDrop } = useDropFolder
 <style>
 @import './assets/style/base.css';
 </style>
+<!-- <style src="@/assets/style/base.css"></style> -->
+
+<style scoped src="@/assets/style/layout.css"></style>
+<style scoped src="@/assets/style/toast.css"></style>
 
 <style scoped>
-@import './assets/style/layout.css';
-@import './assets/style/toast.css';
-
 /* ===== Drop Overlay (拖拽文件夹打开) ===== */
 .drop-overlay {
   position: fixed;

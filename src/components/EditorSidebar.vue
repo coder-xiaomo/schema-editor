@@ -302,9 +302,8 @@ function handleRenameSchema(sIdx: number) {
   </div>
 </template>
 
+<style scoped src="@/assets/style/btn.css"></style>
 <style scoped>
-@import '../assets/style/btn.css';
-
 /* ===== Left Sidebar ===== */
 .sidebar {
   width: 250px;
