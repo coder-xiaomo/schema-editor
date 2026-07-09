@@ -19,6 +19,7 @@ import {
   getTableFileHandle,
   getInitialDataFileHandle,
 } from '@/core/workspace/paths'
+import { CURRENT_STRUCT_VERSION } from '@/core/workspace/layout'
 import {
   getOrCreateDir,
   getFileHandleSafe,
@@ -141,14 +142,35 @@ export interface NewStructureProject {
   initialData: { key: string; data: InitialData }[]
 }
 
-/** 判断根目录是否已是新结构（存在 current/ 目录） */
+/**
+ * 判断根目录是否已是最新结构。
+ *
+ * 以根 common.json 中的 struct_version 与代码中 CURRENT_STRUCT_VERSION 比对，
+ * 而非依赖 current/ 目录是否存在（空目录残留会误判为已升级）。
+ * 版本 >= 当前版本即视为新结构；无 common.json 或版本更低则视为旧结构，需升级。
+ */
 export async function isNewStructure(rootHandle: FileSystemDirectoryHandle): Promise<boolean> {
   try {
-    await getOrCreateDir(rootHandle, CURRENT_DIR, false)
-    return true
+    const commonHandle = await getCommonFileHandle(rootHandle, false)
+    const data = await readJsonFile<{ struct_version?: string }>(commonHandle)
+    const version = data?.struct_version || '0.0'
+    return compareStructVersion(version, CURRENT_STRUCT_VERSION) >= 0
   } catch {
+    // 无根 common.json：视为旧结构，需走升级流程
     return false
   }
+}
+
+/** 语义化版本比较：a >= b 返回 >= 0，a < b 返回 < 0（仅比较数字段，忽略非数字后缀） */
+function compareStructVersion(a: string, b: string): number {
+  const aParts = a.split('.').map((n) => parseInt(n, 10) || 0)
+  const bParts = b.split('.').map((n) => parseInt(n, 10) || 0)
+  const len = Math.max(aParts.length, bParts.length)
+  for (let i = 0; i < len; i++) {
+    const diff = (aParts[i] || 0) - (bParts[i] || 0)
+    if (diff !== 0) return diff
+  }
+  return 0
 }
 
 /**
@@ -452,6 +474,49 @@ export async function migrateOldToNewStructure(
   }
 }
 
+/**
+ * 迁移完成后清理「已迁移」的旧结构文件，杜绝回退导致新结构字段丢失。
+ *
+ * 原则：升级了哪里就处理哪里——只删除已被整体迁移的旧文件，不删除整个目录
+ * （目录可能含用户其他无关文件）：
+ *   - 每个旧 schemas/<schema>.json（已迁移为 current/schemas/<schema>/ 下文件）
+ *   - 每个旧 initial-data/<schema>/<table>.json（已行内化为 current/.../initial-data.json）
+ * 旧根 common.json 在迁移时已被覆盖重写为新结构，无需删除。
+ */
+export async function cleanupOldStructure(
+  rootHandle: FileSystemDirectoryHandle,
+  oldSchemas: Schema[],
+  oldInitialDataKeys: string[],
+): Promise<void> {
+  // 1. 删除旧 schemas/<schema>.json
+  try {
+    const sdHandle = await getSchemasDir(rootHandle, false)
+    for (const schema of oldSchemas) {
+      await removeEntry(sdHandle, `${sanitizeName(schema.schema)}.json`)
+    }
+  } catch {
+    // 无 schemas/ 目录，跳过
+  }
+
+  // 2. 删除旧 initial-data/<schema>/<table>.json
+  try {
+    const idHandle = await getInitialDataDir(rootHandle, false)
+    for (const key of oldInitialDataKeys) {
+      const sep = key.indexOf('/')
+      const schemaName = key.substring(0, sep)
+      const tableName = key.substring(sep + 1)
+      try {
+        const schemaDir = await getOrCreateDir(idHandle, sanitizeName(schemaName), false)
+        await removeOldInitialDataFile(schemaDir, sanitizeName(tableName))
+      } catch {
+        // 该旧 initial-data 文件不存在，跳过
+      }
+    }
+  } catch {
+    // 无 initial-data/ 目录，跳过
+  }
+}
+
 /** 读取旧结构 schemas/*.json 到内存态（供迁移升级使用） */
 export async function readOldSchemasFromHandle(
   rootHandle: FileSystemDirectoryHandle,
@@ -592,7 +657,7 @@ export async function readInitialDataFromHandle(
   return result
 }
 
-/** 归一化原始 JSON 数据为 InitialData 格式（v0.3+ 只接受对象格式，数组格式已由 version-upgrader 迁移） */
+/** 归一化原始 JSON 数据为 InitialData 格式（v0.3+ 只接受对象格式，数组格式已由 structure-migrations 迁移） */
 function normalizeInitialData(raw: unknown): InitialData | null {
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
     const obj = raw as Record<string, any>
