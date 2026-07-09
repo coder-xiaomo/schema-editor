@@ -58,11 +58,8 @@ const { dragOver, onDragOver, onDragEnter, onDragLeave, onDrop } = useDropFolder
   </div>
 </template>
 
-<!-- 全局基础样式（reset）：@import 不受 scoped 影响，保持全局 -->
-<style>
-@import './assets/style/base.css';
-</style>
-<!-- <style src="@/assets/style/base.css"></style> -->
+<!-- 全局基础样式 -->
+<style src="@/assets/style/base.css"></style>
 
 <style scoped src="@/assets/style/layout.css"></style>
 <style scoped src="@/assets/style/toast.css"></style>
