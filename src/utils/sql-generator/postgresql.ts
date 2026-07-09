@@ -1,6 +1,7 @@
 import type { CommonConfig, Schema, Table, Field, InitialData } from '@/types/schema'
 import { getTableColumnNames, renderCommentBeforeField, renderCommentBeforeTable, resolveField, resolveFieldTypeForDialect, resolveQuoteDefault, formatSqlDefault, getTablePreSql, getTablePostSql, getSchemaPreSql, getSchemaPostSql, fmtPrePostSql, getInitialDataPreSql, getInitialDataPostSql, filterInitialDataRows } from './shared'
 import { splitColumnForSql } from '@/utils/index-column-utils'
+import { resolveDialectOverride } from '@/utils/dialect-resolver'
 
 /*
   SQL 生成器
@@ -27,10 +28,7 @@ function getFieldDefinitionPostgreSQL(field: Field, commonConfig: CommonConfig |
   const fieldScale = resolved.scale
 
   // 确定 default 值（不走 unified_type，保持字段级 → 方言覆盖链）
-  let defaultValue = field.default
-  if (field.postgresql?.default !== undefined) {
-    defaultValue = field.postgresql.default
-  }
+  const defaultValue = resolveDialectOverride(field, 'postgresql', 'default')
 
   if (fieldType) {
     if (typeof fieldScale === 'number' && typeof fieldLength === 'number') {
@@ -122,9 +120,9 @@ export function generateTablePostgreSQL(table: Table, schemaName: string, common
 
   // UNIQUE 索引在建表语句中定义
   table.indexes.forEach(index => {
-    const indexType = index.postgresql?.type || index.type
+    const indexType = resolveDialectOverride(index, 'postgresql', 'type', index.type)
     if (indexType === 'unique') {
-      let indexName = index.postgresql?.name || index.name
+      let indexName = resolveDialectOverride(index, 'postgresql', 'name', index.name)
       indexName = indexName?.replace('{pre}', `uk__${table.name}__`).replace('{post}', '') || `uk__${table.name}__${index.columns.map(c => c.name).join('_')}`
       indexDefinitions.push(`  CONSTRAINT ${quoteIdent(indexName, commonConfig)} UNIQUE (${index.columns.map(col => {
         const { name, sortPart } = splitColumnForSql(col, 'postgresql')
@@ -143,13 +141,13 @@ export function generateTablePostgreSQL(table: Table, schemaName: string, common
   // 普通索引在建表语句下方定义
   let hasCreateIndexSql = false
   table.indexes.forEach((index, i) => {
-    const indexType = index.postgresql?.type || index.type
+    const indexType = resolveDialectOverride(index, 'postgresql', 'type', index.type)
 
     if (indexType !== 'unique' && (indexType || index.columns)) {
       if (index.pre_comment) {
         sql += `-- ${index.pre_comment}\n`
       }
-      let indexName = index.postgresql?.name || index.name
+      let indexName = resolveDialectOverride(index, 'postgresql', 'name', index.name)
       indexName = indexName?.replace('{pre}', `idx__${table.name}__`).replace('{post}', '') || `idx__${table.name}__${index.columns.map(c => c.name).join('_')}`
       sql += `CREATE INDEX ${quoteIdent(indexName, commonConfig)} ON ${qSchemaName}.${qTableName} (${index.columns.map(col => {
         const { name, sortPart } = splitColumnForSql(col, 'postgresql')
@@ -184,9 +182,9 @@ export function generateTablePostgreSQL(table: Table, schemaName: string, common
   // 索引注释 — 为唯一索引和已命名普通索引生成 COMMENT ON INDEX
   table.indexes.forEach(index => {
     if (!index.comment) return
-    const indexType = index.postgresql?.type || index.type
+    const indexType = resolveDialectOverride(index, 'postgresql', 'type', index.type)
     if (indexType === 'unique') {
-      let indexName = index.postgresql?.name || index.name
+      let indexName = resolveDialectOverride(index, 'postgresql', 'name', index.name)
       indexName = indexName?.replace('{pre}', `uk__${table.name}__`).replace('{post}', '') || `uk__${table.name}__${index.columns.map(c => c.name).join('_')}`
       sql += `COMMENT ON INDEX ${qSchemaName}.${quoteIdent(indexName, commonConfig)} IS '${index.comment.replace(/'/g, "''")}';\n`
     }

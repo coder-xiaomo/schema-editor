@@ -1,6 +1,7 @@
 import type { CommonConfig, Schema, Table, Field, Index, InitialData } from '@/types/schema'
 import { getTableColumnNames, renderCommentBeforeField, renderCommentBeforeTable, resolveField, resolveFieldTypeForDialect, resolveQuoteDefault, formatSqlDefault, getTablePreSql, getTablePostSql, getSchemaPreSql, getSchemaPostSql, fmtPrePostSql, getInitialDataPreSql, getInitialDataPostSql, filterInitialDataRows } from './shared'
 import { splitColumnForSql } from '@/utils/index-column-utils'
+import { resolveDialectOverride } from '@/utils/dialect-resolver'
 
 /*
   SQL 生成器
@@ -19,10 +20,7 @@ function getFieldDefinitionMySQL(field: Field, commonConfig: CommonConfig | null
   const fieldScale = resolved.scale
 
   // 确定 default 值（不走 unified_type，保持字段级 → 方言覆盖链）
-  let defaultValue = field.default
-  if (field.mysql?.default !== undefined) {
-    defaultValue = field.mysql.default
-  }
+  const defaultValue = resolveDialectOverride(field, 'mysql', 'default')
 
   if (fieldType) {
     if (typeof fieldScale === 'number' && typeof fieldLength === 'number') {
@@ -36,11 +34,12 @@ function getFieldDefinitionMySQL(field: Field, commonConfig: CommonConfig | null
     switch (fieldType.toLowerCase()) {
       case 'varchar':
       case 'text':
-        if (commonConfig?.default_config?.mysql?.table?.mysql_charset) {
-          fieldDef += ` CHARACTER SET ${commonConfig.default_config.mysql.table.mysql_charset}`
+        const mysqlTable = commonConfig?.default_config?.mysql?.table
+        if (mysqlTable?.mysql_charset) {
+          fieldDef += ` CHARACTER SET ${mysqlTable.mysql_charset}`
         }
-        if (commonConfig?.default_config?.mysql?.table?.mysql_collation) {
-          fieldDef += ` COLLATE ${commonConfig.default_config.mysql.table.mysql_collation}`
+        if (mysqlTable?.mysql_collation) {
+          fieldDef += ` COLLATE ${mysqlTable.mysql_collation}`
         }
         break
     }
