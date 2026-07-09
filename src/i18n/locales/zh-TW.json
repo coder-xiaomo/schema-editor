@@ -271,7 +271,14 @@
     "projectClosed": "專案已關閉",
     "dropNotSupported": "拖曳開啟不支援當前瀏覽器，請使用 Chrome / Edge",
     "dropFolderOnly": "請拖曳資料夾而非檔案",
-    "diskFileChanged": "磁碟檔案已變更，是否重新載入？"
+    "diskFileChanged": "磁碟檔案已變更，是否重新載入？",
+    "upgradeFailed": "專案結構升級失敗"
+  },
+  "upgrade": {
+    "title": "專案結構需要升級",
+    "message": "目前專案使用的是舊目錄結構。為支援新的「每表獨立檔案 + 基線管理」佈局，需要將其升級為新結構。\n\n升級會保留所有資料（表、欄位、索引、初始資料、註解、pre/post SQL），舊檔案不會被刪除，可隨時回退。",
+    "confirm": "升級專案結構",
+    "cancel": "暫不升級"
   },
   "confirm": {
     "deleteSchema": "確認刪除 Schema \"{name}\" 及其所有表？此操作無法復原。",

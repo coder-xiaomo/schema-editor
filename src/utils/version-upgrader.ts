@@ -3,8 +3,8 @@ import type { CommonConfig, InitialData, Schema } from '@/types/schema'
 import { upgradeIndexColumns } from './index-column-utils'
 import { getInitialDataDir } from '@/core/workspace/paths'
 
-/** 当前编辑器支持的最高结构版本 */
-export const CURRENT_STRUCT_VERSION = '0.4'
+/** 当前编辑器支持的最高结构版本（新结构 current/ 起始版本） */
+export const CURRENT_STRUCT_VERSION = '2.0'
 
 /**
  * 读取旧字段名（历史兼容）。

@@ -41,3 +41,13 @@
 2. `feat: 实现 migrateOldToNewStructure 迁移函数（读写旧→写新）`
 3. `feat: 工具栏/侧栏接入「升级项目结构」按钮`
 4. `test: 迁移函数 Vitest 单测（内存态转换 + 路径映射，不接 jsdom）`
+
+## 实现状态（已落地范围）
+
+本步骤的**必要前提**已随第 11 步一并实现（旧结构打开 → 弹窗确认 → 迁移 → 加载新结构）：
+
+- `editor.ts` `_openRootHandle` 检测旧结构（无 `current/` 目录）时，设置 `showUpgradeModal` + `pendingUpgradeRootHandle`，**不自动改盘**；用户确认后 `confirmUpgradeStructure` 才执行 `migrateAndLoad`。
+- 升级弹窗已从专用 `UpgradeModal.vue` **重构为通用 `ConfirmModal.vue`**：弹窗本身不再耦合任何业务文案或提交逻辑，完全由 props 驱动（`title` / `message` / `confirmText` / `cancelText`）+ 事件回调（`confirm` / `cancel`）。`App.vue` 中传入 `upgrade.*` 文案并绑定 `store.confirmUpgradeStructure()` / `store.cancelUpgradeStructure()`。
+- 旧文件保留不删除（便于回退），与本文档「决策」一致。
+
+> 完整「工具栏/侧栏显式按钮 + 兼容以旧结构继续编辑」为后续增强项，本文档第 1 项「提供按钮」目标仍在规划中。

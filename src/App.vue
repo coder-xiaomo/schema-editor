@@ -1,4 +1,5 @@
 ﻿<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import { useDropFolder } from '@/composables/useDropFolder'
 import EditorToolbar from '@/components/EditorToolbar.vue'
@@ -8,9 +9,11 @@ import SchemaConfigPanel from '@/components/SchemaConfigPanel.vue'
 import TableEditor from '@/components/TableEditor.vue'
 import AddFieldModal from '@/components/modal/AddFieldModal.vue'
 import ImportSqlModal from '@/components/modal/ImportSqlModal.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 
 const store = useEditorStore()
 const { dragOver, onDragOver, onDragEnter, onDragLeave, onDrop } = useDropFolder()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -52,6 +55,17 @@ const { dragOver, onDragOver, onDragEnter, onDragLeave, onDrop } = useDropFolder
 
     <!-- 导入 SQL 弹窗 -->
     <ImportSqlModal />
+
+    <!-- 升级项目结构弹窗（基于通用确认弹窗） -->
+    <ConfirmModal
+      :visible="store.showUpgradeModal"
+      :title="t('upgrade.title')"
+      :message="t('upgrade.message')"
+      :confirm-text="t('upgrade.confirm')"
+      :cancel-text="t('upgrade.cancel')"
+      @confirm="store.confirmUpgradeStructure()"
+      @cancel="store.cancelUpgradeStructure()"
+    />
 
     <!-- Toast 通知 -->
     <div class="toast" :class="{ show: store.toastVisible }">{{ store.toastMsg }}</div>

@@ -51,3 +51,15 @@ your-schema-folder/
 3. `feat: editor.ts 保存流程改为按每表目录写 table.json + database.json`
 4. `refactor: reloadFromDisk 与 FileSystemObserver 适配新目录结构`
 5. `refactor: useDropFolder 调用链路适配（如涉及）`
+
+## 实现状态（已落地范围）
+
+第 1–5 项核心读写均已实现（与第 13 步的升级弹窗合并落地）：
+
+- `src/utils/file-helpers.ts` 提供新结构读写模块：`openProjectFolderNew`、`isNewStructure`、`writeDatabaseToHandle`、`writeSchemaJsonToHandle`、`writeTableToHandle`、`writeInitialDataToNewStructure`、`deleteTableDirFromHandle`、`deleteSchemaDirFromHandle`、`deleteInitialDataFromNewStructure`，以及迁移辅助 `migrateOldToNewStructure` / `readOldSchemasFromHandle`。
+- `editor.ts` 打开流程（`_openRootHandle`）检测新/旧结构：新结构经 `_loadNewStructure` 走 `current/`；旧结构弹升级确认窗（见 13 实现状态）。保存流程 `syncAllToDisk` 按新结构写 `common.json` / `current/database.json` / 各 `table.json` / 各 `initial-data.json`。
+- `FileSystemObserver` 与 `reloadFromDisk` 已适配新结构（监听 `COMMON_FILE` 与 `current/` 前缀路径，保留 `_writeDepth` / `_reloading` 防抖）。
+- `useDropFolder.ts` 调用链路不变，仍走 `openProjectFromHandle`。
+- `CURRENT_STRUCT_VERSION` 已升至 `'2.0'`。
+
+> 目标态中的 `baselines/`、`migrations/` 目录尚未实现，属后续步骤（见 15-baseline-migrations-design.md）。

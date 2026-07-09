@@ -271,7 +271,14 @@
     "projectClosed": "Project closed",
     "dropNotSupported": "Drag-and-drop is unsupported in this browser. Please use Chrome or Edge",
     "dropFolderOnly": "Please drop a folder, not a file",
-    "diskFileChanged": "The disk file has changed. Reload?"
+    "diskFileChanged": "The disk file has changed. Reload?",
+    "upgradeFailed": "Project structure upgrade failed"
+  },
+  "upgrade": {
+    "title": "Project structure needs upgrade",
+    "message": "This project uses the old directory structure. To support the new \"per-table file + baseline management\" layout, it needs to be upgraded to the new structure.\n\nThe upgrade preserves all data (tables, fields, indexes, initial data, comments, pre/post SQL). Old files are NOT deleted, so you can roll back at any time.",
+    "confirm": "Upgrade project structure",
+    "cancel": "Not now"
   },
   "confirm": {
     "deleteSchema": "Delete schema \"{name}\" and ALL its tables? This cannot be undone.",
