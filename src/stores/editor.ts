@@ -35,6 +35,7 @@ import {
 } from '@/utils/sql-generator/postgresql'
 import { checkVersion, CURRENT_STRUCT_VERSION, upgradeSchemaData } from '@/utils/version-upgrader'
 import { formatIndexColumn } from '@/utils/index-column-utils'
+import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { DEFAULT_UNIFIED_TYPES } from '@/utils/unified-types'
 import { fmtPrePostSql, getGlobalPostSql, getGlobalPreSql, resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
 import type { UnifiedTypeDefinition } from '@/types/schema'
@@ -1323,13 +1324,13 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== MySQL table override =====
   function getTableMysqlEngine(table: Table) {
-    return table.mysql?.mysql_engine || ''
+    return getDialectSubConfig(table.mysql, 'mysql_engine', '')
   }
   function getTableMysqlCharset(table: Table) {
-    return table.mysql?.mysql_charset || ''
+    return getDialectSubConfig(table.mysql, 'mysql_charset', '')
   }
   function getTableMysqlCollation(table: Table) {
-    return table.mysql?.mysql_collation || ''
+    return getDialectSubConfig(table.mysql, 'mysql_collation', '')
   }
   function setTableMysqlEngine(table: Table, val: string) {
     if (!table.mysql) table.mysql = {}
