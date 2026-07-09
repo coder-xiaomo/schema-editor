@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { CommonConfig, InitialData, Schema } from '@/types/schema'
 import { upgradeIndexColumns } from './index-column-utils'
+import { getInitialDataDir } from '@/core/workspace/paths'
 
 /** 当前编辑器支持的最高结构版本 */
 export const CURRENT_STRUCT_VERSION = '0.4'
@@ -234,7 +235,7 @@ export function checkVersion(commonConfig: CommonConfig | null): VersionCheckRes
 async function migrateInitialDataFormat(rootHandle: FileSystemDirectoryHandle): Promise<void> {
   let initialDataHandle: FileSystemDirectoryHandle
   try {
-    initialDataHandle = await rootHandle.getDirectoryHandle('initial-data')
+    initialDataHandle = await getInitialDataDir(rootHandle, false)
   } catch {
     return // initial-data/ 目录不存在，无需迁移
   }

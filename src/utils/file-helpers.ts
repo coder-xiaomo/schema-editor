@@ -1,5 +1,18 @@
 import { toRaw } from 'vue'
 import type { InitialData } from '@/types/schema'
+import {
+  getCommonFileHandle,
+  getSchemasDir,
+  getInitialDataDir,
+  getOldInitialDataFileHandle,
+  removeOldInitialDataFile,
+  getOutputDir,
+  getOutputDialectDir,
+  getOutputSqlFileHandle,
+  removeOutputSqlFile,
+} from '@/core/workspace/paths'
+import { getOrCreateDir } from '@/core/workspace/handles'
+import { SCHEMAS_DIR } from '@/core/workspace/layout'
 
 const jsonFileIndent = 4
 
@@ -45,7 +58,7 @@ export async function openProjectFolder(rootHandle?: FileSystemDirectoryHandle):
       } catch (e) { console.warn('[openProjectFolder] common.json parse error:', e) }
     }
 
-    if (name === 'schemas' && handle.kind === 'directory') {
+    if (name === SCHEMAS_DIR && handle.kind === 'directory') {
       schemaHandle = handle
       console.log('[openProjectFolder] schemas/ directory found')
     }
@@ -53,7 +66,7 @@ export async function openProjectFolder(rootHandle?: FileSystemDirectoryHandle):
 
   // 读取 schemas/ 子目录
   try {
-    const sdHandle = await resolvedRootHandle.getDirectoryHandle('schemas')
+    const sdHandle = await getSchemasDir(resolvedRootHandle)
     schemaHandle = sdHandle
     console.log('[openProjectFolder] iterating schemas/ entries...')
     for await (const entry of sdHandle.values()) {
@@ -71,7 +84,7 @@ export async function openProjectFolder(rootHandle?: FileSystemDirectoryHandle):
     console.log(`[openProjectFolder] schema files found: ${schemaFiles.length}`)
   } catch {
     console.log('[openProjectFolder] no schemas/ directory, creating one')
-    schemaHandle = await resolvedRootHandle.getDirectoryHandle('schemas', { create: true })
+    schemaHandle = await getSchemasDir(resolvedRootHandle, true)
   }
 
   return { rootHandle: resolvedRootHandle, schemaHandle, commonData, schemaFiles }
@@ -81,7 +94,7 @@ export async function openProjectFolder(rootHandle?: FileSystemDirectoryHandle):
  * 将数据写入 common.json
  */
 export async function writeCommonToHandle(rootHandle: FileSystemDirectoryHandle, data: unknown): Promise<void> {
-  const handle = await rootHandle.getFileHandle('common.json', { create: true })
+  const handle = await getCommonFileHandle(rootHandle)
   const writable = await handle.createWritable()
   await writable.write(JSON.stringify(toRaw(data), null, jsonFileIndent))
   await writable.close()
@@ -114,9 +127,9 @@ export async function writeSqlToOutput(
   filename: string,
   content: string
 ): Promise<void> {
-  const outputHandle = await rootHandle.getDirectoryHandle('output', { create: true })
-  const dialectHandle = await outputHandle.getDirectoryHandle(dialect, { create: true })
-  const fileHandle = await dialectHandle.getFileHandle(filename, { create: true })
+  const outputHandle = await getOutputDir(rootHandle)
+  const dialectHandle = await getOutputDialectDir(outputHandle, dialect)
+  const fileHandle = await getOutputSqlFileHandle(dialectHandle, filename)
   const writable = await fileHandle.createWritable()
   await writable.write(content)
   await writable.close()
@@ -131,9 +144,9 @@ export async function deleteSqlFromOutput(
   filename: string
 ): Promise<void> {
   try {
-    const outputHandle = await rootHandle.getDirectoryHandle('output', { create: false })
-    const dialectHandle = await outputHandle.getDirectoryHandle(dialect, { create: false })
-    await dialectHandle.removeEntry(filename)
+    const outputHandle = await getOutputDir(rootHandle, false)
+    const dialectHandle = await getOutputDialectDir(outputHandle, dialect, false)
+    await removeOutputSqlFile(dialectHandle, filename)
   } catch {
     // 文件可能不存在，忽略
   }
@@ -153,7 +166,7 @@ export async function readInitialDataFromHandle(
 
   let initialDataHandle: FileSystemDirectoryHandle
   try {
-    initialDataHandle = await rootHandle.getDirectoryHandle('initial-data')
+    initialDataHandle = await getInitialDataDir(rootHandle, false)
   } catch {
     // initial-data/ 目录不存在，返回空
     return result
@@ -223,9 +236,9 @@ export async function writeInitialDataToHandle(
   tableName: string,
   data: InitialData
 ): Promise<void> {
-  const initialDataHandle = await rootHandle.getDirectoryHandle('initial-data', { create: true })
-  const schemaHandle = await initialDataHandle.getDirectoryHandle(schemaName, { create: true })
-  const fileHandle = await schemaHandle.getFileHandle(`${tableName}.json`, { create: true })
+  const initialDataHandle = await getInitialDataDir(rootHandle)
+  const schemaHandle = await getOrCreateDir(initialDataHandle, schemaName)
+  const fileHandle = await getOldInitialDataFileHandle(schemaHandle, tableName)
   const writable = await fileHandle.createWritable()
 
   // 构建干净的导出对象，只包含已配置的属性
@@ -258,9 +271,9 @@ export async function deleteInitialDataFromHandle(
   tableName: string
 ): Promise<void> {
   try {
-    const initialDataHandle = await rootHandle.getDirectoryHandle('initial-data')
-    const schemaHandle = await initialDataHandle.getDirectoryHandle(schemaName)
-    await schemaHandle.removeEntry(`${tableName}.json`)
+    const initialDataHandle = await getInitialDataDir(rootHandle, false)
+    const schemaHandle = await getOrCreateDir(initialDataHandle, schemaName, false)
+    await removeOldInitialDataFile(schemaHandle, tableName)
   } catch {
     // 文件或目录不存在，静默忽略
   }

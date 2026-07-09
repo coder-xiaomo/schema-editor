@@ -37,6 +37,8 @@ import { checkVersion, CURRENT_STRUCT_VERSION, upgradeSchemaData } from '@/utils
 import { formatIndexColumn } from '@/utils/index-column-utils'
 import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { DEFAULT_UNIFIED_TYPES } from '@/utils/unified-types'
+import { getCommonFileHandle } from '@/core/workspace/paths'
+import { COMMON_FILE, SCHEMAS_DIR, INITIAL_DATA_DIR } from '@/core/workspace/layout'
 import { fmtPrePostSql, getGlobalPostSql, getGlobalPreSql, resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
 import type { SqlDialect } from '@/utils/sql-generator/shared'
 import type { UnifiedTypeDefinition } from '@/types/schema'
@@ -394,7 +396,7 @@ export const useEditorStore = defineStore('editor', () => {
       // 从磁盘读取 common.json
       let commonData: unknown | null = null
       try {
-        const commonHandle = await rootH.getFileHandle('common.json')
+        const commonHandle = await getCommonFileHandle(rootH)
         const file = await commonHandle.getFile()
         commonData = JSON.parse(await file.text())
       } catch {
@@ -465,7 +467,7 @@ export const useEditorStore = defineStore('editor', () => {
         // 只关注 common.json、schemas/*、initial-data/*，忽略 output/ 等
         const relevantRecords = records.filter(r => {
           const path = r.relativePathComponents.join('/')
-          return path === 'common.json' || path.startsWith('schemas/') || path.startsWith('initial-data/')
+          return path === COMMON_FILE || path.startsWith(`${SCHEMAS_DIR}/`) || path.startsWith(`${INITIAL_DATA_DIR}/`)
         })
         if (relevantRecords.length === 0) return
 
