@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, reactive } from 'vue'
 import type { IndexColumn } from '@/types/schema'
+import type { SqlDialect } from '@/utils/sql-generator/shared'
 
 const props = defineProps<{
   modelValue: IndexColumn[]
@@ -53,7 +54,7 @@ function emitChange() {
   emit('update:modelValue', [...props.modelValue])
 }
 
-function setDbSortOrder(col: IndexColumn, db: 'mysql' | 'postgresql', val: string) {
+function setDbSortOrder(col: IndexColumn, db: SqlDialect, val: string) {
   if (val) {
     if (!col[db]) col[db] = {}
     col[db]!.sort_order = val as 'ASC' | 'DESC'

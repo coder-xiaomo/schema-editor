@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useEditorStore } from '@/stores/editor'
-import { getTablePreSql, getTablePostSql } from '@/utils/sql-generator/shared'
+import { getTablePreSql, getTablePostSql, type SqlDialect } from '@/utils/sql-generator/shared'
 import TableBasicInfo from './TableBasicInfo.vue'
 import FieldTable from './FieldTable.vue'
 import IndexTable from './IndexTable.vue'
@@ -13,22 +13,22 @@ const store = useEditorStore()
 
 const activeTab = ref<'structure' | 'initial-data'>('structure')
 
-function tablePreSql(dialect: 'mysql' | 'postgresql'): string {
+function tablePreSql(dialect: SqlDialect): string {
   if (!store.currentTable) return ''
   return getTablePreSql(store.currentTable, dialect)
 }
 
-function tablePostSql(dialect: 'mysql' | 'postgresql'): string {
+function tablePostSql(dialect: SqlDialect): string {
   if (!store.currentTable) return ''
   return getTablePostSql(store.currentTable, dialect)
 }
 
-function setTablePreSql(dialect: 'mysql' | 'postgresql', val: string) {
+function setTablePreSql(dialect: SqlDialect, val: string) {
   if (!store.currentTable) return
   store.setTablePreSql(store.currentTable, dialect, val)
 }
 
-function setTablePostSql(dialect: 'mysql' | 'postgresql', val: string) {
+function setTablePostSql(dialect: SqlDialect, val: string) {
   if (!store.currentTable) return
   store.setTablePostSql(store.currentTable, dialect, val)
 }

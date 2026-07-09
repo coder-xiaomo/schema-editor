@@ -38,6 +38,7 @@ import { formatIndexColumn } from '@/utils/index-column-utils'
 import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { DEFAULT_UNIFIED_TYPES } from '@/utils/unified-types'
 import { fmtPrePostSql, getGlobalPostSql, getGlobalPreSql, resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
+import type { SqlDialect } from '@/utils/sql-generator/shared'
 import type { UnifiedTypeDefinition } from '@/types/schema'
 import { parseCreateTableStatements, detectDialect, convertColumnToField } from '@/utils/sql-parser'
 import type { ParsedTable, ParseMessage } from '@/utils/sql-parser'
@@ -76,7 +77,7 @@ export const useEditorStore = defineStore('editor', () => {
   // ===== Import SQL State =====
   const showImportSqlModal = ref(false)
   const importSqlText = ref('')
-  const importSqlDialect = ref<'auto' | 'mysql' | 'postgresql'>('auto')
+  const importSqlDialect = ref<'auto' | SqlDialect>('auto')
   const importSqlParsedTables = ref<ParsedTable[]>([])
   const importSqlErrors = ref<ParseMessage[]>([])
   const importSqlTargetMode = ref<'new' | 'existing'>('new')
@@ -712,7 +713,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Initial Data Pre/Post SQL =====
 
-  function setInitialDataPreSql(initialData: InitialData, dialect: 'mysql' | 'postgresql', val: string) {
+  function setInitialDataPreSql(initialData: InitialData, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !initialData.pre_sql) return
     if (!initialData.pre_sql) initialData.pre_sql = {}
@@ -726,7 +727,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function setInitialDataPostSql(initialData: InitialData, dialect: 'mysql' | 'postgresql', val: string) {
+  function setInitialDataPostSql(initialData: InitialData, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !initialData.post_sql) return
     if (!initialData.post_sql) initialData.post_sql = {}
@@ -1061,7 +1062,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /** 获取字段在指定数据库方言中最终解析的类型显示字符串（如 "VARCHAR(255)" 或 "DECIMAL(10,2)"） */
-  function getResolvedFieldTypeForDb(field: Field, dialect: 'mysql' | 'postgresql'): string {
+  function getResolvedFieldTypeForDb(field: Field, dialect: SqlDialect): string {
     const resolved = getResolvedField(field)
     const typeInfo = resolveFieldTypeForDialect(resolved, dialect, commonConfig.value)
     if (!typeInfo.type) return '-'
@@ -1355,7 +1356,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Table Pre/Post SQL =====
 
-  function setTablePreSql(table: Table, dialect: 'mysql' | 'postgresql', val: string) {
+  function setTablePreSql(table: Table, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !table.pre_sql) return
     if (!table.pre_sql) table.pre_sql = {}
@@ -1370,7 +1371,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function setTablePostSql(table: Table, dialect: 'mysql' | 'postgresql', val: string) {
+  function setTablePostSql(table: Table, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !table.post_sql) return
     if (!table.post_sql) table.post_sql = {}
@@ -1386,7 +1387,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Schema Pre/Post SQL =====
 
-  function setSchemaPreSql(schema: Schema, dialect: 'mysql' | 'postgresql', val: string) {
+  function setSchemaPreSql(schema: Schema, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !schema.pre_sql) return
     if (!schema.pre_sql) schema.pre_sql = {}
@@ -1400,7 +1401,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function setSchemaPostSql(schema: Schema, dialect: 'mysql' | 'postgresql', val: string) {
+  function setSchemaPostSql(schema: Schema, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !schema.post_sql) return
     if (!schema.post_sql) schema.post_sql = {}
@@ -1416,7 +1417,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Global Pre/Post SQL =====
 
-  function setGlobalPreSql(dialect: 'mysql' | 'postgresql', val: string) {
+  function setGlobalPreSql(dialect: SqlDialect, val: string) {
     if (!commonConfig.value) return
     const trimmed = val.trim()
     if (dialect === 'mysql') {
@@ -1429,7 +1430,7 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
-  function setGlobalPostSql(dialect: 'mysql' | 'postgresql', val: string) {
+  function setGlobalPostSql(dialect: SqlDialect, val: string) {
     if (!commonConfig.value) return
     const trimmed = val.trim()
     if (dialect === 'mysql') {
@@ -1443,16 +1444,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   // ===== Field mysql/postgresql override helpers =====
-  function ensureFieldOverride(field: Field, db: 'mysql' | 'postgresql') {
+  function ensureFieldOverride(field: Field, db: SqlDialect) {
     if (!field[db]) field[db] = {}
     return field[db]!
   }
 
-  function getFieldOverrideValue(field: Field, db: 'mysql' | 'postgresql', key: string) {
+  function getFieldOverrideValue(field: Field, db: SqlDialect, key: string) {
     return (field[db] as any)?.[key] ?? ''
   }
 
-  function setFieldOverrideValue(field: Field, db: 'mysql' | 'postgresql', key: string, val: any) {
+  function setFieldOverrideValue(field: Field, db: SqlDialect, key: string, val: any) {
     const override = ensureFieldOverride(field, db)
     if (val === '' || val === null || val === undefined) {
       delete override[key as keyof typeof override]
@@ -1470,11 +1471,11 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   // ===== Index mysql/postgresql override helpers =====
-  function getIndexOverrideValue(index: Index, db: 'mysql' | 'postgresql', key: string) {
+  function getIndexOverrideValue(index: Index, db: SqlDialect, key: string) {
     return (index[db] as any)?.[key] ?? ''
   }
 
-  function setIndexOverrideValue(index: Index, db: 'mysql' | 'postgresql', key: string, val: any) {
+  function setIndexOverrideValue(index: Index, db: SqlDialect, key: string, val: any) {
     if (!index[db]) (index as any)[db] = {}
     if (val === '' || val === null || val === undefined) {
       delete (index[db] as any)[key]
@@ -1805,7 +1806,7 @@ export const useEditorStore = defineStore('editor', () => {
   /** 将解析后的表定义转换为项目的 Table 结构 */
   function parsedTableToTable(
     parsed: ParsedTable,
-    dialect: 'mysql' | 'postgresql',
+    dialect: SqlDialect,
     unifiedTypes: UnifiedTypeDefinition[],
   ): Table {
     const fields: Field[] = parsed.columns.map(col => {
@@ -1980,7 +1981,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function confirmImportSql() {
-    const dialect: 'mysql' | 'postgresql' = importSqlDialect.value === 'auto' ? 'mysql' : importSqlDialect.value
+    const dialect: SqlDialect = importSqlDialect.value === 'auto' ? 'mysql' : importSqlDialect.value
     const unifiedTypes = commonConfig.value?.unified_types ?? DEFAULT_UNIFIED_TYPES
 
     // 转换每个解析后的表（应用用户编辑的表名）

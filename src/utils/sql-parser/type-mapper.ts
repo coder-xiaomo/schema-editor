@@ -9,6 +9,7 @@
 
 import type { UnifiedTypeDefinition, Field } from '@/types/schema'
 import type { ParsedColumn } from './create-table-parser'
+import type { SqlDialect } from '@/utils/sql-generator/shared'
 
 /** 类型映射结果 */
 export interface TypeMappingResult {
@@ -131,7 +132,7 @@ function normalizePgSqlType(rawType: string): { type: string; length?: number | 
  */
 export function mapSqlTypeToField(
   column: ParsedColumn,
-  dialect: 'mysql' | 'postgresql',
+  dialect: SqlDialect,
   unifiedTypes: UnifiedTypeDefinition[],
 ): TypeMappingResult {
   // 规范化类型名
@@ -263,7 +264,7 @@ export function mapSqlTypeToField(
  */
 export function convertColumnToField(
   column: ParsedColumn,
-  dialect: 'mysql' | 'postgresql',
+  dialect: SqlDialect,
   unifiedTypes: UnifiedTypeDefinition[],
 ): Field {
   const typeInfo = mapSqlTypeToField(column, dialect, unifiedTypes)

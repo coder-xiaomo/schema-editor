@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import { parseDefaultInput } from '@/utils/file-helpers'
-import { getInitialDataPreSql, getInitialDataPostSql } from '@/utils/sql-generator/shared'
+import { getInitialDataPreSql, getInitialDataPostSql, type SqlDialect } from '@/utils/sql-generator/shared'
 import type { InitialData } from '@/types/schema'
 import PrePostSqlEditor from './PrePostSqlEditor.vue'
 import InitialDataSqlPreview from './InitialDataSqlPreview.vue'
@@ -93,12 +93,12 @@ function ensureInitialDataEntry(): InitialData | undefined {
   return data
 }
 
-function handlePreSql(dialect: 'mysql' | 'postgresql', val: string) {
+function handlePreSql(dialect: SqlDialect, val: string) {
   const data = ensureInitialDataEntry()
   if (data) store.setInitialDataPreSql(data, dialect, val)
 }
 
-function handlePostSql(dialect: 'mysql' | 'postgresql', val: string) {
+function handlePostSql(dialect: SqlDialect, val: string) {
   const data = ensureInitialDataEntry()
   if (data) store.setInitialDataPostSql(data, dialect, val)
 }

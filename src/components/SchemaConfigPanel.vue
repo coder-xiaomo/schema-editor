@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import { useEditorStore } from '@/stores/editor'
-import { getSchemaPreSql, getSchemaPostSql } from '@/utils/sql-generator/shared'
+import { getSchemaPreSql, getSchemaPostSql, type SqlDialect } from '@/utils/sql-generator/shared'
 import PrePostSqlEditor from './PrePostSqlEditor.vue'
 
 const store = useEditorStore()
 
-function schemaPreSql(dialect: 'mysql' | 'postgresql'): string {
+function schemaPreSql(dialect: SqlDialect): string {
   if (!store.currentSchema) return ''
   return getSchemaPreSql(store.currentSchema, dialect)
 }
 
-function schemaPostSql(dialect: 'mysql' | 'postgresql'): string {
+function schemaPostSql(dialect: SqlDialect): string {
   if (!store.currentSchema) return ''
   return getSchemaPostSql(store.currentSchema, dialect)
 }
 
-function setPreSql(dialect: 'mysql' | 'postgresql', val: string) {
+function setPreSql(dialect: SqlDialect, val: string) {
   if (!store.currentSchema) return
   store.setSchemaPreSql(store.currentSchema, dialect, val)
 }
 
-function setPostSql(dialect: 'mysql' | 'postgresql', val: string) {
+function setPostSql(dialect: SqlDialect, val: string) {
   if (!store.currentSchema) return
   store.setSchemaPostSql(store.currentSchema, dialect, val)
 }

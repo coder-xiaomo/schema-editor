@@ -7,8 +7,9 @@
  */
 
 import { lex, type Token, TokenType } from './tokenizer'
+import type { SqlDialect } from '@/utils/sql-generator/shared'
 
-export type DetectedDialect = 'mysql' | 'postgresql' | 'unknown'
+export type DetectedDialect = SqlDialect | 'unknown'
 
 /**
  * 从原始 SQL 文本检测方言

@@ -24,7 +24,7 @@ export function resolveField(field: Field, commonConfig: CommonConfig | null): F
  */
 export function resolveFieldTypeForDialect(
   field: Field,
-  dialect: 'mysql' | 'postgresql',
+  dialect: SqlDialect,
   commonConfig: CommonConfig | null,
 ): { type: string; length: number | null; scale: number | null } {
   let type = ''
@@ -191,29 +191,29 @@ export function getTableColumnNames(table: Table, commonConfig: CommonConfig | n
 
 // ===== 前置/后置 SQL 辅助 =====
 
-export function getTablePreSql(table: Table, dialect: 'mysql' | 'postgresql'): string {
+export function getTablePreSql(table: Table, dialect: SqlDialect): string {
   return table.pre_sql?.[dialect] || ''
 }
 
-export function getTablePostSql(table: Table, dialect: 'mysql' | 'postgresql'): string {
+export function getTablePostSql(table: Table, dialect: SqlDialect): string {
   return table.post_sql?.[dialect] || ''
 }
 
-export function getSchemaPreSql(schema: Schema, dialect: 'mysql' | 'postgresql'): string {
+export function getSchemaPreSql(schema: Schema, dialect: SqlDialect): string {
   return schema.pre_sql?.[dialect] || ''
 }
 
-export function getSchemaPostSql(schema: Schema, dialect: 'mysql' | 'postgresql'): string {
+export function getSchemaPostSql(schema: Schema, dialect: SqlDialect): string {
   return schema.post_sql?.[dialect] || ''
 }
 
-export function getGlobalPreSql(commonConfig: CommonConfig | null, dialect: 'mysql' | 'postgresql'): string {
+export function getGlobalPreSql(commonConfig: CommonConfig | null, dialect: SqlDialect): string {
   if (!commonConfig) return ''
   if (dialect === 'mysql') return commonConfig.default_config.mysql.pre_sql || ''
   return commonConfig.default_config.postgresql.pre_sql || ''
 }
 
-export function getGlobalPostSql(commonConfig: CommonConfig | null, dialect: 'mysql' | 'postgresql'): string {
+export function getGlobalPostSql(commonConfig: CommonConfig | null, dialect: SqlDialect): string {
   if (!commonConfig) return ''
   if (dialect === 'mysql') return commonConfig.default_config.mysql.post_sql || ''
   return commonConfig.default_config.postgresql.post_sql || ''
@@ -229,11 +229,11 @@ export function fmtPrePostSql(sql: string): string {
 
 // ===== Initial-Data 级别 pre/post SQL =====
 
-export function getInitialDataPreSql(initialData: InitialData, dialect: 'mysql' | 'postgresql'): string {
+export function getInitialDataPreSql(initialData: InitialData, dialect: SqlDialect): string {
   return initialData.pre_sql?.[dialect] || ''
 }
 
-export function getInitialDataPostSql(initialData: InitialData, dialect: 'mysql' | 'postgresql'): string {
+export function getInitialDataPostSql(initialData: InitialData, dialect: SqlDialect): string {
   return initialData.post_sql?.[dialect] || ''
 }
 
