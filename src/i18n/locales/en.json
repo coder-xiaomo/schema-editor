@@ -2,6 +2,7 @@
   "app": {
     "title": "Schema Editor",
     "emptyState": "Drop a folder here, or choose File → Open Folder from the menu to continue",
+    "loadingOpenProject": "Opening project, please wait…",
     "dropHint": "Drop to open folder"
   },
   "menu": {
@@ -246,6 +247,8 @@
     "schemaRenamed": "Schema renamed",
     "tableAdded": "Table added",
     "tableDeleted": "Table deleted",
+    "tableExists": "Table \"{name}\" already exists",
+    "tableRenamed": "Table renamed",
     "pleaseSelectCommonField": "Please select a common field",
     "pleaseEnterFieldName": "Please enter field name",
     "fieldExistsInTable": "Field \"{name}\" already exists in this table",
@@ -271,7 +274,15 @@
     "projectClosed": "Project closed",
     "dropNotSupported": "Drag-and-drop is unsupported in this browser. Please use Chrome or Edge",
     "dropFolderOnly": "Please drop a folder, not a file",
-    "diskFileChanged": "The disk file has changed. Reload?"
+    "diskFileChanged": "The disk file has changed. Reload?",
+    "upgradeFailed": "Project structure upgrade failed"
+  },
+  "upgrade": {
+    "title": "Project structure needs upgrade",
+    "message": "This project uses the old directory structure. To support the new \"per-table file + baseline management\" layout, it needs to be upgraded to the new structure.\n\nThe upgrade preserves all data (tables, fields, indexes, initial data, comments, pre/post SQL) and removes the corresponding old files. Rollback to the old structure is no longer supported after upgrading.",
+    "confirm": "Upgrade project structure",
+    "cancel": "Not now, close project",
+    "loading": "Upgrading project structure, please wait…"
   },
   "confirm": {
     "deleteSchema": "Delete schema \"{name}\" and ALL its tables? This cannot be undone.",

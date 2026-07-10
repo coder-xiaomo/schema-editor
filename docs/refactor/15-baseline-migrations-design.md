@@ -1,7 +1,6 @@
 # 15 · 基线快照 / 迁移脚本 设计文档
 
 > 状态：**设计文档，待评审**。可运行实现（快照创建/列表、基于名称的初级 diff、用户自定义 SQL 步骤）留到 `field_id` 引入后落地。
-> 依赖：[`11-directory-restructure.md`](./11-directory-restructure.md) 的目录布局。
 
 ## 背景与目标
 

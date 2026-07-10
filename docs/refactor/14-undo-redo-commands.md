@@ -1,7 +1,7 @@
 # 14 · undo/redo 命令模式 + 结构化 patch + 按需写文件
 
 > 目标：当前架构每次重做/恢复都全量快照，且每次改动全量写盘。引入「命令模式 + 结构化补丁」：每次用户改动生成一个原子命令（含 forward/backward 数据），undo/redo 只应用/回滚该命令，并**只写受影响的 json 文件**，顺带解决全量保存问题。
-> 依赖：统一路径层 `src/core/workspace/`、`[11-directory-restructure.md](./11-directory-restructure.md)`（按需写文件依赖每表独立 JSON）。
+> 依赖：统一路径层 `src/core/workspace/`（按需写文件依赖每表独立 JSON，目录布局见 [`00-background.md`](./00-background.md)）。
 
 ## 现状问题
 

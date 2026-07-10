@@ -1,4 +1,13 @@
 /**
+ * 当前编辑器支持的「项目结构版本」。
+ *
+ * 作为结构版本的单一事实来源：写入新结构根 common.json 的 struct_version，
+ * 并用于 `structure-migrations/` 的升级链判定与 `file-helpers.ts` 的版本比较。
+ * 未来调整目录布局时，在此升版并在 structure-migrations 注册表追加对应迁移 step。
+ */
+export const CURRENT_STRUCT_VERSION = '1.0'
+
+/**
  * 工作目录路径片段常量与文件名友好化规则（纯常量与字符串规则，无业务语义）。
  *
  * 作为整个项目的「路径单一事实来源」：目录重构（见 docs/refactor/11）后路径规则更复杂，
@@ -57,7 +66,7 @@ export function sanitizeName(name: string): string {
 
   const replaced = name
     // 路径分隔符与常见非法字符
-    .replace(/[\/\\<>:"|?*]/g, '_')
+    .replace(/[/\\<>:"|?*]/g, '_')
     // 控制字符
     .replace(/[\x00-\x1f]/g, '_')
     // 折叠连续下划线

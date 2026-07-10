@@ -13,17 +13,22 @@ import type {
   TableDdlMode,
 } from '@/types/schema'
 import {
-  openProjectFolder,
   isFileSystemAccessSupported,
   writeCommonToHandle,
-  writeSchemaToHandle,
-  deleteSchemaFromHandle,
   deleteSqlFromOutput,
   writeSqlToOutput,
-  readInitialDataFromHandle,
-  writeInitialDataToHandle,
-  deleteInitialDataFromHandle,
   parseFieldLengthInput,
+  // ===== 新结构（current/）读写 =====
+  openProjectFolderNew,
+  isNewStructure,
+  writeDatabaseToHandle,
+  writeSchemaJsonToHandle,
+  writeTableToHandle,
+  writeInitialDataToNewStructure,
+  deleteTableDirFromHandle,
+  deleteSchemaDirFromHandle,
+  pruneTableDirsFromHandle,
+  deleteInitialDataFromNewStructure,
 } from '@/utils/file-helpers'
 import {
   generateSchemaMySQL,
@@ -33,12 +38,14 @@ import {
   generateSchemaPostgreSQL,
   generateInitialDataAllPostgreSQL,
 } from '@/utils/sql-generator/postgresql'
-import { checkVersion, CURRENT_STRUCT_VERSION, upgradeSchemaData } from '@/utils/version-upgrader'
+import { checkVersion } from '@/utils/structure-migrations/version-utils'
+import { runStructureMigrations } from '@/utils/structure-migrations'
 import { formatIndexColumn } from '@/utils/index-column-utils'
 import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { DEFAULT_UNIFIED_TYPES } from '@/utils/unified-types'
-import { getCommonFileHandle } from '@/core/workspace/paths'
-import { COMMON_FILE, SCHEMAS_DIR, INITIAL_DATA_DIR } from '@/core/workspace/layout'
+import { getCommonFileHandle, getCurrentDir } from '@/core/workspace/paths'
+import { readJsonFile } from '@/core/workspace/handles'
+import { COMMON_FILE, CURRENT_DIR, CURRENT_STRUCT_VERSION, sanitizeName } from '@/core/workspace/layout'
 import { fmtPrePostSql, getGlobalPostSql, getGlobalPreSql, resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
 import type { SqlDialect } from '@/utils/sql-generator/shared'
 import type { UnifiedTypeDefinition } from '@/types/schema'
@@ -69,7 +76,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   // File System Access API handles (in-memory, same session)
   const rootDirHandle = ref<any>(null)
-  const schemaDirHandle = ref<any>(null)
+  const currentDirHandle = ref<any>(null)
   const projectOpened = ref(false)
 
   // Initial Data —— 独立存储在 initial-data/<schema>/<table>.json
@@ -149,6 +156,13 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Open Project Folder =====
 
+  /** 升级确认弹窗状态（打开旧结构项目时由用户手动触发迁移） */
+  const showUpgradeModal = ref(false)
+  const pendingUpgradeRootHandle = ref<any>(null)
+  /** 全局加载遮罩：升级旧结构 / 打开项目加载期间展示，全局唯一实例 */
+  const overlayVisible = ref(false)
+  const overlayText = ref('')
+
   /** 选择项目文件夹并加载内容，之后所有编辑实时自动同步 */
   async function openProject() {
     if (!isFileSystemAccessSupported()) {
@@ -157,32 +171,14 @@ export const useEditorStore = defineStore('editor', () => {
       return
     }
     try {
-      const result = await openProjectFolder()
-      console.log('[openProject] result.schemaFiles.length:', result.schemaFiles.length)
-      console.log('[openProject] result.commonData:', !!result.commonData)
-
-      rootDirHandle.value = result.rootHandle
-      schemaDirHandle.value = result.schemaHandle
-
-      const ok = await _loadProjectFromHandles(
-        result.rootHandle,
-        result.schemaHandle,
-        result.commonData,
-        result.schemaFiles,
-      )
-      if (!ok) return
-
-      projectOpened.value = true
-
-      const parts: string[] = []
-      if (schemas.length > 0) parts.push(`${schemas.length} schema(s)`)
-      if (commonConfig.value) parts.push('common.json')
-      showToast(t('toast.opened', { summary: parts.join(' + ') }))
-
-      setupAutoSync()
-      await _startFileObserver()
+      const rootHandle: FileSystemDirectoryHandle = await window.showDirectoryPicker()
+      overlayText.value = t('app.loadingOpenProject')
+      overlayVisible.value = true
+      await _openRootHandle(rootHandle)
     } catch {
       // User cancelled the directory picker — do nothing
+    } finally {
+      overlayVisible.value = false
     }
   }
 
@@ -193,43 +189,64 @@ export const useEditorStore = defineStore('editor', () => {
       return
     }
     try {
-      const result = await openProjectFolder(handle)
-      console.log('[openProjectFromHandle] result.schemaFiles.length:', result.schemaFiles.length)
-      console.log('[openProjectFromHandle] result.commonData:', !!result.commonData)
-
-      rootDirHandle.value = result.rootHandle
-      schemaDirHandle.value = result.schemaHandle
-
-      const ok = await _loadProjectFromHandles(
-        result.rootHandle,
-        result.schemaHandle,
-        result.commonData,
-        result.schemaFiles,
-      )
-      if (!ok) return
-
-      projectOpened.value = true
-
-      const parts: string[] = []
-      if (schemas.length > 0) parts.push(`${schemas.length} schema(s)`)
-      if (commonConfig.value) parts.push('common.json')
-      showToast(t('toast.opened', { summary: parts.join(' + ') }))
-
-      setupAutoSync()
-      await _startFileObserver()
+      overlayText.value = t('app.loadingOpenProject')
+      overlayVisible.value = true
+      await _openRootHandle(handle)
     } catch (e) {
       console.error('[openProjectFromHandle] Failed:', e)
       showToast(t('toast.dropNotSupported'))
+    } finally {
+      overlayVisible.value = false
     }
+  }
+
+  /** 统一打开入口：检测新/旧结构，新结构直接加载，旧结构弹升级窗 */
+  async function _openRootHandle(rootHandle: FileSystemDirectoryHandle) {
+    rootDirHandle.value = rootHandle
+
+    const isNew = await isNewStructure(rootHandle)
+    if (isNew) {
+      await _loadNewStructure(rootHandle)
+      return
+    }
+
+    // 旧结构：弹升级确认窗，未确认不加载（也不允许编辑）
+    pendingUpgradeRootHandle.value = rootHandle
+    showUpgradeModal.value = true
+  }
+
+  /** 用户确认升级：迁移旧结构到新结构，然后加载 */
+  async function confirmUpgradeStructure() {
+    const rootHandle = pendingUpgradeRootHandle.value
+    if (!rootHandle) return
+    showUpgradeModal.value = false
+    pendingUpgradeRootHandle.value = null
+    overlayText.value = t('upgrade.loading')
+    overlayVisible.value = true
+    try {
+      await _migrateAndLoad(rootHandle)
+    } catch (e) {
+      console.error('[confirmUpgradeStructure] migration failed:', e)
+      showToast(t('toast.upgradeFailed'))
+    } finally {
+      overlayVisible.value = false
+    }
+  }
+
+  /** 取消升级：关闭项目，返回空状态（不再保留旧结构打开态，不弹关闭提示） */
+  function cancelUpgradeStructure() {
+    showUpgradeModal.value = false
+    pendingUpgradeRootHandle.value = null
+    closeProject(true)
   }
 
   // ===== Close Project =====
 
-  /** 关闭当前项目文件夹，清空所有编辑状态 */
-  function closeProject() {
+  /** 关闭当前项目文件夹，清空所有编辑状态。silent=true 时不弹「项目已关闭」提示（如取消升级场景） */
+  function closeProject(silent = false) {
     _stopFileObserver()
     rootDirHandle.value = null
-    schemaDirHandle.value = null
+    currentDirHandle.value = null
     projectOpened.value = false
     commonConfig.value = null
     schemas.length = 0
@@ -245,23 +262,43 @@ export const useEditorStore = defineStore('editor', () => {
       _syncTimer = null
     }
     _autoSyncSetup = false
-    showToast(t('toast.projectClosed'))
+    if (!silent) showToast(t('toast.projectClosed'))
   }
 
-  // ===== Shared: Load Project Data from Handles =====
+  // ===== Load New Structure (current/) =====
+
+  /** 构造默认根 common.json（新结构） */
+  function _createDefaultCommonConfig(): any {
+    return {
+      struct_version: CURRENT_STRUCT_VERSION,
+      default_config: {
+        mysql: {
+          database: {},
+          table: {
+            mysql_engine: 'InnoDB',
+            mysql_charset: 'utf8mb4',
+            mysql_collation: 'utf8mb4_0900_ai_ci',
+          }
+        },
+        postgresql: {
+          quote_identifiers: true,
+        }
+      },
+      common_used_fields: {},
+      type_case: 'keep',
+    }
+  }
 
   /**
-   * 从 handles 和已解析数据加载项目全部状态（openProject / reloadFromDisk 共用核心）。
-   * 调用前确保 rootDirHandle / schemaDirHandle 已设置。
-   * 返回 false 表示版本检查未通过，调用方应中止后续操作。
+   * 加载新结构项目：从 current/database.json + 各 table.json + 各 initial-data.json 还原内存态。
+   * 同时完成 projectOpened / toast / auto-sync / observer 的收尾。
+   * 返回 false 表示版本检查未通过。
    */
-  async function _loadProjectFromHandles(
-    rootHandle: FileSystemDirectoryHandle,
-    schemaHandle: FileSystemDirectoryHandle,
-    commonData: unknown | null,
-    schemaFiles: { name: string; data: unknown }[],
-  ): Promise<boolean> {
-    // 清空内存状态（handle 引用保留）
+  async function _loadNewStructure(rootHandle: FileSystemDirectoryHandle): Promise<boolean> {
+    const newProj = await openProjectFolderNew(rootHandle)
+    currentDirHandle.value = await getCurrentDir(rootHandle)
+
+    // 清空内存状态
     commonConfig.value = null
     schemas.length = 0
     initialDataMap.clear()
@@ -272,118 +309,120 @@ export const useEditorStore = defineStore('editor', () => {
     expandedFields.clear()
     expandedIndexes.clear()
 
-    // 加载 common.json
-    if (commonData) {
-      const data = commonData as any
-      if (data.default_config && data.common_used_fields) {
-        // 兼容旧 common.json 无 postgresql 配置
+    // 加载根 common.json（与基线无关的配置）
+    let common: any = null
+    try {
+      const commonHandle = await getCommonFileHandle(rootHandle, false)
+      const data = await readJsonFile(commonHandle) as any
+      if (data?.default_config && data?.common_used_fields) {
         if (!data.default_config.postgresql) {
           data.default_config.postgresql = { quote_identifiers: true }
         }
-        commonConfig.value = data
-        console.log('[openProject] commonConfig set')
+        common = data
       }
+    } catch {
+      common = null
     }
-    // 如果文件夹中没有 common.json 或数据无效，创建默认配置
-    if (!commonConfig.value) {
-      commonConfig.value = {
-        struct_version: CURRENT_STRUCT_VERSION,
-        default_config: {
-          mysql: {
-            database: {},
-            table: {
-              mysql_engine: 'InnoDB',
-              mysql_charset: 'utf8mb4',
-              mysql_collation: 'utf8mb4_0900_ai_ci',
-            }
-          },
-          postgresql: {
-            quote_identifiers: true,
-          }
-        },
-        common_used_fields: {},
-        type_case: 'keep',
-      }
-      console.log('[openProject] default commonConfig created')
-    }
+    if (!common) common = _createDefaultCommonConfig()
+    commonConfig.value = common
+
+    // commonConfig.value 已确定非 null，使用本地常量避免 TS 窄化失败
+    const cc = commonConfig.value!
 
     // 版本检查
-    const versionResult = checkVersion(commonConfig.value)
+    const versionResult = checkVersion(cc)
     if (!versionResult.ok) {
       alert(versionResult.error)
       return false
     }
-    const needsUpgrade = versionResult.needsUpgrade
-
-    // 加载 schema JSON
-    for (const { name, data: raw } of schemaFiles) {
-      const data = raw as any
-      console.log(`[openProject] processing "${name}": schema="${data.schema}", tables=${Array.isArray(data.tables) ? data.tables.length : 'N/A'}`)
-      if (!data.schema || !Array.isArray(data.tables)) {
-        showToast(t('toast.skipping', { name }))
-        continue
-      }
-      data.tables.forEach((t: any) => {
-        if (!t.indexes) t.indexes = []
-        if (!t.fields) t.fields = []
-      })
-      schemas.push(data)
+    if (versionResult.needsUpgrade) {
+      return false
     }
 
-    console.log('[openProject] schemas loaded:', schemas.length)
-    // 按 schema_order 排序（如果存在）
+    // 加载 schema_order 与各表定义
+    cc.schema_order = newProj.databaseData?.schema_order
+    for (const s of newProj.schemas) {
+      schemas.push({ schema: s.schema, tables: s.tables } as Schema)
+    }
     applySchemaOrder()
 
-    // 升级旧版数据结构
-    if (needsUpgrade) {
-      await upgradeSchemaData(schemas, versionResult.fromVersion!, commonConfig.value!, rootHandle)
-      if (commonConfig.value) {
-        commonConfig.value.struct_version = CURRENT_STRUCT_VERSION
-      }
-      // 升级后立即写盘（此时 auto-sync watcher 尚未 setup）
-      await writeCommonToHandle(rootHandle, commonConfig.value!)
-      for (const schema of schemas) {
-        const data = buildSchemaExportData(schema)
-        await writeSchemaToHandle(schemaHandle, `${schema.schema}.json`, data)
-      }
-      console.log('[openProject] schema data upgraded & saved to version', CURRENT_STRUCT_VERSION)
-    }
-
     // 初始化 unified_types（若缺失或为空，则填充内置默认集）
-    if (!commonConfig.value.unified_types || commonConfig.value.unified_types.length === 0) {
-      commonConfig.value.unified_types = JSON.parse(JSON.stringify(DEFAULT_UNIFIED_TYPES))
+    if (!cc.unified_types || cc.unified_types.length === 0) {
+      cc.unified_types = JSON.parse(JSON.stringify(DEFAULT_UNIFIED_TYPES))
     }
 
-    // 加载 initial-data（迁移已在 upgradeSchemaData 中完成，文件均为完整对象格式）
-    try {
-      const initialDataFiles = await readInitialDataFromHandle(rootHandle)
-      for (const { key, data } of initialDataFiles) {
-        initialDataMap.set(key, data)
-      }
-      if (initialDataFiles.length > 0) {
-        console.log(`[openProject] initial data loaded: ${initialDataFiles.length} file(s)`)
-      }
-    } catch (e) {
-      console.warn('[openProject] failed to load initial data:', e)
+    // 加载 initial-data（行内化在各 table 目录）
+    for (const { key, data } of newProj.initialData) {
+      initialDataMap.set(key, data)
     }
 
-    // Select first schema automatically
+    // 自动选中第一个 schema
     if (schemas.length > 0) {
       selectedSchemaIdx.value = 0
       selectedTableIdx.value = schemas[0]!.tables.length > 0 ? 0 : -1
     }
 
+    projectOpened.value = true
+    const parts: string[] = []
+    if (schemas.length > 0) parts.push(`${schemas.length} schema(s)`)
+    if (commonConfig.value) parts.push('common.json')
+    showToast(t('toast.opened', { summary: parts.join(' + ') }))
+
+    setupAutoSync()
+    await _startFileObserver()
     return true
+  }
+
+  /**
+   * 旧结构项目升级：读旧盘 → 经升级器处理 → 写新结构 → 清理已迁移的旧文件 → 加载新结构。
+   * 升级后不允许回退旧结构（新结构新增字段回退会丢失），迁移脚本内部会清理对应的旧文件。
+   */
+  async function _migrateAndLoad(rootHandle: FileSystemDirectoryHandle): Promise<void> {
+    // 读取根 common.json 用于版本判定
+    let oldCommon: any = null
+    try {
+      const commonHandle = await getCommonFileHandle(rootHandle, false)
+      oldCommon = await readJsonFile(commonHandle)
+    } catch {
+      oldCommon = null
+    }
+
+    const versionResult = checkVersion(oldCommon)
+    if (!versionResult.ok) {
+      alert(versionResult.error)
+      return
+    }
+    if (!versionResult.needsUpgrade) {
+      // 无需升级（理论不会走到这里，因为 _openRootHandle 已按版本分流）
+      await _loadNewStructure(rootHandle)
+      return
+    }
+
+    console.log('[migrateAndLoad] upgrading structure', versionResult.fromVersion, '→', CURRENT_STRUCT_VERSION)
+
+    // 按注册表逐版本执行结构迁移（落后者会依次跑 1.0→1.1、1.1→1.2……）
+    await runStructureMigrations(
+      rootHandle,
+      versionResult.fromVersion!,
+      {
+        transformTable: (_schema, table) =>
+          buildSchemaExportData({ schema: _schema.schema, tables: [table] }).tables[0]!,
+      },
+      CURRENT_STRUCT_VERSION,
+    )
+
+    console.log('[migrateAndLoad] structure migrated to latest on disk')
+
+    await _loadNewStructure(rootHandle)
   }
 
   // ===== Reload from Disk =====
 
   /** 放弃网页中的编辑，从本地文件重新读取所有数据 */
   async function reloadFromDisk() {
-    if (!rootDirHandle.value || !schemaDirHandle.value) return
+    if (!rootDirHandle.value || !currentDirHandle.value) return
 
     const rootH = rootDirHandle.value
-    const schemaH = schemaDirHandle.value
 
     _enterWriteScope()
     _reloading = true
@@ -393,35 +432,15 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     try {
-      // 从磁盘读取 common.json
-      let commonData: unknown | null = null
-      try {
-        const commonHandle = await getCommonFileHandle(rootH)
-        const file = await commonHandle.getFile()
-        commonData = JSON.parse(await file.text())
-      } catch {
-        console.warn('[reloadFromDisk] Failed to read common.json, resetting to default')
+      const ok = await _loadNewStructure(rootH)
+      if (!ok) {
+        // 版本不匹配（磁盘结构版本高于/低于当前编辑器支持版本）：
+        // 重新加载本质等价于「关闭项目后重新打开」，因此关闭后重新走打开流程，
+        // 由 _openRootHandle 自然分流——旧结构弹升级窗、版本过高则提示升级编辑器。
+        closeProject(true)
+        await _openRootHandle(rootH)
+        return
       }
-
-      // 从磁盘读取所有 schema JSON
-      const schemaFiles: { name: string; data: unknown }[] = []
-      for await (const entry of schemaH.values()) {
-        const fHandle = entry as FileSystemFileHandle | FileSystemDirectoryHandle
-        const fName: string = fHandle.name
-        if (fName.endsWith('.json') && fHandle.kind === 'file') {
-          try {
-            const file = await fHandle.getFile()
-            schemaFiles.push({ name: fName, data: JSON.parse(await file.text()) })
-          } catch (e) {
-            console.warn(`[reloadFromDisk] Failed to parse "${fName}":`, e)
-          }
-        }
-      }
-
-      const ok = await _loadProjectFromHandles(rootH, schemaH, commonData, schemaFiles)
-      if (!ok) return
-
-      projectOpened.value = true
       showToast(t('toast.reloadedFromDisk'))
     } catch (e) {
       console.error('[reloadFromDisk] Failed:', e)
@@ -464,10 +483,10 @@ export const useEditorStore = defineStore('editor', () => {
         // 自身写入期间忽略所有文件变更
         if (_writeDepth > 0) return
 
-        // 只关注 common.json、schemas/*、initial-data/*，忽略 output/ 等
+        // 只关注 common.json 与新结构 current/ 下的文件，忽略 output/ 等
         const relevantRecords = records.filter(r => {
           const path = r.relativePathComponents.join('/')
-          return path === COMMON_FILE || path.startsWith(`${SCHEMAS_DIR}/`) || path.startsWith(`${INITIAL_DATA_DIR}/`)
+          return path === COMMON_FILE || path.startsWith(`${CURRENT_DIR}/`)
         })
         if (relevantRecords.length === 0) return
 
@@ -520,15 +539,32 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function syncAllToDisk() {
-    if (!rootDirHandle.value || !schemaDirHandle.value) return
+    if (!rootDirHandle.value || !currentDirHandle.value) return
     _enterWriteScope()
     try {
       if (commonConfig.value) {
-        await writeCommonToHandle(rootDirHandle.value, commonConfig.value)
+        // 根 common.json：不再携带 schema_order（已迁入 current/database.json）
+        const commonToWrite: any = { ...commonConfig.value }
+        delete commonToWrite.schema_order
+        await writeCommonToHandle(rootDirHandle.value, commonToWrite)
+        // current/database.json：schema 排序
+        await writeDatabaseToHandle(rootDirHandle.value, {
+          schema_order: commonConfig.value.schema_order ?? schemas.map(s => s.schema),
+        })
       }
+      // 每 schema 目录 + 每表目录
       for (const schema of schemas) {
-        const data = buildSchemaExportData(schema)
-        await writeSchemaToHandle(schemaDirHandle.value, `${schema.schema}.json`, data)
+        const tableNames = schema.tables.map(t => t.name)
+        // 先清理磁盘上已失效的旧表目录（如改名后残留的旧 table.json 目录），避免脏数据累积
+        await pruneTableDirsFromHandle(rootDirHandle.value, schema.schema, tableNames)
+        const tableOrder = tableNames
+        await writeSchemaJsonToHandle(rootDirHandle.value, schema.schema, {
+          schema: schema.schema,
+          table_order: tableOrder,
+        })
+        for (const table of schema.tables) {
+          await writeTableToHandle(rootDirHandle.value, schema.schema, buildTableExportData(table))
+        }
       }
       // 同时生成 SQL 到 output 目录
       await syncSqlToOutput()
@@ -604,12 +640,12 @@ export const useEditorStore = defineStore('editor', () => {
   async function syncInitialDataToDisk() {
     if (!rootDirHandle.value) return
     try {
-      // 写入所有有数据的条目
+      // 写入所有有数据的条目（行内化到各 table 目录）
       for (const [key, initialData] of initialDataMap.entries()) {
         const sep = key.indexOf('/')
         const schemaName = key.substring(0, sep)
         const tableName = key.substring(sep + 1)
-        await writeInitialDataToHandle(rootDirHandle.value, schemaName, tableName, initialData)
+        await writeInitialDataToNewStructure(rootDirHandle.value, schemaName, tableName, initialData)
       }
 
       // 删除标记为已删除的文件
@@ -617,7 +653,7 @@ export const useEditorStore = defineStore('editor', () => {
         const sep = key.indexOf('/')
         const schemaName = key.substring(0, sep)
         const tableName = key.substring(sep + 1)
-        await deleteInitialDataFromHandle(rootDirHandle.value, schemaName, tableName)
+        await deleteInitialDataFromNewStructure(rootDirHandle.value, schemaName, tableName)
       }
       initialDataDeletedKeys.clear()
     } catch (e) {
@@ -811,12 +847,12 @@ export const useEditorStore = defineStore('editor', () => {
         }
       }
 
-      // Delete file from disk
-      if (schemaDirHandle.value) {
+      // Delete schema directory from disk (current/schemas/<schema>/)
+      if (rootDirHandle.value) {
         try {
-          await deleteSchemaFromHandle(schemaDirHandle.value, `${schema.schema}.json`)
+          await deleteSchemaDirFromHandle(rootDirHandle.value, schema.schema)
         } catch (e) {
-          console.warn('Failed to delete schema file:', e)
+          console.warn('Failed to delete schema directory:', e)
         }
       }
 
@@ -866,12 +902,12 @@ export const useEditorStore = defineStore('editor', () => {
 
     _enterWriteScope()
     try {
-      // Delete old file from disk
-      if (schemaDirHandle.value) {
+      // Delete old schema directory from disk
+      if (rootDirHandle.value) {
         try {
-          await deleteSchemaFromHandle(schemaDirHandle.value, `${oldName}.json`)
+          await deleteSchemaDirFromHandle(rootDirHandle.value, oldName)
         } catch (e) {
-          console.warn('Failed to delete old schema file:', e)
+          console.warn('Failed to delete old schema directory:', e)
         }
       }
 
@@ -903,6 +939,9 @@ export const useEditorStore = defineStore('editor', () => {
         }
         initialDataDeletedKeys.add(oldKey)
       }
+
+      // 重写新目录（database.json + schema.json + 各 table.json + initial-data + SQL）
+      await syncAllToDisk()
 
       showToast(t('toast.schemaRenamed'))
     } finally {
@@ -950,7 +989,53 @@ export const useEditorStore = defineStore('editor', () => {
     showToast(t('toast.tableAdded'))
   }
 
-  function deleteTable(schemaIdx: number, tableIdx: number) {
+  /** 重命名表：同步更新表名、迁移初始数据 key 并清理旧表目录 */
+  async function renameTable(schemaIdx: number, tableIdx: number, newName: string): Promise<boolean> {
+    const schema = schemas[schemaIdx]
+    if (!schema) return false
+    const table = schema.tables[tableIdx]
+    if (!table) return false
+    newName = newName.trim()
+    if (!newName) return false
+    if (schema.tables.some((t, i) => i !== tableIdx && t.name === newName)) {
+      showToast(t('toast.tableExists', { name: newName }))
+      return false
+    }
+
+    const oldName = table.name
+
+    _enterWriteScope()
+    try {
+      // 迁移初始数据 key（oldTable -> newTable），并标记旧 key 待删除
+      const oldKey = initialDataKey(schema.schema, oldName)
+      const newKey = initialDataKey(schema.schema, newName)
+      const data = initialDataMap.get(oldKey)
+      if (data !== undefined) {
+        initialDataMap.delete(oldKey)
+        initialDataMap.set(newKey, data)
+      }
+      // 仅当旧表目录与新模式下的目录确实不同时，才标记旧文件待删除。
+      // 若两者经 sanitize 后同名（如仅改大小写的 users -> Users），在大小写
+      // 不敏感文件系统上指向同一物理目录，新数据会覆盖旧文件，无需删除，
+      // 否则会在写入新 initial-data.json 之后又被误删。
+      if (sanitizeName(oldName) !== sanitizeName(newName)) {
+        initialDataDeletedKeys.add(oldKey)
+      }
+
+      table.name = newName
+
+      // 重新写盘：syncAllToDisk 会先 prune 失效的旧表目录（含旧 initial-data.json），
+      // 再按新表名写入 table.json 与 initial-data.json
+      await syncAllToDisk()
+
+      showToast(t('toast.tableRenamed'))
+      return true
+    } finally {
+      _leaveWriteScope()
+    }
+  }
+
+  async function deleteTable(schemaIdx: number, tableIdx: number) {
     const schema = schemas[schemaIdx]
     if (!schema) return
     const tableName = schema.tables[tableIdx]?.name
@@ -962,6 +1047,14 @@ export const useEditorStore = defineStore('editor', () => {
       if (initialDataMap.has(key)) {
         initialDataMap.delete(key)
         initialDataDeletedKeys.add(key)
+      }
+      // 删除磁盘上的 table 目录（current/schemas/<schema>/<table>/）
+      if (rootDirHandle.value) {
+        try {
+          await deleteTableDirFromHandle(rootDirHandle.value, schema.schema, tableName)
+        } catch (e) {
+          console.warn('Failed to delete table directory:', e)
+        }
       }
     }
     if (selectedSchemaIdx.value === schemaIdx) {
@@ -1490,101 +1583,105 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   // ===== Build export data =====
+
+  /** 将单表内存态转换为可写出的 table.json 对象 */
+  function buildTableExportData(table: Table): Table {
+    const tableData: Partial<Table> = {
+      name: table.name,
+      comment: table.comment,
+    }
+
+    // comment_before_table
+    if (table.comment_before_table) {
+      tableData.comment_before_table = table.comment_before_table
+    }
+
+    // comment_before_fields
+    if (table.comment_before_fields && Object.keys(table.comment_before_fields).length > 0) {
+      tableData.comment_before_fields = {}
+      for (const [k, v] of Object.entries(table.comment_before_fields)) {
+        tableData.comment_before_fields[k] = v
+      }
+    }
+
+    // pre_sql / post_sql
+    if (table.pre_sql && (table.pre_sql.mysql || table.pre_sql.postgresql)) {
+      tableData.pre_sql = { ...table.pre_sql }
+    }
+    if (table.post_sql && (table.post_sql.mysql || table.post_sql.postgresql)) {
+      tableData.post_sql = { ...table.post_sql }
+    }
+
+    // mysql table config
+    if (table.mysql && Object.keys(table.mysql).length > 0) {
+      const mysqlData: TableMysqlConfig = {}
+      if (table.mysql.mysql_engine) mysqlData.mysql_engine = table.mysql.mysql_engine
+      if (table.mysql.mysql_charset) mysqlData.mysql_charset = table.mysql.mysql_charset
+      if (table.mysql.mysql_collation) mysqlData.mysql_collation = table.mysql.mysql_collation
+      if (Object.keys(mysqlData).length > 0) tableData.mysql = mysqlData
+    }
+
+    // fields
+    tableData.fields = table.fields.map(field => {
+      const f: Field = { field_name: field.field_name }
+      if (field.use_common_used_fields) {
+        f.use_common_used_fields = true
+      } else {
+        // 导出 unified_type（仅当有值时）
+        if (field.unified_type) {
+          f.unified_type = field.unified_type
+          // 有 unified_type 时不导出冗余的 field_type/field_length/field_scale（除非有显式字段级覆盖）
+          if (field.field_type !== undefined && field.field_type !== '') f.field_type = field.field_type
+          if (field.field_length !== undefined) f.field_length = field.field_length
+          if (field.field_scale !== undefined) f.field_scale = field.field_scale
+        } else {
+          if (field.field_type !== undefined) f.field_type = field.field_type
+          if (field.field_length !== undefined) f.field_length = field.field_length
+          if (field.field_scale !== undefined) f.field_scale = field.field_scale
+        }
+        if (field.not_null !== undefined) f.not_null = field.not_null
+        if (field.primary_key !== undefined) f.primary_key = field.primary_key
+        if (field.default !== undefined) f.default = field.default
+        // 仅自定义类型字段导出 quote_default（统一类型字段从类型定义中获取）
+        if (!field.unified_type && field.quote_default !== undefined) f.quote_default = field.quote_default
+        if (field.comment !== undefined) f.comment = field.comment
+        if (field.is_commented_out) f.is_commented_out = true
+        if (field.field_length_disabled) f.field_length_disabled = true
+        if (field.field_scale_disabled) f.field_scale_disabled = true
+        // db overrides
+        if (field.mysql && Object.keys(field.mysql).length > 0) f.mysql = { ...field.mysql }
+        if (field.postgresql && Object.keys(field.postgresql).length > 0) f.postgresql = { ...field.postgresql }
+      }
+      return f
+    })
+
+    // indexes
+    tableData.indexes = table.indexes.map(index => {
+      const idx: Partial<Index> = {}
+      if (index.name) idx.name = index.name
+      if (index.type) idx.type = index.type
+      if (index.using) idx.using = index.using
+      idx.columns = index.columns.map(c => {
+        const col: any = { name: c.name }
+        if (c.sort_order) col.sort_order = c.sort_order
+        if (c.mysql && Object.keys(c.mysql).length > 0) col.mysql = { ...c.mysql }
+        if (c.postgresql && Object.keys(c.postgresql).length > 0) col.postgresql = { ...c.postgresql }
+        return col
+      })
+      if (index.comment) idx.comment = index.comment
+      if (index.pre_comment) idx.pre_comment = index.pre_comment
+      if (index.mysql && Object.keys(index.mysql).length > 0) idx.mysql = { ...index.mysql }
+      if (index.postgresql && Object.keys(index.postgresql).length > 0) idx.postgresql = { ...index.postgresql }
+      return idx as Index
+    })
+
+    return tableData as Table
+  }
+
   function buildSchemaExportData(schema: Schema) {
     const data: Schema = {
       schema: schema.schema,
-      tables: schema.tables.map(table => {
-        const tableData: Partial<Table> = {
-          name: table.name,
-          comment: table.comment,
-        }
-
-        // comment_before_table
-        if (table.comment_before_table) {
-          tableData.comment_before_table = table.comment_before_table
-        }
-
-        // comment_before_fields
-        if (table.comment_before_fields && Object.keys(table.comment_before_fields).length > 0) {
-          tableData.comment_before_fields = {}
-          for (const [k, v] of Object.entries(table.comment_before_fields)) {
-            tableData.comment_before_fields[k] = v
-          }
-        }
-
-        // pre_sql / post_sql
-        if (table.pre_sql && (table.pre_sql.mysql || table.pre_sql.postgresql)) {
-          tableData.pre_sql = { ...table.pre_sql }
-        }
-        if (table.post_sql && (table.post_sql.mysql || table.post_sql.postgresql)) {
-          tableData.post_sql = { ...table.post_sql }
-        }
-
-        // mysql table config
-        if (table.mysql && Object.keys(table.mysql).length > 0) {
-          const mysqlData: TableMysqlConfig = {}
-          if (table.mysql.mysql_engine) mysqlData.mysql_engine = table.mysql.mysql_engine
-          if (table.mysql.mysql_charset) mysqlData.mysql_charset = table.mysql.mysql_charset
-          if (table.mysql.mysql_collation) mysqlData.mysql_collation = table.mysql.mysql_collation
-          if (Object.keys(mysqlData).length > 0) tableData.mysql = mysqlData
-        }
-
-        // fields
-        tableData.fields = table.fields.map(field => {
-          const f: Field = { field_name: field.field_name }
-          if (field.use_common_used_fields) {
-            f.use_common_used_fields = true
-          } else {
-            // 导出 unified_type（仅当有值时）
-            if (field.unified_type) {
-              f.unified_type = field.unified_type
-              // 有 unified_type 时不导出冗余的 field_type/field_length/field_scale（除非有显式字段级覆盖）
-              if (field.field_type !== undefined && field.field_type !== '') f.field_type = field.field_type
-              if (field.field_length !== undefined) f.field_length = field.field_length
-              if (field.field_scale !== undefined) f.field_scale = field.field_scale
-            } else {
-              if (field.field_type !== undefined) f.field_type = field.field_type
-              if (field.field_length !== undefined) f.field_length = field.field_length
-              if (field.field_scale !== undefined) f.field_scale = field.field_scale
-            }
-            if (field.not_null !== undefined) f.not_null = field.not_null
-            if (field.primary_key !== undefined) f.primary_key = field.primary_key
-            if (field.default !== undefined) f.default = field.default
-            // 仅自定义类型字段导出 quote_default（统一类型字段从类型定义中获取）
-            if (!field.unified_type && field.quote_default !== undefined) f.quote_default = field.quote_default
-            if (field.comment !== undefined) f.comment = field.comment
-            if (field.is_commented_out) f.is_commented_out = true
-            if (field.field_length_disabled) f.field_length_disabled = true
-            if (field.field_scale_disabled) f.field_scale_disabled = true
-            // db overrides
-            if (field.mysql && Object.keys(field.mysql).length > 0) f.mysql = { ...field.mysql }
-            if (field.postgresql && Object.keys(field.postgresql).length > 0) f.postgresql = { ...field.postgresql }
-          }
-          return f
-        })
-
-        // indexes
-        tableData.indexes = table.indexes.map(index => {
-          const idx: Partial<Index> = {}
-          if (index.name) idx.name = index.name
-          if (index.type) idx.type = index.type
-          if (index.using) idx.using = index.using
-          idx.columns = index.columns.map(c => {
-            const col: any = { name: c.name }
-            if (c.sort_order) col.sort_order = c.sort_order
-            if (c.mysql && Object.keys(c.mysql).length > 0) col.mysql = { ...c.mysql }
-            if (c.postgresql && Object.keys(c.postgresql).length > 0) col.postgresql = { ...c.postgresql }
-            return col
-          })
-          if (index.comment) idx.comment = index.comment
-          if (index.pre_comment) idx.pre_comment = index.pre_comment
-          if (index.mysql && Object.keys(index.mysql).length > 0) idx.mysql = { ...index.mysql }
-          if (index.postgresql && Object.keys(index.postgresql).length > 0) idx.postgresql = { ...index.postgresql }
-          return idx as Index
-        })
-
-        return tableData as Table
-      })
+      tables: schema.tables.map(buildTableExportData),
     }
     // schema 级别 pre_sql / post_sql
     if (schema.pre_sql && (schema.pre_sql.mysql || schema.pre_sql.postgresql)) {
@@ -2082,6 +2179,11 @@ export const useEditorStore = defineStore('editor', () => {
     closeProject,
     reloadFromDisk,
     syncAllToDisk,
+    showUpgradeModal,
+    overlayVisible,
+    overlayText,
+    confirmUpgradeStructure,
+    cancelUpgradeStructure,
 
     // Initial Data
     initialDataMap,
@@ -2108,6 +2210,7 @@ export const useEditorStore = defineStore('editor', () => {
     // Table CRUD
     addTable,
     deleteTable,
+    renameTable,
     moveTable,
     moveTableToSchema,
 

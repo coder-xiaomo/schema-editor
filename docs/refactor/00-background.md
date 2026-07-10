@@ -41,7 +41,7 @@
 
 ## 4. 目录与数据模型（核心重构目标态）
 
-> 详细方案见 [`11-directory-restructure.md`](./11-directory-restructure.md)。统一路径层（`src/core/workspace/`）已落地，目录/句柄解析均经此模块。
+> 目录结构重构（每表独立 JSON + current/ 布局）已随统一路径层 `src/core/workspace/` 与结构迁移链 `v0.4→v1.0` 一并落地（原方案文档 `11-directory-restructure.md` 已归档删除）。统一路径层已落地，目录/句柄解析均经此模块。
 
 新工作目录布局（工作目录可能被 git 管理，基线用普通文件以保留完整历史）：
 
@@ -72,7 +72,7 @@ your-schema-folder/
     row_comment?: string                       // 可选
   }>
   ```
-- **版本**：核心重构时 `struct_version` 从 `'0.4'` 提升到 `'2.0'`（见 [`12-initial-data-inline.md`](./12-initial-data-inline.md)）。
+- **版本**：核心重构时 `struct_version` 从 `'0.4'` 提升到 `'1.0'`（见 [`12-initial-data-inline.md`](./12-initial-data-inline.md)）。
 
 ## 5. 方言解析约定
 

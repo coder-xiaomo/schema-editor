@@ -105,7 +105,7 @@ export function getOutputSqlFileHandle(
   dialectDir: FileSystemDirectoryHandle,
   filename: string,
 ): Promise<FileSystemFileHandle> {
-  return getFileHandleSafe(dialectDir, `${filename}.sql`)
+  return getFileHandleSafe(dialectDir, filename)
 }
 
 /** 删除旧结构 output/<dialect>/<filename>.sql */
@@ -113,7 +113,7 @@ export function removeOutputSqlFile(
   dialectDir: FileSystemDirectoryHandle,
   filename: string,
 ): Promise<void> {
-  return removeEntry(dialectDir, `${filename}.sql`)
+  return removeEntry(dialectDir, filename)
 }
 
 // ===== 新结构（current/baselines/migrations）路径解析 =====
