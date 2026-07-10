@@ -162,6 +162,17 @@ export const useEditorStore = defineStore('editor', () => {
     return `${schemaName}/${tableName}`
   }
 
+  /** 反查某个 InitialData 对象所属的 schema/table（用于命令 affectedFiles） */
+  function findInitialDataOwner(data: InitialData): { schema: string; table: string } | null {
+    for (const [key, value] of initialDataMap.entries()) {
+      if (value === data) {
+        const sep = key.indexOf('/')
+        return { schema: key.substring(0, sep), table: key.substring(sep + 1) }
+      }
+    }
+    return null
+  }
+
   const currentInitialDataKey = computed(() => {
     if (!currentSchema.value || !currentTable.value) return null
     return initialDataKey(currentSchema.value.schema, currentTable.value.name)
@@ -855,25 +866,62 @@ export const useEditorStore = defineStore('editor', () => {
   /** JSON 模式：直接设置完整 InitialData 对象 */
   function setInitialDataObject(schemaName: string, tableName: string, data: InitialData) {
     const key = initialDataKey(schemaName, tableName)
-    if ((data.rows?.length ?? 0) === 0) {
-      // 保留有 pre_sql/post_sql 的条目
-      if (data.pre_sql || data.post_sql) {
-        initialDataMap.set(key, data)
-        initialDataDeletedKeys.delete(key)
-      } else {
-        initialDataMap.delete(key)
-        initialDataDeletedKeys.add(key)
-      }
-    } else {
-      initialDataMap.set(key, data)
-      initialDataDeletedKeys.delete(key)
-    }
+    const oldData = initialDataMap.get(key)
+    const oldDeleted = initialDataDeletedKeys.has(key)
+    const willDelete = (data.rows?.length ?? 0) === 0 && !data.pre_sql && !data.post_sql
+    executeCommand({
+      label: t('history.editInitialDataObject'),
+      apply() {
+        if (willDelete) {
+          initialDataMap.delete(key)
+          initialDataDeletedKeys.add(key)
+        } else {
+          initialDataMap.set(key, data)
+          initialDataDeletedKeys.delete(key)
+        }
+      },
+      revert() {
+        if (oldData) {
+          initialDataMap.set(key, oldData)
+        } else {
+          initialDataMap.delete(key)
+        }
+        if (oldDeleted) {
+          initialDataDeletedKeys.add(key)
+        } else {
+          initialDataDeletedKeys.delete(key)
+        }
+      },
+      affectedFiles() {
+        return [affectedInitialData(schemaName, tableName), affectedSql()]
+      },
+    })
   }
 
   function deleteInitialData(schemaName: string, tableName: string) {
     const key = initialDataKey(schemaName, tableName)
-    initialDataMap.delete(key)
-    initialDataDeletedKeys.add(key)
+    const oldData = initialDataMap.get(key)
+    const oldDeleted = initialDataDeletedKeys.has(key)
+    executeCommand({
+      label: t('history.deleteInitialData'),
+      apply() {
+        initialDataMap.delete(key)
+        initialDataDeletedKeys.add(key)
+      },
+      revert() {
+        if (oldData) {
+          initialDataMap.set(key, oldData)
+        }
+        if (oldDeleted) {
+          initialDataDeletedKeys.add(key)
+        } else {
+          initialDataDeletedKeys.delete(key)
+        }
+      },
+      affectedFiles() {
+        return [affectedInitialData(schemaName, tableName), affectedSql()]
+      },
+    })
   }
 
   /** 切换某行是否跳过（不生成 INSERT），支持 undo/redo */
@@ -1009,29 +1057,69 @@ export const useEditorStore = defineStore('editor', () => {
   function setInitialDataPreSql(initialData: InitialData, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !initialData.pre_sql) return
-    if (!initialData.pre_sql) initialData.pre_sql = {}
-    if (trimmed) {
-      initialData.pre_sql[dialect] = trimmed
-    } else {
-      delete initialData.pre_sql[dialect]
-    }
-    if (initialData.pre_sql && !initialData.pre_sql.mysql && !initialData.pre_sql.postgresql) {
-      delete initialData.pre_sql
-    }
+    const oldPreSql = initialData.pre_sql ? { ...initialData.pre_sql } : undefined
+    const owner = findInitialDataOwner(initialData)
+    executeCommand({
+      label: t('history.editInitialDataPreSql', { dialect }),
+      coalesceKey: `initial-pre-sql:${dialect}`,
+      apply() {
+        if (!initialData.pre_sql) initialData.pre_sql = {}
+        if (trimmed) {
+          initialData.pre_sql[dialect] = trimmed
+        } else {
+          delete initialData.pre_sql[dialect]
+        }
+        if (initialData.pre_sql && !initialData.pre_sql.mysql && !initialData.pre_sql.postgresql) {
+          delete initialData.pre_sql
+        }
+      },
+      revert() {
+        if (oldPreSql) {
+          initialData.pre_sql = { ...oldPreSql }
+        } else {
+          delete initialData.pre_sql
+        }
+      },
+      affectedFiles() {
+        return owner
+          ? [affectedInitialData(owner.schema, owner.table), affectedSql()]
+          : [affectedSql()]
+      },
+    })
   }
 
   function setInitialDataPostSql(initialData: InitialData, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !initialData.post_sql) return
-    if (!initialData.post_sql) initialData.post_sql = {}
-    if (trimmed) {
-      initialData.post_sql[dialect] = trimmed
-    } else {
-      delete initialData.post_sql[dialect]
-    }
-    if (initialData.post_sql && !initialData.post_sql.mysql && !initialData.post_sql.postgresql) {
-      delete initialData.post_sql
-    }
+    const oldPostSql = initialData.post_sql ? { ...initialData.post_sql } : undefined
+    const owner = findInitialDataOwner(initialData)
+    executeCommand({
+      label: t('history.editInitialDataPostSql', { dialect }),
+      coalesceKey: `initial-post-sql:${dialect}`,
+      apply() {
+        if (!initialData.post_sql) initialData.post_sql = {}
+        if (trimmed) {
+          initialData.post_sql[dialect] = trimmed
+        } else {
+          delete initialData.post_sql[dialect]
+        }
+        if (initialData.post_sql && !initialData.post_sql.mysql && !initialData.post_sql.postgresql) {
+          delete initialData.post_sql
+        }
+      },
+      revert() {
+        if (oldPostSql) {
+          initialData.post_sql = { ...oldPostSql }
+        } else {
+          delete initialData.post_sql
+        }
+      },
+      affectedFiles() {
+        return owner
+          ? [affectedInitialData(owner.schema, owner.table), affectedSql()]
+          : [affectedSql()]
+      },
+    })
   }
 
   // ===== Schema Order =====
@@ -1981,17 +2069,45 @@ export const useEditorStore = defineStore('editor', () => {
 
   // ===== Index CRUD =====
   function addIndex(table: Table) {
-    table.indexes.push({
+    const newIndex: Index = {
       type: 'index',
       columns: [{ name: '' }],
       using: ''
+    }
+    executeCommand({
+      label: t('history.addIndex'),
+      apply() {
+        table.indexes.push(newIndex)
+      },
+      revert() {
+        const idx = table.indexes.indexOf(newIndex)
+        if (idx >= 0) table.indexes.splice(idx, 1)
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
     })
     showToast(t('toast.indexAdded'))
   }
 
   function deleteIndex(table: Table, indexIdx: number) {
     if (!confirm(t('confirm.deleteIndex'))) return
-    table.indexes.splice(indexIdx, 1)
+    const removed = table.indexes[indexIdx]
+    if (!removed) return
+    executeCommand({
+      label: t('history.deleteIndex'),
+      apply() {
+        if (indexIdx >= 0 && indexIdx < table.indexes.length) {
+          table.indexes.splice(indexIdx, 1)
+        }
+      },
+      revert() {
+        table.indexes.splice(indexIdx, 0, removed)
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
+    })
     showToast(t('toast.indexDeleted'))
   }
 
@@ -2013,10 +2129,25 @@ export const useEditorStore = defineStore('editor', () => {
 
   function setIndexColumns(index: Index, text: string) {
     const raw = text.split(',').map(s => s.trim()).filter(s => s)
-    index.columns = raw.map(s => ({ name: s }))
-    if (index.columns.length === 0) {
-      index.columns = [{ name: '' }]
-    }
+    const newColumns = raw.length > 0 ? raw.map(s => ({ name: s })) : [{ name: '' }]
+    const oldColumns = index.columns.map(c => ({ ...c }))
+    executeCommand({
+      label: t('history.editIndexColumns'),
+      coalesceKey: `index-cols:${index.name ?? ''}`,
+      apply() {
+        index.columns = newColumns
+      },
+      revert() {
+        index.columns = oldColumns.map(c => ({ ...c }))
+      },
+      affectedFiles() {
+        const owner = schemas.find(s => s.tables.some(t => t.indexes.includes(index)))
+        const table = owner?.tables.find(t => t.indexes.includes(index))
+        return (owner && table)
+          ? [affectedTable(owner.schema, table.name), affectedSql()]
+          : [affectedSql()]
+      },
+    })
   }
 
   // ===== MySQL table override =====
@@ -2030,19 +2161,70 @@ export const useEditorStore = defineStore('editor', () => {
     return getDialectSubConfig(table.mysql, 'mysql_collation', '')
   }
   function setTableMysqlEngine(table: Table, val: string) {
-    if (!table.mysql) table.mysql = {}
-    table.mysql.mysql_engine = val || undefined
-    cleanMysqlOverride(table)
+    const oldMysql = table.mysql ? { ...table.mysql } : undefined
+    executeCommand({
+      label: t('history.editTableMysqlEngine'),
+      coalesceKey: `table-mysql-engine:${table.name}`,
+      apply() {
+        if (!table.mysql) table.mysql = {}
+        table.mysql.mysql_engine = val || undefined
+        cleanMysqlOverride(table)
+      },
+      revert() {
+        if (oldMysql) {
+          table.mysql = { ...oldMysql }
+        } else {
+          delete table.mysql
+        }
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
+    })
   }
   function setTableMysqlCharset(table: Table, val: string) {
-    if (!table.mysql) table.mysql = {}
-    table.mysql.mysql_charset = val || undefined
-    cleanMysqlOverride(table)
+    const oldMysql = table.mysql ? { ...table.mysql } : undefined
+    executeCommand({
+      label: t('history.editTableMysqlCharset'),
+      coalesceKey: `table-mysql-charset:${table.name}`,
+      apply() {
+        if (!table.mysql) table.mysql = {}
+        table.mysql.mysql_charset = val || undefined
+        cleanMysqlOverride(table)
+      },
+      revert() {
+        if (oldMysql) {
+          table.mysql = { ...oldMysql }
+        } else {
+          delete table.mysql
+        }
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
+    })
   }
   function setTableMysqlCollation(table: Table, val: string) {
-    if (!table.mysql) table.mysql = {}
-    table.mysql.mysql_collation = val || undefined
-    cleanMysqlOverride(table)
+    const oldMysql = table.mysql ? { ...table.mysql } : undefined
+    executeCommand({
+      label: t('history.editTableMysqlCollation'),
+      coalesceKey: `table-mysql-collation:${table.name}`,
+      apply() {
+        if (!table.mysql) table.mysql = {}
+        table.mysql.mysql_collation = val || undefined
+        cleanMysqlOverride(table)
+      },
+      revert() {
+        if (oldMysql) {
+          table.mysql = { ...oldMysql }
+        } else {
+          delete table.mysql
+        }
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
+    })
   }
   function cleanMysqlOverride(table: Table) {
     if (table.mysql && Object.values(table.mysql).every(v => v === undefined || v === '')) {
@@ -2055,30 +2237,63 @@ export const useEditorStore = defineStore('editor', () => {
   function setTablePreSql(table: Table, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !table.pre_sql) return
-    if (!table.pre_sql) table.pre_sql = {}
-    if (trimmed) {
-      table.pre_sql[dialect] = trimmed
-    } else {
-      delete table.pre_sql[dialect]
-    }
-    // 清理空对象
-    if (table.pre_sql && !table.pre_sql.mysql && !table.pre_sql.postgresql) {
-      delete table.pre_sql
-    }
+    const oldPreSql = table.pre_sql ? { ...table.pre_sql } : undefined
+    executeCommand({
+      label: t('history.editTablePreSql', { dialect }),
+      coalesceKey: `table-pre-sql:${table.name}:${dialect}`,
+      apply() {
+        if (!table.pre_sql) table.pre_sql = {}
+        if (trimmed) {
+          table.pre_sql[dialect] = trimmed
+        } else {
+          delete table.pre_sql[dialect]
+        }
+        if (table.pre_sql && !table.pre_sql.mysql && !table.pre_sql.postgresql) {
+          delete table.pre_sql
+        }
+      },
+      revert() {
+        if (oldPreSql) {
+          table.pre_sql = { ...oldPreSql }
+        } else {
+          delete table.pre_sql
+        }
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
+    })
   }
 
   function setTablePostSql(table: Table, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !table.post_sql) return
-    if (!table.post_sql) table.post_sql = {}
-    if (trimmed) {
-      table.post_sql[dialect] = trimmed
-    } else {
-      delete table.post_sql[dialect]
-    }
-    if (table.post_sql && !table.post_sql.mysql && !table.post_sql.postgresql) {
-      delete table.post_sql
-    }
+    const oldPostSql = table.post_sql ? { ...table.post_sql } : undefined
+    executeCommand({
+      label: t('history.editTablePostSql', { dialect }),
+      coalesceKey: `table-post-sql:${table.name}:${dialect}`,
+      apply() {
+        if (!table.post_sql) table.post_sql = {}
+        if (trimmed) {
+          table.post_sql[dialect] = trimmed
+        } else {
+          delete table.post_sql[dialect]
+        }
+        if (table.post_sql && !table.post_sql.mysql && !table.post_sql.postgresql) {
+          delete table.post_sql
+        }
+      },
+      revert() {
+        if (oldPostSql) {
+          table.post_sql = { ...oldPostSql }
+        } else {
+          delete table.post_sql
+        }
+      },
+      affectedFiles() {
+        return [affectedTable(currentSchemaName(table), table.name), affectedSql()]
+      },
+    })
   }
 
   // ===== Schema Pre/Post SQL =====
@@ -2086,29 +2301,63 @@ export const useEditorStore = defineStore('editor', () => {
   function setSchemaPreSql(schema: Schema, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !schema.pre_sql) return
-    if (!schema.pre_sql) schema.pre_sql = {}
-    if (trimmed) {
-      schema.pre_sql[dialect] = trimmed
-    } else {
-      delete schema.pre_sql[dialect]
-    }
-    if (schema.pre_sql && !schema.pre_sql.mysql && !schema.pre_sql.postgresql) {
-      delete schema.pre_sql
-    }
+    const oldPreSql = schema.pre_sql ? { ...schema.pre_sql } : undefined
+    executeCommand({
+      label: t('history.editSchemaPreSql', { dialect }),
+      coalesceKey: `schema-pre-sql:${schema.schema}:${dialect}`,
+      apply() {
+        if (!schema.pre_sql) schema.pre_sql = {}
+        if (trimmed) {
+          schema.pre_sql[dialect] = trimmed
+        } else {
+          delete schema.pre_sql[dialect]
+        }
+        if (schema.pre_sql && !schema.pre_sql.mysql && !schema.pre_sql.postgresql) {
+          delete schema.pre_sql
+        }
+      },
+      revert() {
+        if (oldPreSql) {
+          schema.pre_sql = { ...oldPreSql }
+        } else {
+          delete schema.pre_sql
+        }
+      },
+      affectedFiles() {
+        return [affectedSchema(schema.schema), affectedSql()]
+      },
+    })
   }
 
   function setSchemaPostSql(schema: Schema, dialect: SqlDialect, val: string) {
     const trimmed = val.trim()
     if (!trimmed && !schema.post_sql) return
-    if (!schema.post_sql) schema.post_sql = {}
-    if (trimmed) {
-      schema.post_sql[dialect] = trimmed
-    } else {
-      delete schema.post_sql[dialect]
-    }
-    if (schema.post_sql && !schema.post_sql.mysql && !schema.post_sql.postgresql) {
-      delete schema.post_sql
-    }
+    const oldPostSql = schema.post_sql ? { ...schema.post_sql } : undefined
+    executeCommand({
+      label: t('history.editSchemaPostSql', { dialect }),
+      coalesceKey: `schema-post-sql:${schema.schema}:${dialect}`,
+      apply() {
+        if (!schema.post_sql) schema.post_sql = {}
+        if (trimmed) {
+          schema.post_sql[dialect] = trimmed
+        } else {
+          delete schema.post_sql[dialect]
+        }
+        if (schema.post_sql && !schema.post_sql.mysql && !schema.post_sql.postgresql) {
+          delete schema.post_sql
+        }
+      },
+      revert() {
+        if (oldPostSql) {
+          schema.post_sql = { ...oldPostSql }
+        } else {
+          delete schema.post_sql
+        }
+      },
+      affectedFiles() {
+        return [affectedSchema(schema.schema), affectedSql()]
+      },
+    })
   }
 
   // ===== Global Pre/Post SQL =====
@@ -2215,15 +2464,38 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function setIndexOverrideValue(index: Index, db: SqlDialect, key: string, val: any) {
-    if (!index[db]) (index as any)[db] = {}
-    if (val === '' || val === null || val === undefined) {
-      delete (index[db] as any)[key]
-    } else {
-      (index[db] as any)[key] = val
-    }
-    if (index[db] && Object.keys(index[db]!).length === 0) {
-      delete index[db]
-    }
+    const oldOverride = index[db] ? { ...(index[db] as any) } : undefined
+    const oldDeleted = oldOverride === undefined
+    const newVal = (val === '' || val === null || val === undefined) ? undefined : val
+    executeCommand({
+      label: t('history.editIndexOverride'),
+      coalesceKey: `index-override:${db}:${key}`,
+      apply() {
+        if (!index[db]) (index as any)[db] = {}
+        if (newVal === undefined) {
+          delete (index[db] as any)[key]
+        } else {
+          (index[db] as any)[key] = newVal
+        }
+        if (index[db] && Object.keys(index[db]!).length === 0) {
+          delete index[db]
+        }
+      },
+      revert() {
+        if (oldDeleted) {
+          delete index[db]
+        } else {
+          ;(index as any)[db] = { ...oldOverride! }
+        }
+      },
+      affectedFiles() {
+        const owner = schemas.find(s => s.tables.some(t => t.indexes.includes(index)))
+        const table = owner?.tables.find(t => t.indexes.includes(index))
+        return (owner && table)
+          ? [affectedTable(owner.schema, table.name), affectedSql()]
+          : [affectedSql()]
+      },
+    })
   }
 
   // ===== Build export data =====
