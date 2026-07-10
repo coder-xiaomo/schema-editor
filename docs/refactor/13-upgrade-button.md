@@ -1,7 +1,7 @@
 # 13 · 手动「升级项目结构」按钮
 
-> 目标：核心重构后目录/数据结构发生破坏性变化（每表独立 JSON、initial-data 行内化、struct_version 2.0）。为避免自动改盘造成的不可预期损失，**提供显式按钮**，由用户手动触发从旧结构迁移到新结构。
-> 依赖：统一路径层 `src/core/workspace/`、`[11-directory-restructure.md](./11-directory-restructure.md)`、`[12-initial-data-inline.md](./12-initial-data-inline.md)`。
+> 目标：核心重构后目录/数据结构发生破坏性变化（每表独立 JSON、initial-data 行内化、struct_version 1.0）。为避免自动改盘造成的不可预期损失，**提供显式按钮**，由用户手动触发从旧结构迁移到新结构。
+> 依赖：统一路径层 `src/core/workspace/`、`[12-initial-data-inline.md](./12-initial-data-inline.md)`。
 
 ## 背景
 
@@ -11,14 +11,14 @@
 - `initial-data/<schema>/<table>.json`（平行数组结构）
 - `output/<dialect>/<schema>.sql`
 
-新结构见 [`11`](./11-directory-restructure.md) / [`12`](./12-initial-data-inline.md)。
+新结构见 [`00-background.md`](./00-background.md) / [`12-initial-data-inline.md](./12-initial-data-inline.md)。
 
 决策（已确认）：**不自动改盘**，由用户在界面显式触发「升级项目结构」；升级成功后清理对应的旧文件，**不再支持回退旧结构**（新结构新增字段回退会丢失）。
 
 ## 目标
 
 1. `editor.ts` 打开项目时检测 `struct_version`：
-   - 若 `< 2.0` 且目录为新结构不存在 → 提示「当前项目为旧结构，可升级」。
+   - 若 `< 1.0` 且目录为新结构不存在 → 提示「当前项目为旧结构，可升级」。
    - 提供「升级项目结构」按钮（工具栏/侧栏）。
 2. 点击后执行一次性迁移：
    - 读取旧 `common.json` / `schemas/*.json` / `initial-data/*`，经升级器转为新内存态。
@@ -62,7 +62,7 @@
 
 - **版本权威**：`CURRENT_STRUCT_VERSION`（当前 `1.0`）定义在 `src/core/workspace/layout.ts`，作为根 `common.json` 的 `struct_version` 写入值与判定基准（置于 layout 以避免 `file-helpers` ↔ `version-upgrader` 循环依赖）。`1.0` 是引入 `current/` 新布局后的第一个结构版本；此前旧磁盘格式（平行 `schemas/` + `initial-data/` 目录）对应的结构版本记为 `0.4`，即数据级升级链（`version-upgrader.UPGRADE_STEPS`）的当前末端。
 - **判定**：`file-helpers.isNewStructure` 读取根 `common.json` 的 `struct_version` 与 `CURRENT_STRUCT_VERSION` 比较，不再依赖 `current/` 目录是否存在（避免空目录残留误判）。
-- **结构迁移注册表**：`src/utils/structure-migrations/index.ts` 的 `STRUCTURE_MIGRATION_STEPS`（每条 `{ from, to, migrate }`）+ 通用调度器 `runStructureMigrations(rootHandle, fromVersion, deps, targetVersion)`。调度器从 `fromVersion` 出发，按注册表顺序循环查找 `from === current` 的下一步执行，直到达到 `targetVersion`，**天然支持用户落后多版本时依次跑**（如 `0.4 → 2.0` 会依次跑 `0.4→1.0`、`1.0→2.0`）。
+- **结构迁移注册表**：`src/utils/structure-migrations/index.ts` 的 `STRUCTURE_MIGRATION_STEPS`（每条 `{ from, to, migrate }`）+ 通用调度器 `runStructureMigrations(rootHandle, fromVersion, deps, targetVersion)`。调度器从 `fromVersion` 出发，按注册表顺序循环查找 `from === current` 的下一步执行，直到达到 `targetVersion`，**天然支持用户落后多版本时依次跑**（如 `0.4 → 1.0` 会依次跑各注册表步骤直到目标版本）。当前 `CURRENT_STRUCT_VERSION = '1.0'`，即迁移链终点，`2.0` 不在本批次范围内。
 - **每个版本一个脚本文件**：`src/utils/structure-migrations/v0_4-to-v1.ts` 导出 `migrate(rootHandle, deps)`，自包含地完成「读 from 磁盘 → 数据级升级 → 写 to 磁盘 → 清理已迁移旧文件」。未来新增 `v1-to-v2.ts` 只需新建文件并在注册表追加一行，**旧代码零改动**。
 - **依赖注入打破循环**：脚本所需的「数据级升级」（`upgradeData`，来自 `version-upgrader.upgradeSchemaData`）与「表序列化」（`transformTable`，来自 `editor.buildSchemaExportData`）由调度器注入，脚本文件不反向依赖 `version-upgrader`/`editor`，避免模块循环。
 - **数据级升级链**：`version-upgrader.UPGRADE_STEPS`（内存态字段迁移，如 `pgsql → postgresql`）仍按 `from→to` 链运行，由脚本在写盘前调用。

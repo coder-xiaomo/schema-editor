@@ -8,10 +8,10 @@
  * 自包含：从当前磁盘读取 0.0 版本、写出 0.1 版本（覆盖写回），
  * 支持用户落后多个版本时「逐个版本」依次跑。
  *
- * 范式参考：未来任何字段新增/改名/结构调整（如 v1.0→v2.0），都沿用此模式——
+ * 范式参考：未来任何字段新增/改名/结构调整（如 v1.0→v1.1），都沿用此模式——
  *   const data = await readProject(rootHandle, '1.0')
  *   // 改 data.schemas / data.common / data.initialData 的字段
- *   await writeProject(rootHandle, '2.0', data)
+ *   await writeProject(rootHandle, '1.1', data)
  */
 
 import { upgradeIndexColumns } from '@/utils/index-column-utils'

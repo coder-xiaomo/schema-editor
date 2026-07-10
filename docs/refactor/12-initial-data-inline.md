@@ -42,8 +42,8 @@ export interface InitialData {
 
 ## 升级器变更
 
-- `version-upgrader.ts`：新增 `0.4 → 2.0` 升级步骤，将旧 `rows/row_comments/field_comments/skip_rows` 合并为 `InitialDataRow[]`。
-- `CURRENT_STRUCT_VERSION` 从 `'0.4'` 升至 `'2.0'`。
+- `version-upgrader.ts`：新增 `0.4 → 1.0` 升级步骤，将旧 `rows/row_comments/field_comments/skip_rows` 合并为 `InitialDataRow[]`。
+- `CURRENT_STRUCT_VERSION` 从 `'0.4'` 升至 `'1.0'`。
 - 旧字段访问（若有残留）继续使用 `readLegacyField`（见背景第 6 节），不新增 `@ts-expect-error`。
 
 ## 读写适配
@@ -63,7 +63,7 @@ export interface InitialData {
 ## 原子提交拆分建议
 
 1. `feat: types 新增 InitialDataRow，保留旧 InitialData 兼容`
-2. `feat: version-upgrader 增加 0.4→2.0 行内结构合并，struct_version→2.0`
+2. `feat: version-upgrader 增加 0.4→1.0 行内结构合并，struct_version→1.0`
 3. `refactor: file-helpers 读写改为行内结构`
 4. `refactor: InitialDataEditor.vue 操作改为行内对象数组`
 5. `refactor: sql-generator 读取行内结构（行为不变）`

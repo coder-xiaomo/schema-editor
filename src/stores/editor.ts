@@ -400,7 +400,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     console.log('[migrateAndLoad] upgrading structure', versionResult.fromVersion, '→', CURRENT_STRUCT_VERSION)
 
-    // 按注册表逐版本执行结构迁移（落后者会依次跑 1.0→2.0、2.0→3.0……）
+    // 按注册表逐版本执行结构迁移（落后者会依次跑 1.0→1.1、1.1→1.2……）
     await runStructureMigrations(
       rootHandle,
       versionResult.fromVersion!,

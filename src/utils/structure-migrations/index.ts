@@ -9,7 +9,7 @@
  * 因此 step 之间可以链式串联（step N 写入的结果即 step N+1 读取的输入）。
  *
  * 两类步骤：
- * - 字段级步骤（v0.0→v0.1、v0.1→v0.2、v0.2→v0.3、v0.3→v0.4，以及未来的 v1.0→v2.0 等）：
+ * - 字段级步骤（v0.0→v0.1、v0.1→v0.2、v0.2→v0.3、v0.3→v0.4，以及未来的 v1.0→v1.1 等）：
  *   这是**最主要、最频繁**的迁移形态——字段新增、改名、结构调整。磁盘布局不变，
  *   通过 structure-io 的 readProject/writeProject 统一读写，脚本只关注"字段怎么变"。
  * - 结构级步骤（v0.4→v1.0）：改写磁盘布局（旧 schemas/ + initial-data/ → current/ 每表文件），
@@ -21,8 +21,8 @@
  *   export async function migrate(rootHandle) {
  *     const data = await readProject(rootHandle, '1.0')   // 读当前盘（自动选布局）
  *     // 在此修改 data.schemas / data.common / data.initialData 的字段
- *     if (data.common) data.common.struct_version = '2.0'
- *     await writeProject(rootHandle, '2.0', data)         // 写回（自动选布局）
+ *     if (data.common) data.common.struct_version = '1.1'
+ *     await writeProject(rootHandle, '1.1', data)         // 写回（自动选布局）
  *   }
  */
 

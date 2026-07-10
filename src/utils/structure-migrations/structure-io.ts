@@ -25,7 +25,7 @@ import { sanitizeName } from '@/core/workspace/layout'
  * - 旧布局（0.0~0.4）：schemas/*.json + initial-data/* + common.json
  * - 新布局（1.0+）：current/schemas/<schema>/<table>/table.json + initial-data.json + database.json
  *
- * 未来新增字段级迁移（如 v1.0→v2.0）时，只需调用本模块的 readProject/writeProject，
+ * 未来新增字段级迁移（如 v1.0→v1.1）时，只需调用本模块的 readProject/writeProject，
  * 在内存态上做字段变更后写回即可，无需新增任何 IO 代码。
  */
 
