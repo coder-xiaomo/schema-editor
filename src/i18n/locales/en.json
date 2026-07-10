@@ -35,7 +35,22 @@
     "toggleSkipRow": "Toggle Skip Row",
     "editInitialDataComment": "Edit Initial Data Comment",
     "editInitialDataCell": "Edit Initial Data",
-    "editInitialDataRowComment": "Edit Initial Data Row Comment"
+    "editInitialDataRowComment": "Edit Initial Data Row Comment",
+    "editGlobalPreSql": "Edit Global Pre SQL ({dialect})",
+    "editGlobalPostSql": "Edit Global Post SQL ({dialect})",
+    "editMysqlEngine": "Edit MySQL Engine",
+    "editMysqlCharset": "Edit MySQL Charset",
+    "editMysqlCollation": "Edit MySQL Collation",
+    "editPgQuoteIdentifiers": "Edit PG Quote Identifiers",
+    "editTableDdlMode": "Edit Table DDL Mode",
+    "editTypeCase": "Edit Type Case",
+    "addCommonField": "Add Common Field",
+    "deleteCommonField": "Delete Common Field",
+    "renameCommonField": "Rename Common Field",
+    "addUnifiedType": "Add Unified Type",
+    "deleteUnifiedType": "Delete Unified Type",
+    "renameUnifiedType": "Rename Unified Type",
+    "editUnifiedTypes": "Edit Unified Types"
   },
   "toolbar": {
     "openFolder": "Open Folder",

@@ -35,7 +35,22 @@
     "toggleSkipRow": "切換跳過列",
     "editInitialDataComment": "編輯初始資料註解",
     "editInitialDataCell": "編輯初始資料",
-    "editInitialDataRowComment": "編輯初始資料列註解"
+    "editInitialDataRowComment": "編輯初始資料列註解",
+    "editGlobalPreSql": "編輯全域前置 SQL（{dialect}）",
+    "editGlobalPostSql": "編輯全域後置 SQL（{dialect}）",
+    "editMysqlEngine": "編輯 MySQL 引擎",
+    "editMysqlCharset": "編輯 MySQL 字元集",
+    "editMysqlCollation": "編輯 MySQL 排序規則",
+    "editPgQuoteIdentifiers": "編輯 PG 引號識別符",
+    "editTableDdlMode": "編輯建表 DDL 模式",
+    "editTypeCase": "編輯類型大小寫",
+    "addCommonField": "新增公共欄位",
+    "deleteCommonField": "刪除公共欄位",
+    "renameCommonField": "重新命名公共欄位",
+    "addUnifiedType": "新增統一類型",
+    "deleteUnifiedType": "刪除統一類型",
+    "renameUnifiedType": "重新命名統一類型",
+    "editUnifiedTypes": "編輯統一類型"
   },
   "toolbar": {
     "openFolder": "開啟資料夾",

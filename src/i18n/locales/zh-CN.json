@@ -35,7 +35,22 @@
     "toggleSkipRow": "切换跳过行",
     "editInitialDataComment": "编辑初始数据注释",
     "editInitialDataCell": "编辑初始数据",
-    "editInitialDataRowComment": "编辑初始数据行注释"
+    "editInitialDataRowComment": "编辑初始数据行注释",
+    "editGlobalPreSql": "编辑全局前置 SQL（{dialect}）",
+    "editGlobalPostSql": "编辑全局后置 SQL（{dialect}）",
+    "editMysqlEngine": "编辑 MySQL 引擎",
+    "editMysqlCharset": "编辑 MySQL 字符集",
+    "editMysqlCollation": "编辑 MySQL 排序规则",
+    "editPgQuoteIdentifiers": "编辑 PG 引号标识符",
+    "editTableDdlMode": "编辑建表 DDL 模式",
+    "editTypeCase": "编辑类型大小写",
+    "addCommonField": "添加公共字段",
+    "deleteCommonField": "删除公共字段",
+    "renameCommonField": "重命名公共字段",
+    "addUnifiedType": "添加统一类型",
+    "deleteUnifiedType": "删除统一类型",
+    "renameUnifiedType": "重命名统一类型",
+    "editUnifiedTypes": "编辑统一类型"
   },
   "toolbar": {
     "openFolder": "打开文件夹",
