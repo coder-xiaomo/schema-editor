@@ -46,12 +46,27 @@ function onDocumentClick(e: MouseEvent) {
 }
 
 function onKeydown(e: KeyboardEvent) {
+  const mod = e.ctrlKey || e.metaKey
   if (e.key === 'Escape' && openMenu.value) {
     closeMenu()
   }
+
+  // 打开文件夹（通用约定 Ctrl/Cmd+O），调用目录选择器
+  if (mod && (e.key === 'o' || e.key === 'O')) {
+    e.preventDefault()
+    store.openProject()
+    return
+  }
+  // 关闭文件夹（Ctrl/Cmd+Shift+W，避免与 Ctrl+W 直接关闭标签页冲突）
+  if (mod && e.shiftKey && (e.key === 'w' || e.key === 'W')) {
+    if (store.projectOpened) {
+      e.preventDefault()
+      store.closeProject()
+    }
+    return
+  }
   // Undo/Redo 快捷键（仅在项目打开时生效，避免与输入框原生撤销冲突由 store 接管）
   if (store.projectOpened) {
-    const mod = e.ctrlKey || e.metaKey
     if (mod && (e.key === 'z' || e.key === 'Z')) {
       e.preventDefault()
       if (e.shiftKey) store.redo()
@@ -89,14 +104,16 @@ onUnmounted(() => {
           :class="{ disabled: store.projectOpened }"
           @click="menuAction(() => store.openProject())"
         >
-          {{ $t('toolbar.openFolder') }}
+          <span>{{ $t('toolbar.openFolder') }}</span>
+          <span class="menu-shortcut">{{ isMac ? '⌘O' : 'Ctrl+O' }}</span>
         </div>
         <div
           class="menu-dropdown-item"
           :class="{ disabled: !store.projectOpened }"
           @click="store.projectOpened && menuAction(() => store.closeProject())"
         >
-          {{ $t('toolbar.closeFolder') }}
+          <span>{{ $t('toolbar.closeFolder') }}</span>
+          <span class="menu-shortcut">{{ isMac ? '⌘⇧W' : 'Ctrl+Shift+W' }}</span>
         </div>
         <div class="menu-separator"></div>
         <div
