@@ -11,6 +11,8 @@ import { GITHUB_REPO_URL } from '@/utils/constants'
 const store = useEditorStore()
 const { t, locale } = useI18n()
 
+const isMac = /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent || '')
+
 const showAboutModal = ref(false)
 const showBaselineModal = ref(false)
 const openMenu = ref<string | null>(null)
@@ -115,6 +117,29 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <!-- Edit Menu -->
+    <div class="menu-item" :class="{ open: openMenu === 'edit' }" @click.stop="toggleMenu('edit')">
+      {{ $t('menu.edit') }}
+      <div v-if="openMenu === 'edit'" class="menu-dropdown" @click.stop>
+        <div
+          class="menu-dropdown-item"
+          :class="{ disabled: !store.canUndo }"
+          @click="store.canUndo && menuAction(() => store.undo())"
+        >
+          <span>{{ $t('history.undo') }}</span>
+          <span class="menu-shortcut">{{ isMac ? '⌘Z' : 'Ctrl+Z' }}</span>
+        </div>
+        <div
+          class="menu-dropdown-item"
+          :class="{ disabled: !store.canRedo }"
+          @click="store.canRedo && menuAction(() => store.redo())"
+        >
+          <span>{{ $t('history.redo') }}</span>
+          <span class="menu-shortcut">{{ isMac ? '⌘⇧Z' : 'Ctrl+Shift+Z / Ctrl+Y' }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Help Menu -->
     <div class="menu-item" :class="{ open: openMenu === 'help' }" @click.stop="toggleMenu('help')">
       {{ $t('menu.help') }}
@@ -137,19 +162,6 @@ onUnmounted(() => {
 
     <!-- Right Side -->
     <div class="menu-bar-right">
-      <button
-        class="toolbar-btn"
-        :disabled="!store.canUndo"
-        :title="store.undoLabel ? $t('history.undoTitle', { label: store.undoLabel }) : $t('history.undo')"
-        @click="store.canUndo && store.undo()"
-      >&#8630; {{ $t('history.undo') }}</button>
-      <button
-        class="toolbar-btn"
-        :disabled="!store.canRedo"
-        :title="store.redoLabel ? $t('history.redoTitle', { label: store.redoLabel }) : $t('history.redo')"
-        @click="store.canRedo && store.redo()"
-      >&#8631; {{ $t('history.redo') }}</button>
-
       <span v-if="store.projectOpened" class="sync-badge" :title="$t('toolbar.autoSavingTitle')">
         &#128190;&#xFE0E; {{ $t('toolbar.autoSaving') }}
       </span>
@@ -254,6 +266,18 @@ onUnmounted(() => {
   color: #bbb;
   cursor: default;
   pointer-events: none;
+}
+
+.menu-shortcut {
+  margin-left: 24px;
+  font-size: 11px;
+  color: #999;
+  font-family: -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.menu-dropdown-item.disabled .menu-shortcut {
+  color: #ccc;
 }
 
 .menu-separator {
