@@ -312,7 +312,7 @@
     "created": "基線已建立：{name}",
     "delete": "刪除基線",
     "deleteConfirm": "確認刪除基線「{name}」？",
-    "empty": "尚無基線 — 建立首個基線後才會延遲產生 field_id / table_id / schema_id",
+    "empty": "尚無基線",
     "list": "基線清單",
     "createdAt": "建立時間",
     "diffFrom": "對比來源",
@@ -357,7 +357,18 @@
     "postgresqlSql": "PostgreSQL SQL",
     "preview": "DDL 預覽",
     "save": "儲存",
-    "empty": "尚無遷移腳本"
+    "empty": "尚無遷移腳本",
+    "guideTitle": "建立遷移腳本",
+    "guideDesc": "遷移腳本描述兩個基線之間的結構差異，可附加資料轉換步驟。",
+    "guideStep1": "點擊「+ 建立遷移」選擇來源與目標基線",
+    "guideStep2": "新增步驟（如自動結構 diff、SQL 轉換等）",
+    "guideStep3": "儲存並預覽產生的 DDL",
+    "newTitle": "新建遷移腳本",
+    "editTitle": "編輯：{name}",
+    "cancel": "取消",
+    "needTwoBaselines": "至少需要 2 個基線才能建立遷移，請先到「基線」頁建立基線。",
+    "sameBaseline": "來源基線與目標基線不能相同。",
+    "noSteps": "尚無步驟，點擊上方按鈕新增。"
   },
   "toast": {
     "skipping": "跳過 {name}：格式無效",

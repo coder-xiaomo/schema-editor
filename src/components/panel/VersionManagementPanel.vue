@@ -28,6 +28,8 @@ async function onDeleteBaseline(id: string, name: string) {
 }
 
 const selectedMigrationId = ref<string | null>(null)
+// true => 右侧处于「新建迁移草稿」模式；false => 未选中任何项
+const isDrafting = ref(false)
 const draftFrom = ref('')
 const draftTo = ref('')
 const editingMigration = ref<Migration | null>(null)
@@ -35,10 +37,20 @@ const preview = ref<MigrationDdlPreview | null>(null)
 const previewDialect = ref<'mysql' | 'postgresql'>('mysql')
 
 const canCreateMigration = computed(
-  () => draftFrom.value && draftTo.value && draftFrom.value !== draftTo.value,
+  () =>
+    draftFrom.value &&
+    draftTo.value &&
+    draftFrom.value !== draftTo.value &&
+    store.baselines.length >= 2,
 )
 
+/** 根据基线 id 取名称（用于列表项副标题） */
+function baselineName(id: string): string {
+  return store.baselines.find(b => b.id === id)?.name ?? id
+}
+
 async function selectMigration(m: Migration) {
+  isDrafting.value = false
   editingMigration.value = JSON.parse(JSON.stringify(m))
   selectedMigrationId.value = m.id
   draftFrom.value = m.from_baseline
@@ -46,11 +58,21 @@ async function selectMigration(m: Migration) {
   await refreshPreview()
 }
 
+/** 进入「新建迁移草稿」模式：清空选中态，默认选首尾两条基线作为 from/to */
 function startNewMigration() {
+  isDrafting.value = true
   editingMigration.value = null
   selectedMigrationId.value = null
   draftFrom.value = store.baselines[0]?.id ?? ''
   draftTo.value = store.baselines[store.baselines.length - 1]?.id ?? ''
+  preview.value = null
+}
+
+/** 取消草稿，回到「未选中」空白态 */
+function cancelDraft() {
+  isDrafting.value = false
+  editingMigration.value = null
+  selectedMigrationId.value = null
   preview.value = null
 }
 
@@ -100,7 +122,7 @@ async function refreshPreview() {
 async function onDeleteMigration(id: string, name: string) {
   if (!confirm(t('migration.deleteConfirm', { name }))) return
   await store.deleteMigrationById(id)
-  if (selectedMigrationId.value === id) startNewMigration()
+  if (selectedMigrationId.value === id) cancelDraft()
 }
 
 function previewText(): string {
@@ -168,19 +190,19 @@ const previewBaselineSummary = computed(() => {
   return store.baselines.find(b => b.id === previewBaselineId.value) ?? null
 })
 
-// 进入版本管理 tab 时重置迁移草稿
+// 进入版本管理 tab 时重置迁移编辑状态（保持未选中空白态，避免误以为在新建）
 watch(
   () => store.settingsTab,
   (tab) => {
     if (tab === 'version') {
       versionTab.value = 'baseline'
-      startNewMigration()
+      cancelDraft()
     }
   },
 )
 
 onMounted(() => {
-  if (store.settingsTab === 'version') startNewMigration()
+  if (store.settingsTab === 'version') cancelDraft()
 })
 
 onUnmounted(() => {
@@ -326,30 +348,90 @@ onUnmounted(() => {
         <!-- 迁移 -->
         <div v-else class="ps-version-body ps-mig">
           <div class="ps-mig-list">
-            <button class="btn btn-sm" @click="startNewMigration">+ {{ $t('migration.create') }}</button>
+            <button class="btn btn-primary btn-block" @click="startNewMigration">+ {{ $t('migration.create') }}</button>
             <div v-if="store.migrations.length === 0" class="ps-empty-sm">{{ $t('migration.empty') }}</div>
             <ul class="ps-list">
               <li v-for="m in store.migrations" :key="m.id" class="ps-list-item"
                 :class="{ active: selectedMigrationId === m.id }" @click="selectMigration(m)">
-                <span class="ps-list-name">{{ m.name }}</span>
+                <div class="ps-list-info">
+                  <span class="ps-list-name">{{ m.name }}</span>
+                  <span class="ps-list-meta">{{ $t('migration.from') }}: {{ baselineName(m.from_baseline) }} → {{ $t('migration.to') }}: {{ baselineName(m.to_baseline) }}</span>
+                </div>
               </li>
             </ul>
           </div>
 
-          <div class="ps-mig-editor" v-if="editingMigration">
-            <div class="ps-mig-pick">
-              <label>{{ $t('migration.from') }}
+          <!-- 未选中任何项：引导说明 -->
+          <div v-if="!isDrafting && !editingMigration" class="ps-mig-editor ps-mig-guide">
+            <div class="ps-guide-card">
+              <div class="ps-guide-icon">⇄</div>
+              <h3>{{ $t('migration.guideTitle') }}</h3>
+              <p>{{ $t('migration.guideDesc') }}</p>
+              <ol class="ps-guide-steps">
+                <li>{{ $t('migration.guideStep1') }}</li>
+                <li>{{ $t('migration.guideStep2') }}</li>
+                <li>{{ $t('migration.guideStep3') }}</li>
+              </ol>
+              <button class="btn btn-primary" @click="startNewMigration">+ {{ $t('migration.create') }}</button>
+            </div>
+          </div>
+
+          <!-- 新建迁移草稿 -->
+          <div v-else-if="isDrafting && !editingMigration" class="ps-mig-editor">
+            <div class="ps-mig-titlebar">
+              <span class="ps-mig-title">{{ $t('migration.newTitle') }}</span>
+              <button class="btn btn-sm btn-ghost" @click="cancelDraft">{{ $t('migration.cancel') }}</button>
+            </div>
+
+            <div class="ps-mig-pick ps-mig-pick-form">
+              <div class="ps-pick-field">
+                <span class="ps-pick-label">{{ $t('migration.from') }}</span>
+                <select v-model="draftFrom">
+                  <option v-for="b in store.baselines" :key="b.id" :value="b.id">{{ b.name }}</option>
+                </select>
+              </div>
+              <span class="ps-pick-arrow">→</span>
+              <div class="ps-pick-field">
+                <span class="ps-pick-label">{{ $t('migration.to') }}</span>
+                <select v-model="draftTo">
+                  <option v-for="b in store.baselines" :key="b.id" :value="b.id">{{ b.name }}</option>
+                </select>
+              </div>
+              <button class="btn btn-primary ps-pick-create"
+                :disabled="!canCreateMigration" @click="onCreateMigration">{{
+                $t('migration.create') }}</button>
+            </div>
+
+            <div v-if="store.baselines.length < 2" class="ps-mig-warn">
+              {{ $t('migration.needTwoBaselines') }}
+            </div>
+            <div v-else-if="draftFrom === draftTo" class="ps-mig-warn">
+              {{ $t('migration.sameBaseline') }}
+            </div>
+          </div>
+
+          <!-- 编辑已有迁移 -->
+          <div v-else class="ps-mig-editor">
+            <div class="ps-mig-titlebar">
+              <span class="ps-mig-title">{{ $t('migration.editTitle', { name: editingMigration.name }) }}</span>
+            </div>
+
+            <div class="ps-mig-pick ps-mig-pick-form">
+              <div class="ps-pick-field">
+                <span class="ps-pick-label">{{ $t('migration.from') }}</span>
                 <select v-model="editingMigration.from_baseline"
                   @change="draftFrom = editingMigration!.from_baseline; refreshPreview()">
                   <option v-for="b in store.baselines" :key="b.id" :value="b.id">{{ b.name }}</option>
                 </select>
-              </label>
-              <label>{{ $t('migration.to') }}
+              </div>
+              <span class="ps-pick-arrow">→</span>
+              <div class="ps-pick-field">
+                <span class="ps-pick-label">{{ $t('migration.to') }}</span>
                 <select v-model="editingMigration.to_baseline"
                   @change="draftTo = editingMigration!.to_baseline; refreshPreview()">
                   <option v-for="b in store.baselines" :key="b.id" :value="b.id">{{ b.name }}</option>
                 </select>
-              </label>
+              </div>
             </div>
 
             <div class="ps-steps">
@@ -363,6 +445,10 @@ onUnmounted(() => {
                     }}</button>
                   <button class="btn btn-sm" @click="addStep('custom_sql')">{{ $t('migration.stepCustomSql') }}</button>
                 </div>
+              </div>
+
+              <div v-if="editingMigration.steps.length === 0" class="ps-empty-sm ps-steps-empty">
+                {{ $t('migration.noSteps') }}
               </div>
 
               <div v-for="(step, idx) in editingMigration.steps" :key="idx" class="ps-step">
@@ -405,25 +491,6 @@ onUnmounted(() => {
             <button class="btn btn-danger-sm ps-del"
               @click="onDeleteMigration(editingMigration.id, editingMigration.name)">{{
                 $t('migration.delete') }}</button>
-          </div>
-
-          <div v-else class="ps-mig-editor">
-            <div class="ps-mig-pick">
-              <label>{{ $t('migration.from') }}
-                <select v-model="draftFrom">
-                  <option v-for="b in store.baselines" :key="b.id" :value="b.id">{{ b.name }}</option>
-                </select>
-              </label>
-              <label>{{ $t('migration.to') }}
-                <select v-model="draftTo">
-                  <option v-for="b in store.baselines" :key="b.id" :value="b.id">{{ b.name }}</option>
-                </select>
-              </label>
-              <button class="btn btn-sm" :disabled="!canCreateMigration" @click="onCreateMigration">{{
-                $t('migration.create')
-                }}</button>
-            </div>
-            <div class="ps-empty-sm">{{ $t('migration.empty') }}</div>
           </div>
         </div>
       </div>
@@ -535,8 +602,12 @@ onUnmounted(() => {
 }
 
 .ps-mig-list {
-  width: 200px;
+  width: 220px;
   flex-shrink: 0;
+}
+
+.ps-mig-list .btn-block {
+  margin-bottom: 12px;
 }
 
 .ps-mig-editor {
@@ -547,6 +618,74 @@ onUnmounted(() => {
   gap: 10px;
 }
 
+/* 引导 / 空白态 */
+.ps-mig-guide {
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ps-guide-card {
+  max-width: 360px;
+  text-align: center;
+  background: #fafafa;
+  border: 1px dashed #d5d5d5;
+  border-radius: 10px;
+  padding: 28px 24px;
+}
+
+.ps-guide-icon {
+  font-size: 34px;
+  color: #4a90d9;
+  margin-bottom: 8px;
+}
+
+.ps-guide-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.ps-guide-card p {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: #777;
+  line-height: 1.6;
+}
+
+.ps-guide-steps {
+  text-align: left;
+  margin: 0 0 18px;
+  padding-left: 20px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.9;
+}
+
+/* 标题栏（新建 / 编辑） */
+.ps-mig-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.ps-mig-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 选基线表单（新建 / 编辑共用） */
+.ps-mig-pick-form {
+  background: #f7f9fc;
+  border: 1px solid #e3e9f2;
+  border-radius: 8px;
+  padding: 12px;
+  align-items: flex-end;
+}
+
 .ps-mig-pick {
   display: flex;
   gap: 8px;
@@ -554,19 +693,49 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
-.ps-mig-pick label {
-  font-size: 12px;
-  color: #555;
+.ps-pick-field {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+}
+
+.ps-pick-label {
+  font-size: 11px;
+  color: #888;
+}
+
+.ps-pick-arrow {
+  color: #4a90d9;
+  font-size: 16px;
+  font-weight: 700;
+  padding-bottom: 2px;
 }
 
 .ps-mig-pick select {
-  padding: 3px 6px;
+  padding: 5px 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 12px;
+  min-width: 130px;
+}
+
+.ps-pick-create {
+  margin-left: auto;
+}
+
+/* 警告提示 */
+.ps-mig-warn {
+  font-size: 12px;
+  color: #c06a00;
+  background: #fff6e6;
+  border: 1px solid #ffd591;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+/* 步骤空态 */
+.ps-steps-empty {
+  padding: 14px;
 }
 
 .ps-steps {
@@ -706,7 +875,7 @@ onUnmounted(() => {
 }
 
 .ps-baseline-list {
-  width: 260px;
+  width: 280px;
   min-width: 260px;
   flex-shrink: 0;
   padding: 16px;

@@ -312,7 +312,7 @@
     "created": "基线已创建：{name}",
     "delete": "删除基线",
     "deleteConfirm": "确认删除基线「{name}」？",
-    "empty": "暂无基线 — 创建首个基线后将延迟生成 field_id / table_id / schema_id",
+    "empty": "暂无基线",
     "list": "基线列表",
     "createdAt": "创建时间",
     "diffFrom": "对比来源",
@@ -357,7 +357,18 @@
     "postgresqlSql": "PostgreSQL SQL",
     "preview": "DDL 预览",
     "save": "保存",
-    "empty": "暂无迁移脚本"
+    "empty": "暂无迁移脚本",
+    "guideTitle": "创建迁移脚本",
+    "guideDesc": "迁移脚本描述两个基线之间的结构差异，可附加数据转换步骤。",
+    "guideStep1": "点击「+ 创建迁移」选择源基线与目标基线",
+    "guideStep2": "添加步骤（如自动结构 diff、SQL 变换等）",
+    "guideStep3": "保存并预览生成的 DDL",
+    "newTitle": "新建迁移脚本",
+    "editTitle": "编辑：{name}",
+    "cancel": "取消",
+    "needTwoBaselines": "至少需要 2 个基线才能创建迁移，请先到「基线」页创建基线。",
+    "sameBaseline": "源基线与目标基线不能相同。",
+    "noSteps": "暂无步骤，点击上方按钮添加。"
   },
   "toast": {
     "skipping": "跳过 {name}：格式无效",

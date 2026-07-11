@@ -49,3 +49,19 @@
   padding: 2px 8px;
   font-size: 11px;
 }
+
+.btn-block {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: #ccc;
+  color: #666;
+}
+
+.btn-ghost:hover {
+  background: #f0f0f0;
+  border-color: #aaa;
+}

@@ -312,7 +312,7 @@
     "created": "Baseline created: {name}",
     "delete": "Delete baseline",
     "deleteConfirm": "Delete baseline \"{name}\"?",
-    "empty": "No baselines yet — field_id / table_id / schema_id are generated lazily on first baseline",
+    "empty": "No baselines yet",
     "list": "Baseline list",
     "createdAt": "Created at",
     "diffFrom": "From",
@@ -357,7 +357,18 @@
     "postgresqlSql": "PostgreSQL SQL",
     "preview": "DDL preview",
     "save": "Save",
-    "empty": "No migration scripts yet"
+    "empty": "No migration scripts yet",
+    "guideTitle": "Create migration script",
+    "guideDesc": "A migration script describes the structural diff between two baselines, with optional data-transform steps.",
+    "guideStep1": "Click \"+ Create migration\" and pick the source & target baselines",
+    "guideStep2": "Add steps (e.g. auto structure diff, SQL transform)",
+    "guideStep3": "Save and preview the generated DDL",
+    "newTitle": "New migration script",
+    "editTitle": "Edit: {name}",
+    "cancel": "Cancel",
+    "needTwoBaselines": "At least 2 baselines are required to create a migration. Create baselines in the \"Baseline\" tab first.",
+    "sameBaseline": "Source and target baselines must differ.",
+    "noSteps": "No steps yet. Click the buttons above to add one."
   },
   "toast": {
     "skipping": "Skipping {name}: invalid format",
