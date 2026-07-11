@@ -342,6 +342,7 @@ onUnmounted(() => {
   font-family: inherit;
   cursor: pointer;
   appearance: auto;
+  user-select: none;
 }
 
 .locale-select:hover {

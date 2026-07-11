@@ -4,8 +4,6 @@ import { useI18n } from 'vue-i18n'
 import type {
   CommonConfig,
   Schema,
-  Table,
-  Field,
   InitialData,
 } from '@/types/schema'
 import {
@@ -39,12 +37,6 @@ import { checkVersion } from '@/utils/structure-migrations/version-utils'
 import { runStructureMigrations } from '@/utils/structure-migrations'
 import {
   CommandManager,
-  affectedTable,
-  affectedInitialData,
-  affectedSchema,
-  affectedDatabase,
-  affectedCommon,
-  affectedSql,
   mergeAffectedFiles,
   type Command,
   type AffectedFile,
@@ -66,8 +58,6 @@ import type {
   BaselineSummary,
   BaselineSnapshot,
   Migration,
-  MigrationDdlPreview,
-  StructureDiff,
 } from '@/core/baseline/types'
 
 export const useEditorStore = defineStore('editor', () => {

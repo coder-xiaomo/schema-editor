@@ -13,7 +13,7 @@ const store = useEditorStore()
   <div class="ps-root">
     <!-- 最左侧：VSCode 风格的页面切换列 -->
     <div class="ps-rail">
-      <div class="ps-rail-title">{{ $t('settings.title') }}</div>
+      <!-- <div class="ps-rail-title">{{ $t('settings.title') }}</div> -->
       <button class="ps-rail-item" :class="{ active: store.settingsTab === 'global' }"
         @click="store.selectSettingsTab('global')">{{ $t('settings.tabs.global') }}</button>
       <button class="ps-rail-item" :class="{ active: store.settingsTab === 'structure' }"
@@ -61,12 +61,13 @@ const store = useEditorStore()
   height: 100%;
   background: #fff;
   overflow: hidden;
+  user-select: none;
 }
 
 /* 最左侧：VSCode 风格页面切换列 */
 .ps-rail {
-  width: 140px;
-  min-width: 140px;
+  width: calc(200px * 0.618);
+  min-width: calc(200px * 0.618);
   background: #f3f3f3;
   border-right: 1px solid #e0e0e0;
   display: flex;
@@ -137,6 +138,7 @@ const store = useEditorStore()
   flex: 1;
   min-width: 0;
   overflow: auto;
+  padding: 16px;
 }
 
 .ps-empty {
