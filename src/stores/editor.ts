@@ -19,12 +19,14 @@ import {
   writeDatabaseToHandle,
   writeSchemaJsonToHandle,
   writeTableToHandle,
-  writeInitialDataToNewStructure,
   deleteTableDirFromHandle,
   deleteSchemaDirFromHandle,
   pruneTableDirsFromHandle,
-  deleteInitialDataFromNewStructure,
 } from '@/utils/file-helpers'
+import {
+  writeInitialDataToNewStructure,
+  deleteInitialDataFromNewStructure,
+} from '@/utils/initial-data-io'
 import {
   generateSchemaMySQL,
   generateInitialDataAllMySQL,
