@@ -784,25 +784,36 @@ export const useEditorStore = defineStore('editor', () => {
         })
       }
       // 每 schema 目录 + 每表目录
-      for (const schema of schemas) {
+      const schemaWriteTasks = schemas.map(async (schema) => {
         const tableNames = schema.tables.map(t => t.name)
         // 先清理磁盘上已失效的旧表目录（如改名后残留的旧 table.json 目录），避免脏数据累积
+        // prune 必须在同 schema 的 table 写入前完成（同目录操作，不能并发）
         await pruneTableDirsFromHandle(rootDirHandle.value, schema.schema, tableNames)
         const tableOrder = tableNames
-        await writeSchemaJsonToHandle(rootDirHandle.value, schema.schema, {
-          schema: schema.schema,
-          table_order: tableOrder,
-        })
+        const promiseList = []
+        promiseList.push(
+          writeSchemaJsonToHandle(rootDirHandle.value, schema.schema, {
+            schema: schema.schema,
+            table_order: tableOrder,
+          }),
+        )
         for (const table of schema.tables) {
-          await writeTableToHandle(rootDirHandle.value, schema.schema, buildTableExportData(table))
+          promiseList.push(
+            writeTableToHandle(rootDirHandle.value, schema.schema, buildTableExportData(table)),
+          )
         }
-      }
-      // 同时生成 SQL 到 output 目录
-      await syncSqlToOutput()
-      // 同步 initial-data 文件
-      await syncInitialDataToDisk()
-      // 同步 AI JSON 结构指南（生成/更新或删除，取决于全局开关）
-      await syncAiGuideToDisk()
+        await Promise.all(promiseList)
+      })
+
+      await Promise.all([
+        ...schemaWriteTasks,
+        // 同时生成 SQL 到 output 目录
+        syncSqlToOutput(),
+        // 同步 initial-data 文件
+        syncInitialDataToDisk(),
+        // 同步 AI JSON 结构指南（生成/更新或删除，取决于全局开关）
+        syncAiGuideToDisk(),
+      ])
     } catch (e) {
       console.error('Auto-sync failed:', e)
       showToast(t('toast.failedSaveChanges'))
