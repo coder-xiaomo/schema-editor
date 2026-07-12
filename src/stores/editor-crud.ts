@@ -1538,7 +1538,8 @@ export function createCrudActions(deps: CrudDeps) {
           if (field.field_scale !== undefined) f.field_scale = field.field_scale
         }
         if (field.not_null !== undefined) f.not_null = field.not_null
-        if (field.primary_key !== undefined) f.primary_key = field.primary_key
+        // primary_key：仅当为 true 时写出（false/undefined 视为默认，省略该属性，精简 JSON）
+        if (field.primary_key === true) f.primary_key = true
         if (field.default !== undefined) f.default = field.default
         // 仅自定义类型字段导出 quote_default（统一类型字段从类型定义中获取）
         if (!field.unified_type && field.quote_default !== undefined) f.quote_default = field.quote_default
