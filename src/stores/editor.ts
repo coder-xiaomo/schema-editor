@@ -14,6 +14,7 @@ import {
   // ===== 新结构（current/）读写 =====
   openProjectFolderNew,
   isNewStructure,
+  isEmptyFolder,
   writeDatabaseToHandle,
   writeSchemaJsonToHandle,
   writeTableToHandle,
@@ -236,6 +237,14 @@ export const useEditorStore = defineStore('editor', () => {
 
     const isNew = await isNewStructure(rootHandle)
     if (isNew) {
+      await _loadNewStructure(rootHandle)
+      return
+    }
+
+    // 空文件夹：视作全新项目，直接以新结构初始化（写入默认 common.json），不提示升级
+    if (await isEmptyFolder(rootHandle)) {
+      const defaultCommon = _createDefaultCommonConfig()
+      await writeCommonToHandle(rootHandle, defaultCommon)
       await _loadNewStructure(rootHandle)
       return
     }

@@ -160,6 +160,17 @@ export async function isNewStructure(rootHandle: FileSystemDirectoryHandle): Pro
 }
 
 /**
+ * 判断根目录是否为空文件夹（无任何条目）。
+ * 空文件夹视为「全新项目」，应直接初始化为新结构，而非提示升级旧结构。
+ */
+export async function isEmptyFolder(rootHandle: FileSystemDirectoryHandle): Promise<boolean> {
+  for await (const _entry of rootHandle.values()) {
+    return false
+  }
+  return true
+}
+
+/**
  * 打开新结构项目：读取 current/database.json + 各 table.json + 各 initial-data.json。
  * 调用前不要求 current/ 已存在——若没有则返回一个空项目骨架（由调用方后续写盘创建）。
  */
