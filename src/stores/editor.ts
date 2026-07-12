@@ -987,6 +987,7 @@ export const useEditorStore = defineStore('editor', () => {
     moveSchema,
     addSchema,
     deleteSchema,
+    copySchema,
     renameSchema,
     selectTable,
     selectCommonConfig,
@@ -995,6 +996,7 @@ export const useEditorStore = defineStore('editor', () => {
     addTable,
     renameTable,
     deleteTable,
+    copyTable,
     moveTable,
     moveTableToSchema,
     isCommonField,
@@ -1206,12 +1208,14 @@ export const useEditorStore = defineStore('editor', () => {
     // Schema CRUD
     addSchema,
     deleteSchema,
+    copySchema,
     renameSchema,
     moveSchema,
 
     // Table CRUD
     addTable,
     deleteTable,
+    copyTable,
     renameTable,
     moveTable,
     moveTableToSchema,

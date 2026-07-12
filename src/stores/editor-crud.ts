@@ -11,7 +11,7 @@ import {
   type Command,
   type AffectedFile,
 } from '@/core/history/command'
-import { newFieldId, newTableId, newSchemaId, newIndexId } from '@/core/ids'
+import { newFieldId, newTableId, newSchemaId, newIndexId, newInitialDataId } from '@/core/ids'
 import { sanitizeName } from '@/core/workspace/layout'
 import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
@@ -443,6 +443,158 @@ export function createCrudActions(deps: CrudDeps) {
       }
     }
     showToast(t('toast.tableDeleted'))
+  }
+
+  // ===== 复制表 / 复制 Schema =====
+
+  /** 生成一个在目标 schema 内不重名的副本名称（追加 _copy / _copy2 …） */
+  function uniqueTableName(schema: Schema, baseName: string): string {
+    let candidate = `${baseName}_copy`
+    let n = 2
+    while (schema.tables.some(t => t.name === candidate)) {
+      candidate = `${baseName}_copy${n}`
+      n++
+    }
+    return candidate
+  }
+
+  /** 深拷贝表，并为所有子对象重新生成唯一 id（table_id / field_id / index_id） */
+  function cloneTableWithNewIds(table: Table, newName: string): Table {
+    const clone: Table = JSON.parse(JSON.stringify(table))
+    clone.name = newName
+    clone.table_id = newTableId()
+    for (const f of clone.fields) {
+      if (f.field_id !== undefined) f.field_id = newFieldId()
+    }
+    for (const idx of clone.indexes) {
+      if (idx.index_id !== undefined) idx.index_id = newIndexId()
+    }
+    return clone
+  }
+
+  /** 深拷贝初始数据，并为每行重新生成 initial_data_id */
+  function cloneInitialDataWithNewIds(data: InitialData): InitialData {
+    const clone: InitialData = JSON.parse(JSON.stringify(data))
+    if (clone.rows) {
+      for (const row of clone.rows) {
+        if (row.initial_data_id !== undefined) row.initial_data_id = newInitialDataId()
+      }
+    }
+    return clone
+  }
+
+  /** 复制表到同一 schema（新名称 + 全新 id），并一并复制其初始数据 */
+  function copyTable(schemaIdx: number, tableIdx: number) {
+    const schema = schemas[schemaIdx]
+    if (!schema) return
+    const table = schema.tables[tableIdx]
+    if (!table) return
+
+    const newName = uniqueTableName(schema, table.name)
+    const cloned = cloneTableWithNewIds(table, newName)
+
+    // 源表是否有初始数据需要一并复制
+    const srcKey = initialDataKey(schema.schema, table.name)
+    const srcData = initialDataMap.has(srcKey) ? initialDataMap.get(srcKey)! : undefined
+    const newKey = initialDataKey(schema.schema, newName)
+
+    executeCommand({
+      label: t('history.copyTable', { name: newName }),
+      apply() {
+        schema.tables.splice(tableIdx + 1, 0, cloned)
+        if (srcData) {
+          initialDataMap.set(newKey, cloneInitialDataWithNewIds(srcData))
+        }
+      },
+      revert() {
+        const idx = schema.tables.indexOf(cloned)
+        if (idx >= 0) schema.tables.splice(idx, 1)
+        if (srcData) {
+          initialDataMap.delete(newKey)
+        }
+      },
+      affectedFiles() {
+        const files: AffectedFile[] = [
+          affectedSchema(schema.schema),
+          affectedTable(schema.schema, newName),
+          affectedSql(),
+        ]
+        if (srcData) files.push(affectedInitialData(schema.schema, newName))
+        return files
+      },
+    })
+
+    // 选中新复制的表
+    selectTable(schemaIdx, tableIdx + 1)
+    showToast(t('toast.tableCopied', { name: newName }))
+  }
+
+  /** 生成一个不重名的 schema 副本名称（追加 _copy / _copy2 …） */
+  function uniqueSchemaName(baseName: string): string {
+    let candidate = `${baseName}_copy`
+    let n = 2
+    while (schemas.some(s => s.schema === candidate)) {
+      candidate = `${baseName}_copy${n}`
+      n++
+    }
+    return candidate
+  }
+
+  /** 复制整个 schema（含所有表与初始数据），全部重新生成唯一 id */
+  function copySchema(schemaIdx: number) {
+    const schema = schemas[schemaIdx]
+    if (!schema) return
+
+    const newSchemaName = uniqueSchemaName(schema.schema)
+    const newSchema: Schema = {
+      schema: newSchemaName,
+      schema_id: newSchemaId(),
+      tables: schema.tables.map(t => cloneTableWithNewIds(t, t.name)),
+    }
+
+    // 收集源 schema 下所有表的初始数据
+    const srcDataList = schema.tables
+      .map(t => {
+        const key = initialDataKey(schema.schema, t.name)
+        return initialDataMap.has(key) ? { name: t.name, data: initialDataMap.get(key)! } : null
+      })
+      .filter((x): x is { name: string; data: InitialData } => x !== null)
+
+    executeCommand({
+      label: t('history.copySchema', { name: newSchemaName }),
+      apply() {
+        schemas.splice(schemaIdx + 1, 0, newSchema)
+        syncSchemaOrder()
+        for (const item of srcDataList) {
+          const key = initialDataKey(newSchemaName, item.name)
+          initialDataMap.set(key, cloneInitialDataWithNewIds(item.data))
+        }
+      },
+      revert() {
+        const idx = schemas.indexOf(newSchema)
+        if (idx >= 0) schemas.splice(idx, 1)
+        syncSchemaOrder()
+        for (const item of srcDataList) {
+          const key = initialDataKey(newSchemaName, item.name)
+          initialDataMap.delete(key)
+        }
+      },
+      affectedFiles() {
+        const files: AffectedFile[] = [
+          affectedDatabase(),
+          affectedSchema(newSchemaName),
+          affectedSql(),
+        ]
+        for (const item of srcDataList) {
+          files.push(affectedInitialData(newSchemaName, item.name))
+        }
+        return files
+      },
+    })
+
+    selectedSchemaIdx.value = schemaIdx + 1
+    selectedTableIdx.value = newSchema.tables.length > 0 ? 0 : -1
+    showToast(t('toast.schemaCopied', { name: newSchemaName }))
   }
 
   /** 拖拽调整同一个 schema 下表的顺序 */
@@ -1600,6 +1752,7 @@ export function createCrudActions(deps: CrudDeps) {
     moveSchema,
     addSchema,
     deleteSchema,
+    copySchema,
     renameSchema,
     selectTable,
     selectCommonConfig,
@@ -1608,6 +1761,7 @@ export function createCrudActions(deps: CrudDeps) {
     addTable,
     renameTable,
     deleteTable,
+    copyTable,
     moveTable,
     moveTableToSchema,
     isCommonField,

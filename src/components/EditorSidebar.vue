@@ -3,6 +3,7 @@ import { ref, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import ImportIcon from './icon/ImportIcon.vue'
+import CopyIcon from './icon/CopyIcon.vue'
 
 const store = useEditorStore()
 const { t } = useI18n()
@@ -230,6 +231,9 @@ function handleRenameSchema(sIdx: number) {
           <span class="schema-action-btn" @click.stop="handleRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">
             <span style="transform: scaleX(-1); display: inline-block;">&#9998;</span>
           </span>
+          <span class="schema-action-btn copy-schema-btn" @click.stop="store.copySchema(sIdx)" :title="$t('sidebar.copySchema')">
+            <CopyIcon />
+          </span>
           <span class="schema-action-btn schema-action-delete" @click.stop="store.deleteSchema(sIdx)" :title="$t('sidebar.deleteSchema')">&times;</span>
           <span class="add-table-btn" @click.stop="store.addTable(sIdx)" :title="$t('sidebar.addTable')">+</span>
           <span class="schema-table-count">{{ schema.tables.length }}</span>
@@ -251,6 +255,9 @@ function handleRenameSchema(sIdx: number) {
           <span class="sidebar-icon">&#9679;</span>
           <span class="table-name">{{ table.name }}</span>
           <span v-if="table.comment" class="table-comment" :title="table.comment">{{ table.comment }}</span>
+          <span class="copy-table-btn" @click.stop="store.copyTable(sIdx, tIdx)" :title="$t('sidebar.copyTable')">
+            <CopyIcon />
+          </span>
           <span class="delete-btn" @click.stop="store.deleteTable(sIdx, tIdx)" :title="$t('sidebar.deleteTable')">&times;</span>
         </div>
         <!-- 尾部 drop 区域：拖到当前 schema 最后一个表之后 -->
@@ -480,6 +487,38 @@ function handleRenameSchema(sIdx: number) {
 }
 .add-table-btn {
   color: var(--success);
+}
+
+/* 复制按钮（表 / schema）：默认隐藏，hover 时显示 */
+.copy-table-btn {
+  opacity: 0;
+  cursor: pointer;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+.sidebar-item:hover .copy-table-btn {
+  opacity: 0.6;
+}
+.copy-table-btn:hover {
+  opacity: 1;
+}
+
+.schema-item .copy-schema-btn {
+  opacity: 0;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 2px;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+}
+.schema-item:hover .copy-schema-btn {
+  opacity: 0.6;
+}
+.schema-item .copy-schema-btn:hover {
+  opacity: 1;
 }
 
 /* ===== Drag-and-Drop ===== */

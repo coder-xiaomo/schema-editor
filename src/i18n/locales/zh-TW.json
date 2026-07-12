@@ -27,6 +27,8 @@
     "deleteSchema": "刪除 Schema",
     "renameSchema": "重新命名 Schema",
     "moveSchema": "移動 Schema",
+    "copySchema": "複製 Schema",
+    "copyTable": "複製資料表",
     "editCommonFields": "編輯公共欄位參照",
     "editField": "編輯欄位",
     "renameField": "重新命名欄位",
@@ -91,6 +93,8 @@
     "deleteSchema": "刪除 Schema",
     "addTable": "新增表",
     "deleteTable": "刪除表",
+    "copyTable": "複製資料表",
+    "copySchema": "複製 Schema",
     "prompt": {
       "schemaName": "Schema 名稱：",
       "newName": "新名稱："
@@ -389,6 +393,8 @@
     "schemaCreated": "Schema 已建立",
     "schemaDeleted": "Schema 已刪除",
     "schemaRenamed": "Schema 已重新命名",
+    "schemaCopied": "Schema 已複製：{name}",
+    "tableCopied": "資料表已複製：{name}",
     "tableAdded": "表已新增",
     "tableDeleted": "表已刪除",
     "tableExists": "表 \"{name}\" 已存在",

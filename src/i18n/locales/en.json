@@ -27,6 +27,8 @@
     "deleteSchema": "Delete Schema",
     "renameSchema": "Rename Schema",
     "moveSchema": "Move Schema",
+    "copySchema": "Copy Schema",
+    "copyTable": "Copy Table",
     "editCommonFields": "Edit Common Field Refs",
     "editField": "Edit Field",
     "renameField": "Rename Field",
@@ -91,6 +93,8 @@
     "deleteSchema": "Delete schema",
     "addTable": "Add table",
     "deleteTable": "Delete table",
+    "copyTable": "Copy table",
+    "copySchema": "Copy schema",
     "prompt": {
       "schemaName": "Schema name:",
       "newName": "New name:"
@@ -389,6 +393,8 @@
     "schemaCreated": "Schema created",
     "schemaDeleted": "Schema deleted",
     "schemaRenamed": "Schema renamed",
+    "schemaCopied": "Schema copied: {name}",
+    "tableCopied": "Table copied: {name}",
     "tableAdded": "Table added",
     "tableDeleted": "Table deleted",
     "tableExists": "Table \"{name}\" already exists",
