@@ -289,8 +289,8 @@ function handleRenameSchema(sIdx: number) {
 <style scoped>
 /* ===== Left Sidebar ===== */
 .sidebar {
-  width: 250px;
-  min-width: 250px;
+  width: var(--sidebar-width, 250px);
+  min-width: var(--sidebar-width, 250px);
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
@@ -329,6 +329,8 @@ function handleRenameSchema(sIdx: number) {
   border-radius: var(--radius-sm);
   transition: background .12s ease, color .12s ease;
   user-select: none;
+  position: relative;
+  --row-hover-bg: var(--surface-3);
 }
 
 .sidebar-item:hover {
@@ -337,6 +339,7 @@ function handleRenameSchema(sIdx: number) {
 
 .sidebar-item.active,
 .schema-item.active {
+  --row-hover-bg: var(--accent-subtle);
   background: var(--accent-subtle);
   color: var(--accent-active);
   font-weight: 600;
@@ -370,7 +373,11 @@ function handleRenameSchema(sIdx: number) {
 }
 
 .table-name {
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .table-comment {
@@ -393,9 +400,34 @@ function handleRenameSchema(sIdx: number) {
   flex-shrink: 0;
 }
 
-.sidebar-item .delete-btn {
-  margin-left: auto;
+/* 表项操作按钮：默认不占布局空间，hover 时右侧淡入，并以渐变过渡 */
+/* 渐变从第一个按钮（复制）的左边缘开始变为纯色，文字一侧为透明过渡 */
+.sidebar-item.table-item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 0;
+  pointer-events: none;
   opacity: 0;
+  background: linear-gradient(to right, transparent, var(--row-hover-bg) 38%);
+  transition: opacity .12s ease;
+}
+
+.sidebar-item.table-item:hover::after {
+  opacity: 1;
+}
+
+.sidebar-item .delete-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
   color: var(--danger);
   cursor: pointer;
   font-size: 11px;
@@ -403,6 +435,7 @@ function handleRenameSchema(sIdx: number) {
 
 .sidebar-item:hover .delete-btn {
   opacity: 0.6;
+  pointer-events: auto;
 }
 
 .sidebar-item .delete-btn:hover {
@@ -417,6 +450,12 @@ function handleRenameSchema(sIdx: number) {
   border-radius: var(--radius-sm);
   font-size: 11px;
   font-weight: 500;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  flex-shrink: 1;
 }
 
 /* ===== Scrollbar ===== */
@@ -458,66 +497,89 @@ function handleRenameSchema(sIdx: number) {
   color: var(--accent-hover);
 }
 
+/* Schema 项操作区：默认不占布局空间，hover 时右侧淡入，并以渐变过渡 */
+/* 渐变从第一个按钮（重命名）的左边缘开始变为纯色，文字一侧为透明过渡 */
+.sidebar-item.schema-item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 118px;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to right, transparent, var(--row-hover-bg) 20%);
+  transition: opacity .12s ease;
+}
+
+.sidebar-item.schema-item:hover::after {
+  opacity: 1;
+}
+
 .schema-table-count {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
   font-size: 10px;
   color: #aaa;
 }
 
 .schema-item .schema-action-btn,
-.schema-item .add-table-btn {
+.schema-item .add-table-btn,
+.schema-item .copy-schema-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
   opacity: 0;
+  pointer-events: none;
   cursor: pointer;
   font-size: 11px;
-  margin-left: 2px;
+  margin-left: 0;
 }
+
+/* 从右到左排列：计数 / 加表 / 删除 / 复制 / 重命名 */
+.schema-item .schema-table-count { right: 8px; }
+.schema-item .add-table-btn { right: 26px; color: var(--success); }
+.schema-item .schema-action-delete { right: 44px; color: var(--danger); }
+.schema-item .copy-schema-btn { right: 62px; color: var(--accent); display: inline-flex; align-items: center; }
+.schema-item .schema-action-btn:not(.schema-action-delete) { right: 80px; color: var(--accent); }
+
 .schema-item:hover .schema-action-btn,
-.schema-item:hover .add-table-btn {
+.schema-item:hover .add-table-btn,
+.schema-item:hover .copy-schema-btn {
   opacity: 0.6;
+  pointer-events: auto;
 }
 .schema-item .schema-action-btn:hover,
-.schema-item .add-table-btn:hover {
+.schema-item .add-table-btn:hover,
+.schema-item .copy-schema-btn:hover {
   opacity: 1;
 }
 
-.schema-action-btn {
-  color: var(--accent);
-}
-.schema-action-delete {
-  color: var(--danger);
-}
-.add-table-btn {
-  color: var(--success);
-}
-
-/* 复制按钮（表 / schema）：默认隐藏，hover 时显示 */
-.copy-table-btn {
+/* 复制按钮（表项）：默认隐藏，hover 时淡入，位于删除按钮左侧 */
+.sidebar-item.table-item .copy-table-btn {
+  position: absolute;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
   opacity: 0;
+  pointer-events: none;
+  margin-left: 0;
   cursor: pointer;
   color: var(--accent);
   display: inline-flex;
   align-items: center;
-  margin-left: 8px;
 }
 .sidebar-item:hover .copy-table-btn {
   opacity: 0.6;
+  pointer-events: auto;
 }
 .copy-table-btn:hover {
-  opacity: 1;
-}
-
-.schema-item .copy-schema-btn {
-  opacity: 0;
-  cursor: pointer;
-  font-size: 11px;
-  margin-left: 2px;
-  color: var(--accent);
-  display: inline-flex;
-  align-items: center;
-}
-.schema-item:hover .copy-schema-btn {
-  opacity: 0.6;
-}
-.schema-item .copy-schema-btn:hover {
   opacity: 1;
 }
 
