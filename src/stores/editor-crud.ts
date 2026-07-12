@@ -17,6 +17,7 @@ import { getDialectSubConfig } from '@/utils/dialect-resolver'
 import { resolveFieldTypeForDialect } from '@/utils/sql-generator/shared'
 import { formatIndexColumn } from '@/utils/index-column-utils'
 import { parseFieldLengthInput } from '@/utils/file-helpers'
+import { confirmDialog } from '@/composables/useConfirm'
 
 export interface CrudDeps {
   schemas: Schema[]
@@ -153,10 +154,10 @@ export function createCrudActions(deps: CrudDeps) {
     showToast(t('toast.schemaCreated'))
   }
 
-  function deleteSchema(schemaIdx: number) {
+  async function deleteSchema(schemaIdx: number) {
     const schema = schemas[schemaIdx]
     if (!schema) return
-    if (!confirm(t('confirm.deleteSchema', { name: schema.schema }))) return
+    if (!(await confirmDialog({ title: t('confirm.title'), message: t('confirm.deleteSchema', { name: schema.schema }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
 
     // 记录该 schema 下各表的 initial-data 状态，便于 revert 恢复
     const removedInitialData: { key: string; data: InitialData }[] = []
@@ -399,7 +400,7 @@ export function createCrudActions(deps: CrudDeps) {
     const schema = schemas[schemaIdx]
     if (!schema) return
     const tableName = schema.tables[tableIdx]?.name
-    if (!confirm(t('confirm.deleteTable', { name: tableName }))) return
+    if (!(await confirmDialog({ title: t('confirm.title'), message: t('confirm.deleteTable', { name: tableName }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
 
     const removedTable = schema.tables[tableIdx]
     if (!removedTable) return
@@ -1013,10 +1014,10 @@ export function createCrudActions(deps: CrudDeps) {
     showToast(t('toast.fieldAdded'))
   }
 
-  function deleteField(table: Table, fieldIdx: number) {
+  async function deleteField(table: Table, fieldIdx: number) {
     const fieldName = table.fields[fieldIdx]?.field_name
     // 空字段名直接删除，不限确认
-    if (fieldName && !confirm(t('confirm.deleteField', { name: fieldName }))) return
+    if (fieldName && !(await confirmDialog({ title: t('confirm.title'), message: t('confirm.deleteField', { name: fieldName }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
 
     const removed = table.fields[fieldIdx]
     if (!removed) return
@@ -1213,8 +1214,8 @@ export function createCrudActions(deps: CrudDeps) {
     showToast(t('toast.indexAdded'))
   }
 
-  function deleteIndex(table: Table, indexIdx: number) {
-    if (!confirm(t('confirm.deleteIndex'))) return
+  async function deleteIndex(table: Table, indexIdx: number) {
+    if (!(await confirmDialog({ title: t('confirm.title'), message: t('confirm.deleteIndex'), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
     const removed = table.indexes[indexIdx]
     if (!removed) return
     executeCommand({

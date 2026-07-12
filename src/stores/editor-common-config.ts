@@ -2,6 +2,7 @@ import type { Ref } from 'vue'
 import type { CommonConfig, Schema, Field, UnifiedTypeDefinition, TypeCaseMode, TableDdlMode } from '@/types/schema'
 import { affectedCommon, affectedSql, type Command } from '@/core/history/command'
 import type { SqlDialect } from '@/utils/sql-generator/shared'
+import { confirmDialog } from '@/composables/useConfirm'
 
 export interface CommonConfigDeps {
   commonConfig: Ref<CommonConfig | null>
@@ -244,7 +245,7 @@ export function createCommonConfigActions(deps: CommonConfigDeps) {
     showToast(t('toast.commonFieldAdded'))
   }
 
-  function deleteCommonUsedField(name: string) {
+  async function deleteCommonUsedField(name: string) {
     if (!commonConfig.value) return
     if (!commonConfig.value.common_used_fields[name]) return
     // 检查是否有表正在引用此 common field
@@ -257,9 +258,7 @@ export function createCommonConfigActions(deps: CommonConfigDeps) {
       }
     }
     if (referencingTables.length > 0) {
-      if (!confirm(
-        t('confirm.deleteCommonField', { name, refs: referencingTables.join('\n') })
-      )) return
+      if (!(await confirmDialog({ title: t('confirm.title'), message: t('confirm.deleteCommonField', { name, refs: referencingTables.join('\n') }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
     }
     const deletedField = { ...commonConfig.value.common_used_fields[name] }
     const hadOrder = commonConfig.value.common_used_field_order !== undefined

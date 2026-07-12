@@ -67,6 +67,7 @@ import type {
   VersionSnapshot,
   Migration,
 } from '@/core/version/types'
+import { confirmDialog, alertDialog } from '@/composables/useConfirm'
 
 export const useEditorStore = defineStore('editor', () => {
   const { t } = useI18n()
@@ -188,7 +189,6 @@ export const useEditorStore = defineStore('editor', () => {
   // ===== Open Project Folder =====
 
   /** 升级确认弹窗状态（打开旧结构项目时由用户手动触发迁移） */
-  const showUpgradeModal = ref(false)
   const pendingUpgradeRootHandle = ref<any>(null)
   /** 全局加载遮罩：升级旧结构 / 打开项目加载期间展示，全局唯一实例 */
   const overlayVisible = ref(false)
@@ -198,7 +198,7 @@ export const useEditorStore = defineStore('editor', () => {
   async function openProject() {
     if (!isFileSystemAccessSupported()) {
       // showToast(t('toast.browserNotSupported'))
-      alert(t('toast.browserNotSupported'))
+      await alertDialog({ title: t('alertTitle'), message: t('toast.browserNotSupported') })
       return
     }
     try {
@@ -216,7 +216,7 @@ export const useEditorStore = defineStore('editor', () => {
   /** 接收拖入的文件夹 handle 直接打开项目（跳过目录选择器） */
   async function openProjectFromHandle(handle: FileSystemDirectoryHandle) {
     if (!isFileSystemAccessSupported()) {
-      alert(t('toast.browserNotSupported'))
+      await alertDialog({ title: t('alertTitle'), message: t('toast.browserNotSupported') })
       return
     }
     try {
@@ -251,14 +251,23 @@ export const useEditorStore = defineStore('editor', () => {
 
     // 旧结构：弹升级确认窗，未确认不加载（也不允许编辑）
     pendingUpgradeRootHandle.value = rootHandle
-    showUpgradeModal.value = true
+    const upgraded = await confirmDialog({
+      title: t('upgrade.title'),
+      message: t('upgrade.message'),
+      confirmText: t('upgrade.confirm'),
+      cancelText: t('upgrade.cancel'),
+    })
+    if (upgraded) {
+      await confirmUpgradeStructure()
+    } else {
+      cancelUpgradeStructure()
+    }
   }
 
   /** 用户确认升级：迁移旧结构到新结构，然后加载 */
   async function confirmUpgradeStructure() {
     const rootHandle = pendingUpgradeRootHandle.value
     if (!rootHandle) return
-    showUpgradeModal.value = false
     pendingUpgradeRootHandle.value = null
     overlayText.value = t('upgrade.loading')
     overlayVisible.value = true
@@ -274,7 +283,6 @@ export const useEditorStore = defineStore('editor', () => {
 
   /** 取消升级：关闭项目，返回空状态（不再保留旧结构打开态，不弹关闭提示） */
   function cancelUpgradeStructure() {
-    showUpgradeModal.value = false
     pendingUpgradeRootHandle.value = null
     closeProject(true)
   }
@@ -408,7 +416,7 @@ export const useEditorStore = defineStore('editor', () => {
     // 版本检查
     const versionResult = checkVersion(cc)
     if (!versionResult.ok) {
-      alert(versionResult.error)
+      await alertDialog({ title: t('alertTitle'), message: versionResult.error ?? '' })
       return false
     }
     if (versionResult.needsUpgrade) {
@@ -477,7 +485,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     const versionResult = checkVersion(oldCommon)
     if (!versionResult.ok) {
-      alert(versionResult.error)
+      await alertDialog({ title: t('alertTitle'), message: versionResult.error ?? '' })
       return
     }
     if (!versionResult.needsUpgrade) {
@@ -585,9 +593,9 @@ export const useEditorStore = defineStore('editor', () => {
         if (_popupDebounceTimer) clearTimeout(_popupDebounceTimer)
         _popupDebounceTimer = setTimeout(() => {
           if (_writeDepth > 0 || _reloading || !projectOpened.value) return
-          if (confirm(t('toast.diskFileChanged'))) {
-            reloadFromDisk()
-          }
+          confirmDialog({ title: t('confirm.title'), message: t('toast.diskFileChanged'), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }).then((ok) => {
+            if (ok) reloadFromDisk()
+          })
         }, 400)
       })
 
@@ -1179,7 +1187,6 @@ export const useEditorStore = defineStore('editor', () => {
     closeProject,
     reloadFromDisk,
     syncAllToDisk,
-    showUpgradeModal,
     overlayVisible,
     overlayText,
     confirmUpgradeStructure,

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import type { Field } from '@/types/schema'
 import { displayFieldLength, displayFieldScale, displayDefault, parseDefaultInput, parseFieldLengthInput, parseFieldScaleInput } from '@/utils/file-helpers'
+import { confirmDialog } from '@/composables/useConfirm'
 
 const store = useEditorStore()
 const { t } = useI18n()
@@ -160,7 +161,7 @@ function onCommonFieldDropTail(e: DragEvent) {
 }
 
 // ===== Delete =====
-function handleDelete(name: string) {
+async function handleDelete(name: string) {
   const refs: string[] = []
   for (const schema of store.schemas) {
     for (const table of schema.tables) {
@@ -170,9 +171,7 @@ function handleDelete(name: string) {
     }
   }
   if (refs.length > 0) {
-    if (!confirm(
-      t('confirm.deleteCommonField', { name, refs: refs.join('\n') })
-    )) return
+    if (!(await confirmDialog({ title: t('confirm.title'), message: t('confirm.deleteCommonField', { name, refs: refs.join('\n') }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
   }
   localFields.value = localFields.value.filter(f => f.field_name !== name)
   store.rebuildCommonUsedFieldsFromArray(localFields.value)

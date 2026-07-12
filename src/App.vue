@@ -1,5 +1,4 @@
 ﻿<script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { useEditorStore } from '@/stores/editor'
 import { useDropFolder } from '@/composables/useDropFolder'
 import EditorToolbar from '@/components/EditorToolbar.vue'
@@ -8,10 +7,13 @@ import AddFieldModal from '@/components/modal/AddFieldModal.vue'
 import ImportSqlModal from '@/components/modal/ImportSqlModal.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import UpgradingOverlay from '@/components/UpgradingOverlay.vue'
+import { useConfirmState, resolveConfirm } from '@/composables/useConfirm'
 
 const store = useEditorStore()
 const { dragOver, onDragOver, onDragEnter, onDragLeave, onDrop } = useDropFolder()
-const { t } = useI18n()
+
+// 全局确认弹窗：绑定 useConfirm 队列，供 confirmDialog()/alertDialog() 驱动
+const confirmState = useConfirmState()
 </script>
 
 <template>
@@ -42,15 +44,16 @@ const { t } = useI18n()
     <!-- 导入 SQL 弹窗 -->
     <ImportSqlModal />
 
-    <!-- 升级项目结构弹窗（基于通用确认弹窗） -->
+    <!-- 全局唯一确认弹窗：绑定 useConfirm 队列，处理 confirmDialog()/alertDialog() 触发的全部确认/提示 -->
     <ConfirmModal
-      :visible="store.showUpgradeModal"
-      :title="t('upgrade.title')"
-      :message="t('upgrade.message')"
-      :confirm-text="t('upgrade.confirm')"
-      :cancel-text="t('upgrade.cancel')"
-      @confirm="store.confirmUpgradeStructure()"
-      @cancel="store.cancelUpgradeStructure()"
+      :visible="confirmState.visible"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :primary-confirm="confirmState.primaryConfirm"
+      @confirm="resolveConfirm(true)"
+      @cancel="resolveConfirm(false)"
     />
 
     <!-- 全局加载遮罩 -->

@@ -438,12 +438,16 @@
     "loading": "正在升级项目结构，请稍候…"
   },
   "confirm": {
+    "title": "确认",
+    "ok": "确定",
+    "cancel": "取消",
     "deleteSchema": "确认删除 Schema \"{name}\" 及其所有表？此操作不可撤销。",
     "deleteTable": "确认删除表 \"{name}\"？",
     "deleteField": "确认删除字段 \"{name}\"？",
     "deleteIndex": "确认删除此索引？",
     "deleteCommonField": "公共字段 \"{name}\" 被以下表引用：\n{refs}\n\n仍然要删除吗？引用将变为无效。"
   },
+  "alertTitle": "提示",
   "prePostSql": {
     "pre": "前置 SQL",
     "post": "后置 SQL"

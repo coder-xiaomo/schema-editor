@@ -5,6 +5,7 @@ import { useEditorStore } from '@/stores/editor'
 import { parseDefaultInput } from '@/utils/file-helpers'
 import { normalizeInitialData } from '@/utils/initial-data-io'
 import { getInitialDataPreSql, getInitialDataPostSql, type SqlDialect } from '@/utils/sql-generator/shared'
+import { confirmDialog } from '@/composables/useConfirm'
 import type { InitialData, InitialDataRow } from '@/types/schema'
 import PrePostSqlEditor from './PrePostSqlEditor.vue'
 import InitialDataSqlPreview from './InitialDataSqlPreview.vue'
@@ -199,16 +200,16 @@ function moveRowDown(rowIdx: number) {
     ;[wrapper.rows[rowIdx], wrapper.rows[rowIdx + 1]] = [wrapper.rows[rowIdx + 1]!, wrapper.rows[rowIdx]!]
 }
 
-function clearRows() {
+async function clearRows() {
   if (!initialData.value) return
-  if (!confirm(t('initialData.clearRowsConfirm'))) return
+  if (!(await confirmDialog({ title: t('confirm.title'), message: t('initialData.clearRowsConfirm'), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
   delete initialData.value.rows
   syncJsonText()
 }
 
-function clearAllData() {
+async function clearAllData() {
   if (!store.currentSchema || !store.currentTable) return
-  if (!confirm(t('initialData.clearConfirm'))) return
+  if (!(await confirmDialog({ title: t('confirm.title'), message: t('initialData.clearConfirm'), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
   store.deleteInitialData(store.currentSchema.schema, store.currentTable.name)
   jsonText.value = '{}'
   jsonError.value = ''

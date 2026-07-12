@@ -438,12 +438,16 @@
     "loading": "Upgrading project structure, please wait…"
   },
   "confirm": {
+    "title": "Confirm",
+    "ok": "OK",
+    "cancel": "Cancel",
     "deleteSchema": "Delete schema \"{name}\" and ALL its tables? This cannot be undone.",
     "deleteTable": "Delete table \"{name}\"?",
     "deleteField": "Delete field \"{name}\"?",
     "deleteIndex": "Delete this index?",
     "deleteCommonField": "Common field \"{name}\" is referenced by:\n{refs}\n\nDelete it anyway? References will become stale."
   },
+  "alertTitle": "Notice",
   "prePostSql": {
     "pre": "Pre-SQL",
     "post": "Post-SQL"

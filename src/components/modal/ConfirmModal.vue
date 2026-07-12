@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = withDefaults(defineProps<{
   /** 是否显示弹窗 */
@@ -26,13 +26,43 @@ const emit = defineEmits<{
 }>()
 
 const showCancel = computed(() => !!props.cancelText)
+// 有取消按钮＝需决策（疑问），无取消＝纯提示（信息）
+const iconGlyph = computed(() => (showCancel.value ? '?' : 'i'))
+const iconClass = computed(() => (showCancel.value ? 'confirm-icon--warn' : 'confirm-icon--info'))
+
+// ===== 键盘快捷键：ESC 取消，ENTER 确认 =====
+// 弹窗由队列驱动、组件始终挂载，仅在 visible 时拦截；
+// 焦点在按钮/表单控件时不抢键，交给原生行为，避免重复触发。
+function onKeydown(e: KeyboardEvent) {
+  if (!props.visible) return
+  const el = e.target as HTMLElement | null
+  const tag = el?.tagName
+  const inFormField =
+    tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || !!el?.isContentEditable
+  if (inFormField) return
+
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    emit('cancel')
+  } else if (e.key === 'Enter') {
+    if (el instanceof HTMLButtonElement) return
+    e.preventDefault()
+    emit('confirm')
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
-  <!-- ===== Generic Confirm Modal ===== -->
+  <!-- ===== Generic Confirm / Alert Modal ===== -->
   <div class="modal-overlay" v-if="visible" @click.self="emit('cancel')">
-    <div class="modal-box confirm-box">
-      <h3>{{ title }}</h3>
+    <div class="modal-box confirm-box" role="dialog" aria-modal="true">
+      <div class="confirm-header">
+        <span class="confirm-icon" :class="iconClass" aria-hidden="true">{{ iconGlyph }}</span>
+        <h3 class="confirm-title">{{ title }}</h3>
+      </div>
       <p class="confirm-message">{{ message }}</p>
       <div class="modal-actions">
         <button v-if="showCancel" class="btn" @click="emit('cancel')">{{ cancelText }}</button>
@@ -42,9 +72,49 @@ const showCancel = computed(() => !!props.cancelText)
   </div>
 </template>
 
+<style scoped src="@/assets/style/modal.css"></style>
+<style scoped src="@/assets/style/btn.css"></style>
+
 <style scoped>
 .confirm-box {
-  max-width: 480px;
+  max-width: 440px;
+}
+
+.confirm-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.confirm-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+}
+
+.confirm-icon--info {
+  background: var(--accent);
+}
+
+.confirm-icon--warn {
+  background: var(--warning);
+}
+
+/* 覆盖 modal.css 中 .modal-box h3 的默认下边距，交给 header 控制间距 */
+.modal-box .confirm-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg);
 }
 
 .confirm-message {
@@ -52,6 +122,7 @@ const showCancel = computed(() => !!props.cancelText)
   line-height: 1.6;
   color: var(--fg-muted);
   font-size: 14px;
-  margin: 8px 0 20px;
+  margin: 0 0 20px;
+  padding-left: 46px;
 }
 </style>

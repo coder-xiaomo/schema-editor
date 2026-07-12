@@ -9,6 +9,7 @@ import type {
 } from '@/core/version/types'
 import { generateSchemaMySQL } from '@/utils/sql-generator/mysql'
 import { generateSchemaPostgreSQL } from '@/utils/sql-generator/postgresql'
+import { confirmDialog } from '@/composables/useConfirm'
 
 const store = useEditorStore()
 const { t } = useI18n()
@@ -23,7 +24,7 @@ async function onCreateVersion() {
 }
 
 async function onDeleteVersion(id: string, name: string) {
-  if (!confirm(t('version.deleteConfirm', { name }))) return
+  if (!(await confirmDialog({ title: t('confirm.title'), message: t('version.deleteConfirm', { name }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
   await store.deleteVersionById(id)
 }
 
@@ -120,7 +121,7 @@ async function refreshPreview() {
 }
 
 async function onDeleteMigration(id: string, name: string) {
-  if (!confirm(t('migration.deleteConfirm', { name }))) return
+  if (!(await confirmDialog({ title: t('confirm.title'), message: t('migration.deleteConfirm', { name }), confirmText: t('confirm.ok'), cancelText: t('confirm.cancel') }))) return
   await store.deleteMigrationById(id)
   if (selectedMigrationId.value === id) cancelDraft()
 }
