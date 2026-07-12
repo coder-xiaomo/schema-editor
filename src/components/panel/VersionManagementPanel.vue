@@ -411,7 +411,7 @@ onUnmounted(() => {
           </div>
 
           <!-- 编辑已有迁移 -->
-          <div v-else class="ps-mig-editor">
+          <div v-else-if="editingMigration" class="ps-mig-editor">
             <div class="ps-mig-titlebar">
               <span class="ps-mig-title">{{ $t('migration.editTitle', { name: editingMigration.name }) }}</span>
             </div>
