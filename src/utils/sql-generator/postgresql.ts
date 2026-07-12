@@ -107,15 +107,16 @@ export function generateTablePostgreSQL(table: Table, schemaName: string, common
     return fieldDef
   })
 
-  // 主键
-  const primaryKeyField = table.fields.find(field => {
+  // 主键（支持复合主键）
+  const primaryKeyFields = table.fields.filter(field => {
     const fieldConfig = resolveField(field, commonConfig)
     return fieldConfig.primary_key
   })
 
   const indexDefinitions: string[] = []
-  if (primaryKeyField) {
-    indexDefinitions.push(`  PRIMARY KEY (${quoteIdent(primaryKeyField.field_name, commonConfig)})`)
+  if (primaryKeyFields.length > 0) {
+    const primaryKeyColumns = primaryKeyFields.map(field => quoteIdent(field.field_name, commonConfig)).join(', ')
+    indexDefinitions.push(`  PRIMARY KEY (${primaryKeyColumns})`)
   }
 
   // UNIQUE 索引在建表语句中定义
