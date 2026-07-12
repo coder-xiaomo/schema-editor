@@ -208,79 +208,98 @@ export async function openProjectFolderNew(rootHandle?: FileSystemDirectoryHandl
     return result
   }
 
+  // 先收集所有 schema 目录句柄，再批量并行处理（保持「先列出目录、后读文件」的先后约束，
+  // 但同层级的各 schema/各 table/各 json 读取互不依赖，可用 Promise.all 并行加速）
+  const schemaDirs: FileSystemDirectoryHandle[] = []
   for await (const schemaEntry of schemasDir.values()) {
     if (schemaEntry.kind !== 'directory') continue
-    const schemaDir = schemaEntry as FileSystemDirectoryHandle
+    schemaDirs.push(schemaEntry as FileSystemDirectoryHandle)
+  }
 
-    // 读 schema.json
-    let schemaMeta: { schema?: string; table_order?: string[] } = {}
-    try {
-      const schemaJsonHandle = await getFileHandleSafe(schemaDir, SCHEMA_FILE, false)
-      schemaMeta = await readJsonFile(schemaJsonHandle)
-    } catch {
-      // 无 schema.json 跳过该目录
-      continue
-    }
-    if (!schemaMeta.schema) continue
-
-    const loadedSchema = {
-      schema: schemaMeta.schema,
-      table_order: schemaMeta.table_order ?? [],
-      tables: [] as Table[],
-    }
-
-    // 遍历该 schema 下的 table 目录
-    for await (const tableEntry of schemaDir.values()) {
-      if (tableEntry.kind !== 'directory') continue
-      const tableDir = tableEntry as FileSystemDirectoryHandle
-
-      // 读 table.json
-      let tableData: Table | null = null
+  const loadedSchemas = await Promise.all(
+    schemaDirs.map(async (schemaDir) => {
+      // 读 schema.json
+      let schemaMeta: { schema?: string; table_order?: string[] } = {}
       try {
-        const tableJsonHandle = await getTableFileHandle(tableDir, false)
-        tableData = await readJsonFile<Table>(tableJsonHandle)
+        const schemaJsonHandle = await getFileHandleSafe(schemaDir, SCHEMA_FILE, false)
+        schemaMeta = await readJsonFile(schemaJsonHandle)
       } catch {
-        tableData = null
+        // 无 schema.json 跳过该目录
+        return null
       }
-      if (!tableData || !tableData.name) continue
+      if (!schemaMeta.schema) return null
 
-      // 补全缺省字段（与旧加载逻辑一致）
-      if (!tableData.indexes) tableData.indexes = []
-      if (!tableData.fields) tableData.fields = []
-      loadedSchema.tables.push(tableData)
-
-      // 读 initial-data.json（可选）
-      try {
-        const initHandle = await getInitialDataFileHandle(tableDir, false)
-        const initParsed = await readJsonFile(initHandle)
-        const normalized = normalizeInitialData(initParsed)
-        if (normalized) {
-          result.initialData.push({
-            key: `${schemaMeta.schema}/${tableData.name}`,
-            data: normalized,
-          })
-        }
-      } catch {
-        // 无 initial-data.json，跳过
+      const loadedSchema = {
+        schema: schemaMeta.schema,
+        table_order: schemaMeta.table_order ?? [],
+        tables: [] as Table[],
       }
-    }
 
-    // 按 table_order 排序（不在列表中的保留原位）
-    const order = loadedSchema.table_order
-    if (order.length > 0) {
-      const orderMap = new Map<string, number>()
-      order.forEach((name, i) => orderMap.set(name, i))
-      loadedSchema.tables.sort((a, b) => {
-        const ai = orderMap.get(a.name)
-        const bi = orderMap.get(b.name)
-        if (ai === undefined && bi === undefined) return 0
-        if (ai === undefined) return 1
-        if (bi === undefined) return -1
-        return ai - bi
-      })
-    }
+      // 先收集该 schema 下的所有 table 目录句柄
+      const tableDirs: FileSystemDirectoryHandle[] = []
+      for await (const tableEntry of schemaDir.values()) {
+        if (tableEntry.kind !== 'directory') continue
+        tableDirs.push(tableEntry as FileSystemDirectoryHandle)
+      }
 
-    result.schemas.push(loadedSchema)
+      // 批量并行读取每个 table 的 table.json 与 initial-data.json（两者无依赖，可同时读）
+      const tableResults = await Promise.all(
+        tableDirs.map(async (tableDir) => {
+          // 读 table.json
+          let tableData: Table | null = null
+          try {
+            const tableJsonHandle = await getTableFileHandle(tableDir, false)
+            tableData = await readJsonFile<Table>(tableJsonHandle)
+          } catch {
+            tableData = null
+          }
+          if (!tableData || !tableData.name) return null
+
+          // 补全缺省字段（与旧加载逻辑一致）
+          if (!tableData.indexes) tableData.indexes = []
+          if (!tableData.fields) tableData.fields = []
+          loadedSchema.tables.push(tableData)
+
+          // 读 initial-data.json（可选）
+          try {
+            const initHandle = await getInitialDataFileHandle(tableDir, false)
+            const initParsed = await readJsonFile(initHandle)
+            const normalized = normalizeInitialData(initParsed)
+            if (normalized) {
+              result.initialData.push({
+                key: `${schemaMeta.schema}/${tableData.name}`,
+                data: normalized,
+              })
+            }
+          } catch {
+            // 无 initial-data.json，跳过
+          }
+          return tableData
+        }),
+      )
+
+      // 按 table_order 排序（不在列表中的保留原位）
+      const order = loadedSchema.table_order
+      if (order.length > 0) {
+        const orderMap = new Map<string, number>()
+        order.forEach((name, i) => orderMap.set(name, i))
+        loadedSchema.tables.sort((a, b) => {
+          const ai = orderMap.get(a.name)
+          const bi = orderMap.get(b.name)
+          if (ai === undefined && bi === undefined) return 0
+          if (ai === undefined) return 1
+          if (bi === undefined) return -1
+          return ai - bi
+        })
+      }
+
+      return loadedSchema
+    }),
+  )
+
+  // 仅保留成功加载的 schema（过滤 null）
+  for (const s of loadedSchemas) {
+    if (s) result.schemas.push(s)
   }
 
   // 按 schema_order 排序（不在列表中的保留原位）
