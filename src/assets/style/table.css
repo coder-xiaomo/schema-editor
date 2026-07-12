@@ -1,58 +1,87 @@
 /* ===== Table Styles ===== */
 .fields-table,
 .indexes-table,
-.common-fields-table {
+.common-fields-table,
+.data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 12px;
 }
 
 .fields-table th,
 .indexes-table th,
-.common-fields-table th {
-  background: #f5f5f5;
-  padding: 6px 8px;
+.common-fields-table th,
+.data-table th {
+  background: var(--surface-2);
+  padding: 8px 10px;
   text-align: left;
   font-weight: 600;
-  color: #666;
-  border-bottom: 1px solid #ddd;
-  white-space: nowrap;
   font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--fg-muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .fields-table td,
 .indexes-table td,
-.common-fields-table td {
-  padding: 4px 8px;
-  border-bottom: 1px solid #eee;
+.common-fields-table td,
+.data-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border-muted);
   vertical-align: middle;
 }
 
-/* ===== Table Input ===== */
+.fields-table tbody tr,
+.indexes-table tbody tr,
+.common-fields-table tbody tr,
+.data-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+.fields-table tbody tr:hover,
+.indexes-table tbody tr:hover,
+.common-fields-table tbody tr:hover,
+.data-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+/* ===== Table Input (inline editable cell) ===== */
 .table-input {
   width: 100%;
-  padding: 3px 6px;
+  padding: 4px 7px;
   border: 1px solid transparent;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   background: transparent;
   color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.table-input:hover {
+  background: var(--surface-3);
 }
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
-  background: #fff;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
 }
 
-.table-input:hover {
-  background: rgba(255, 255, 255, 0.5);
+.table-input:disabled {
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* ===== Table Checkbox ===== */
 .table-checkbox {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
+  accent-color: var(--accent);
 }

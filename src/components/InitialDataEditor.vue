@@ -394,8 +394,8 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
   display: flex;
   align-items: center;
   padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-muted);
   font-weight: 600;
   font-size: 13px;
   color: #444;
@@ -417,8 +417,8 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 
 .mode-toggle {
   display: flex;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -428,21 +428,21 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
   background: #fff;
   font-size: 11px;
   cursor: pointer;
-  color: #555;
+  color: var(--code-thumb);
   transition: all .15s;
 }
 
 .mode-btn:not(:last-child) {
-  border-right: 1px solid #ccc;
+  border-right: 1px solid var(--border);
 }
 
 .mode-btn.active {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
 }
 
 .mode-btn:not(.active):hover {
-  background: #f0f0f0;
+  background: var(--surface-3);
 }
 
 /* Empty State */
@@ -461,22 +461,22 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-bottom: 1px solid #333;
-  background: #16162a;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--code-bg-2);
 }
 
 .json-editor {
   width: 100%;
   min-height: 150px;
   max-height: 500px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: none;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.6;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
   resize: vertical;
   box-sizing: border-box;
 }
@@ -486,11 +486,11 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 }
 
 .json-error {
-  padding: 6px 14px;
-  background: #fff5f5;
-  color: #d32f2f;
+  padding: 8px 14px;
+  background: var(--danger-subtle);
+  color: var(--danger);
   font-size: 11px;
-  border-top: 1px solid #ffcdd2;
+  border-top: 1px solid var(--danger-border);
 }
 
 /* Table Editor */
@@ -499,7 +499,7 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
 }
 
 .data-table {
@@ -511,21 +511,21 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 .data-table th,
 .data-table td {
   padding: 4px 6px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
   text-align: left;
   vertical-align: top;
 }
 
 .data-table th {
-  background: #f8f8f8;
+  background: var(--surface-2);
   font-weight: 600;
-  color: #555;
+  color: var(--code-thumb);
   font-size: 11px;
   white-space: nowrap;
 }
 
 .data-table tbody tr:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .row-num {
@@ -547,8 +547,8 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 
 .table-input {
   padding: 3px 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   width: 100%;
@@ -558,7 +558,7 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .empty-rows {
@@ -580,20 +580,20 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 /* Row Comment */
 .comment-input {
   padding: 3px 5px;
-  border: 1px solid #d0dbe8;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-family: inherit;
   width: 100%;
   min-width: 110px;
   box-sizing: border-box;
-  background: #f8fbff;
+  background: var(--accent-subtle);
   color: #556;
 }
 
 .comment-input:focus {
   outline: none;
-  border-color: #7ba4d9;
+  border-color: var(--accent);
   background: #fff;
 }
 
@@ -615,29 +615,29 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 
 .field-comment-input:hover,
 .field-comment-input:focus {
-  border-color: #ddd;
-  background: #fafafa;
+  border-color: var(--border);
+  background: var(--surface-2);
   outline: none;
   color: #666;
 }
 
 .field-comment-input::placeholder {
-  color: #ccc;
+  color: var(--border);
 }
 
 /* Buttons */
 .btn {
   padding: 4px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn:disabled {
@@ -650,22 +650,22 @@ function setFieldComment(row: InitialDataRow, fieldName: string, val: string) {
 }
 
 .btn-primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn-primary:hover {
-  background: #3a80c9;
+  background: var(--accent-hover);
 }
 
 .btn-danger {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .btn-danger:hover {
-  background: #ffebee;
+  background: var(--danger-subtle);
 }
 
 .btn-sm {

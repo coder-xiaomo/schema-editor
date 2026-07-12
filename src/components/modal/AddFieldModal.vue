@@ -67,12 +67,12 @@ useEscClose(computed(() => store.showAddFieldModal), () => { store.showAddFieldM
 <style scoped src="@/assets/style/form.css"></style>
 <style scoped>
 .modal-box {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
   min-width: 360px;
   max-width: 560px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-box .form-group {
@@ -88,9 +88,9 @@ useEscClose(computed(() => store.showAddFieldModal), () => { store.showAddFieldM
 .common-field-list {
   max-height: 260px;
   overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
 }
 
 .common-field-item {
@@ -98,7 +98,7 @@ useEscClose(computed(() => store.showAddFieldModal), () => { store.showAddFieldM
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
   cursor: pointer;
   user-select: none;
   transition: background .1s;
@@ -109,7 +109,7 @@ useEscClose(computed(() => store.showAddFieldModal), () => { store.showAddFieldM
 }
 
 .common-field-item:hover {
-  background: #e8f0fe;
+  background: var(--accent-subtle);
 }
 
 .common-field-checkbox {
@@ -117,13 +117,13 @@ useEscClose(computed(() => store.showAddFieldModal), () => { store.showAddFieldM
   height: 15px;
   cursor: pointer;
   flex-shrink: 0;
-  accent-color: #4a90d9;
+  accent-color: var(--accent);
 }
 
 .common-field-name {
   font-weight: 600;
   font-size: 12px;
-  color: #333;
+  color: var(--fg);
   white-space: nowrap;
   min-width: 80px;
 }
@@ -150,8 +150,8 @@ useEscClose(computed(() => store.showAddFieldModal), () => { store.showAddFieldM
   text-align: center;
   color: #aaa;
   font-size: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
 }
 </style>

@@ -1,22 +1,23 @@
 /* ===== Badge Styles ===== */
 .common-badge {
   display: inline-block;
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  line-height: 1;
+  padding: 1px 5px;
+  border-radius: var(--radius-pill);
+  line-height: 1.4;
+  letter-spacing: 0.04em;
 }
 
 .commented-badge {
   display: inline-block;
-  background: #999;
+  background: var(--fg-subtle);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 3px;
-  line-height: 1;
+  padding: 1px 5px;
+  border-radius: var(--radius-pill);
+  line-height: 1.4;
 }

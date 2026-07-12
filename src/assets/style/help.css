@@ -3,22 +3,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
-  border: 1px solid #999;
-  color: #999;
+  border: 1px solid var(--fg-subtle);
+  color: var(--fg-subtle);
   font-size: 10px;
   font-weight: 600;
   cursor: help;
   margin-left: 2px;
   vertical-align: middle;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 .quote-help-icon:hover {
-  border-color: #4a90d9;
-  color: #4a90d9;
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
 }

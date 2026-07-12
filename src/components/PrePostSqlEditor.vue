@@ -106,37 +106,39 @@ const dialect = ref<SqlDialect>('mysql')
 }
 
 .tab-btn {
-  padding: 3px 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #666;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
   font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all .15s;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
   font-family: inherit;
 }
 
 .tab-btn:first-child {
-  border-radius: 3px 0 0 3px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .tab-btn:last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   border-left: none;
 }
 
 .tab-btn.active {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .tab-btn.active + .tab-btn {
-  border-left-color: #4a90d9;
+  border-left-color: var(--accent);
 }
 
 .tab-btn:not(.active):hover {
-  background: #e8e8e8;
+  background: var(--surface-3);
+  color: var(--fg);
 }
 
 .sql-grid {
@@ -162,8 +164,8 @@ const dialect = ref<SqlDialect>('mysql')
   width: 100%;
   min-height: 80px;
   padding: 6px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: 'Consolas', 'Monaco', monospace;
   line-height: 1.5;
@@ -173,6 +175,6 @@ const dialect = ref<SqlDialect>('mysql')
 
 .sql-textarea:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 </style>

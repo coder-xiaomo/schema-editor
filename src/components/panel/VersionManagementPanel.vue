@@ -511,23 +511,26 @@ onUnmounted(() => {
   display: flex;
   gap: 4px;
   padding: 12px 16px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
 }
 
 .ps-version-tabs button {
-  padding: 6px 14px;
-  border: 1px solid #d0d0d0;
-  background: #f5f5f5;
-  border-radius: 5px 5px 0 0;
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
   font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-muted);
   cursor: pointer;
   font-family: inherit;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
 
 .ps-version-tabs button.active {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .ps-version-body {
@@ -544,8 +547,8 @@ onUnmounted(() => {
 .ps-input {
   flex: 1;
   padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-family: inherit;
 }
@@ -568,15 +571,15 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-muted);
   border-radius: 5px;
   margin-bottom: 6px;
   cursor: pointer;
 }
 
 .ps-list-item.active {
-  border-color: #4a90d9;
-  background: #f0f6fd;
+  border-color: var(--accent);
+  background: var(--accent-subtle-2);
 }
 
 .ps-list-info {
@@ -587,7 +590,7 @@ onUnmounted(() => {
 .ps-list-name {
   font-size: 13px;
   font-weight: 600;
-  color: #333;
+  color: var(--fg);
 }
 
 .ps-list-meta {
@@ -628,28 +631,28 @@ onUnmounted(() => {
 .ps-guide-card {
   max-width: 360px;
   text-align: center;
-  background: #fafafa;
+  background: var(--surface-2);
   border: 1px dashed #d5d5d5;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 28px 24px;
 }
 
 .ps-guide-icon {
   font-size: 34px;
-  color: #4a90d9;
+  color: var(--accent);
   margin-bottom: 8px;
 }
 
 .ps-guide-card h3 {
   margin: 0 0 8px;
   font-size: 16px;
-  color: #333;
+  color: var(--fg);
 }
 
 .ps-guide-card p {
   margin: 0 0 14px;
   font-size: 13px;
-  color: #777;
+  color: var(--code-thumb);
   line-height: 1.6;
 }
 
@@ -668,13 +671,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
 }
 
 .ps-mig-title {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--fg);
 }
 
 /* 选版本表单（新建 / 编辑共用） */
@@ -705,7 +708,7 @@ onUnmounted(() => {
 }
 
 .ps-pick-arrow {
-  color: #4a90d9;
+  color: var(--accent);
   font-size: 16px;
   font-weight: 700;
   padding-bottom: 2px;
@@ -713,8 +716,8 @@ onUnmounted(() => {
 
 .ps-mig-pick select {
   padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   min-width: 130px;
 }
@@ -726,9 +729,9 @@ onUnmounted(() => {
 /* 警告提示 */
 .ps-mig-warn {
   font-size: 12px;
-  color: #c06a00;
-  background: #fff6e6;
-  border: 1px solid #ffd591;
+  color: var(--warning);
+  background: var(--warning-subtle);
+  border: 1px solid var(--warning-border);
   border-radius: 6px;
   padding: 8px 10px;
 }
@@ -739,7 +742,7 @@ onUnmounted(() => {
 }
 
 .ps-steps {
-  border: 1px solid #eee;
+  border: 1px solid var(--border-muted);
   border-radius: 6px;
   padding: 10px;
 }
@@ -761,11 +764,11 @@ onUnmounted(() => {
 }
 
 .ps-step {
-  border: 1px solid #eee;
+  border: 1px solid var(--border-muted);
   border-radius: 5px;
   padding: 8px;
   margin-bottom: 8px;
-  background: #fafafa;
+  background: var(--surface-2);
 }
 
 .ps-step-head {
@@ -773,7 +776,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #555;
+  color: var(--code-thumb);
   margin-bottom: 6px;
 }
 
@@ -785,8 +788,8 @@ onUnmounted(() => {
 .ps-step-fields input {
   flex: 1;
   padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
 }
 
@@ -796,8 +799,8 @@ onUnmounted(() => {
   font-family: 'Consolas', monospace;
   font-size: 12px;
   padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   margin-bottom: 4px;
 }
 
@@ -807,7 +810,7 @@ onUnmounted(() => {
 }
 
 .ps-preview {
-  border: 1px solid #eee;
+  border: 1px solid var(--border-muted);
   border-radius: 6px;
   padding: 10px;
 }
@@ -828,18 +831,21 @@ onUnmounted(() => {
 }
 
 .ps-dialect button {
-  padding: 2px 8px;
-  border: 1px solid #d0d0d0;
-  background: #f5f5f5;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
   font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-muted);
   cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
 
 .ps-dialect button.active {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .ps-preview-head .btn {
@@ -847,12 +853,14 @@ onUnmounted(() => {
 }
 
 .ps-code {
-  background: #1e1e1e;
-  color: #d4d4d4;
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-family: 'Consolas', 'Monaco', monospace;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--code-bg-2);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 320px;
@@ -880,8 +888,8 @@ onUnmounted(() => {
   flex-shrink: 0;
   padding: 16px;
   overflow-y: auto;
-  border-right: 1px solid #e0e0e0;
-  background: #fafafa;
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
 }
 
 .ps-version-list .ps-list-item {
@@ -911,13 +919,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
 }
 
 .ps-bp-name {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--fg);
   display: block;
 }
 
@@ -942,10 +950,10 @@ onUnmounted(() => {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-muted);
   border-radius: 5px;
   padding: 8px;
-  background: #fafafa;
+  background: var(--surface-2);
 }
 
 .ps-bp-schema {
@@ -955,14 +963,14 @@ onUnmounted(() => {
 .ps-bp-schema-name {
   font-size: 13px;
   font-weight: 600;
-  color: #4a90d9;
+  color: var(--accent);
   cursor: pointer;
   padding: 4px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .ps-bp-schema-name:hover {
-  background: #e8f0fe;
+  background: var(--accent-subtle);
 }
 
 .ps-bp-table {
@@ -972,14 +980,14 @@ onUnmounted(() => {
 .ps-bp-table-name {
   font-size: 12px;
   font-weight: 600;
-  color: #555;
+  color: var(--code-thumb);
   cursor: pointer;
   padding: 3px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .ps-bp-table-name:hover {
-  background: #f0f0f0;
+  background: var(--surface-3);
 }
 
 .ps-bp-table-comment {
@@ -997,16 +1005,16 @@ onUnmounted(() => {
 
 .ps-bp-field-head {
   display: flex;
-  background: #f0f0f0;
-  border-bottom: 1px solid #ddd;
+  background: var(--surface-3);
+  border-bottom: 1px solid var(--border);
   font-weight: 600;
-  color: #555;
-  border-radius: 3px 3px 0 0;
+  color: var(--code-thumb);
+  border-radius: var(--radius-sm) 3px 0 0;
 }
 
 .ps-bp-field-row {
   display: flex;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--surface-3);
   color: #666;
 }
 
@@ -1037,7 +1045,7 @@ onUnmounted(() => {
 .ps-bp-index-title {
   font-size: 11px;
   font-weight: 600;
-  color: #777;
+  color: var(--code-thumb);
   padding: 2px 6px;
 }
 
@@ -1066,7 +1074,7 @@ onUnmounted(() => {
 
 /* SQL 预览区 */
 .ps-bp-sql-section {
-  border: 1px solid #eee;
+  border: 1px solid var(--border-muted);
   border-radius: 6px;
   padding: 10px;
 }

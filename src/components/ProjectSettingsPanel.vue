@@ -69,53 +69,55 @@ const store = useEditorStore()
   flex: 1;
   min-width: 0;
   height: 100%;
-  background: #fff;
+  background: var(--canvas);
   overflow: hidden;
   user-select: none;
 }
 
 /* 最左侧：VSCode 风格页面切换列 */
 .ps-rail {
-  width: calc(200px * 0.618);
-  min-width: calc(200px * 0.618);
-  background: #f3f3f3;
-  border-right: 1px solid #e0e0e0;
+  width: 200px;
+  min-width: 200px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 12px 8px;
-  gap: 2px;
+  padding: 14px 10px;
+  gap: 4px;
 }
 
 .ps-rail-title {
   font-size: 11px;
   font-weight: 600;
-  color: #999;
+  color: var(--fg-subtle);
   text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 4px 8px 10px;
+  letter-spacing: .06em;
+  padding: 4px 10px 10px;
 }
 
 .ps-rail-item {
   text-align: left;
-  padding: 8px 12px;
+  padding: 9px 12px;
   border: none;
   background: none;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
-  color: #444;
+  color: var(--fg-muted);
   cursor: pointer;
   font-family: inherit;
-  transition: background .1s;
+  transition: background .12s ease, color .12s ease;
 }
 
 .ps-rail-item:hover {
-  background: #e6e6e6;
+  background: var(--surface-3);
+  color: var(--fg);
 }
 
 .ps-rail-item.active {
-  background: #4a90d9;
-  color: #fff;
-  font-weight: 500;
+  background: var(--accent-subtle);
+  color: var(--accent-active);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 /* 右侧内容：flex 纵向，子项默认 stretch 横向撑满 */
@@ -170,9 +172,9 @@ const store = useEditorStore()
 
 .ps-setting-row {
   padding: 12px 16px;
-  border: 1px solid #e6e6e6;
+  border: 1px solid var(--surface-3);
   border-radius: 8px;
-  background: #fafafa;
+  background: var(--surface-2);
   max-width: 560px;
 }
 
@@ -183,7 +185,7 @@ const store = useEditorStore()
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--fg);
 }
 
 .ps-switch input[type="checkbox"] {

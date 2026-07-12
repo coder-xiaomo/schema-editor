@@ -185,15 +185,22 @@ const partitionExpression = computed({
 }
 .tab-btn {
   padding: 4px 12px;
-  border: 1px solid #d0d7de;
-  background: #f6f8fa;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 12px;
+  font-weight: 500;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.tab-btn:hover:not(.active) {
+  background: var(--surface-3);
+  color: var(--fg);
 }
 .tab-btn.active {
-  background: #0969da;
+  background: var(--accent);
   color: #fff;
-  border-color: #0969da;
+  border-color: var(--accent);
 }
 </style>

@@ -121,27 +121,27 @@ const availableFieldNames = computed(() => {
 .indexes-table th,
 .indexes-table td {
   padding: 6px 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
   text-align: left;
   vertical-align: middle;
 }
 
 .indexes-table th {
-  background: #f8f8f8;
+  background: var(--surface-2);
   font-weight: 600;
-  color: #555;
+  color: var(--code-thumb);
   font-size: 11px;
   white-space: nowrap;
 }
 
 .indexes-table tbody tr:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .table-input {
   padding: 3px 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   width: 100%;
@@ -150,40 +150,40 @@ const availableFieldNames = computed(() => {
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn {
   padding: 4px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn-primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn-primary:hover {
-  background: #3a80c9;
+  background: var(--accent-hover);
 }
 
 .btn-danger {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .btn-danger:hover {
-  background: #ffebee;
+  background: var(--danger-subtle);
 }
 
 .btn-sm {

@@ -284,21 +284,21 @@ function handleRenameSchema(sIdx: number) {
 .sidebar {
   width: 250px;
   min-width: 250px;
-  background: #fff;
-  border-right: 1px solid #ddd;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .sidebar-header {
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-weight: 600;
-  font-size: 12px;
-  color: #888;
+  font-size: 11px;
+  color: var(--fg-subtle);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #eee;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -308,36 +308,38 @@ function handleRenameSchema(sIdx: number) {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px 0;
+  padding: 8px 8px;
 }
 
 .sidebar-item {
-  padding: 6px 12px;
+  padding: 7px 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #555;
-  transition: background .1s;
+  color: var(--fg);
+  border-radius: var(--radius-sm);
+  transition: background .12s ease, color .12s ease;
   user-select: none;
 }
 
 .sidebar-item:hover {
-  background: #f0f0f0;
+  background: var(--surface-3);
 }
 
 .sidebar-item.active,
 .schema-item.active {
-  background: #e3edf7;
-  color: #4a90d9;
-  font-weight: 500;
+  background: var(--accent-subtle);
+  color: var(--accent-active);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .sidebar-item.schema-item {
   font-weight: 600;
-  color: #333;
-  padding-left: 8px;
+  color: var(--fg);
+  padding-left: 10px;
   font-size: 13px;
   cursor: pointer;
 }
@@ -374,7 +376,7 @@ function handleRenameSchema(sIdx: number) {
 }
 
 .sidebar-item.common-item {
-  color: #4a90d9;
+  color: var(--accent);
   font-weight: 500;
 }
 
@@ -387,7 +389,7 @@ function handleRenameSchema(sIdx: number) {
 .sidebar-item .delete-btn {
   margin-left: auto;
   opacity: 0;
-  color: #d9534f;
+  color: var(--danger);
   cursor: pointer;
   font-size: 11px;
 }
@@ -403,9 +405,9 @@ function handleRenameSchema(sIdx: number) {
 .schema-label {
   display: inline-block;
   padding: 2px 8px;
-  background: #e8f0fe;
-  color: #4a90d9;
-  border-radius: 3px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-weight: 500;
 }
@@ -420,8 +422,8 @@ function handleRenameSchema(sIdx: number) {
 }
 
 .sidebar-tree::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 3px;
+  background: var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .sidebar-tree::-webkit-scrollbar-thumb:hover {
@@ -438,7 +440,7 @@ function handleRenameSchema(sIdx: number) {
 .sidebar-header-btn {
   cursor: pointer;
   font-size: 16px;
-  color: #4a90d9;
+  color: var(--accent);
   font-weight: bold;
   padding: 0 4px;
   line-height: 1;
@@ -446,7 +448,7 @@ function handleRenameSchema(sIdx: number) {
   align-items: center;
 }
 .sidebar-header-btn:hover {
-  color: #3a7bc8;
+  color: var(--accent-hover);
 }
 
 .schema-table-count {
@@ -471,13 +473,13 @@ function handleRenameSchema(sIdx: number) {
 }
 
 .schema-action-btn {
-  color: #4a90d9;
+  color: var(--accent);
 }
 .schema-action-delete {
-  color: #d9534f;
+  color: var(--danger);
 }
 .add-table-btn {
-  color: #5cb85c;
+  color: var(--success);
 }
 
 /* ===== Drag-and-Drop ===== */
@@ -490,17 +492,17 @@ function handleRenameSchema(sIdx: number) {
 }
 
 .sidebar-item.table-item.drag-over {
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
   padding-top: 4px;
 }
 
 .sidebar-item.schema-item.drag-over {
-  border: 2px dashed #4a90d9;
+  border: 2px dashed var(--accent);
   padding: 4px 10px;
 }
 
 .sidebar-item.schema-item.drag-over-line {
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
   padding-top: 4px;
 }
 
@@ -511,7 +513,7 @@ function handleRenameSchema(sIdx: number) {
 
 .drop-tail.drag-over {
   height: 10px;
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
 }
 
 .schema-drag-tail {
@@ -526,6 +528,6 @@ function handleRenameSchema(sIdx: number) {
 
 .schema-drag-tail.drag-over {
   height: 10px;
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
 }
 </style>

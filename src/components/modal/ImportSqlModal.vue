@@ -330,15 +330,15 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 <style scoped src="@/assets/style/form.css"></style>
 <style scoped>
 .modal-box {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
   min-width: 360px;
   max-width: 720px;
   width: 90vw;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-header {
@@ -359,7 +359,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   height: 24px;
   border: none;
   background: transparent;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 18px;
   line-height: 1;
   color: #999;
@@ -370,8 +370,8 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 }
 
 .modal-close-btn:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--surface-3);
+  color: var(--fg);
 }
 
 .form-group {
@@ -393,7 +393,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #555;
+  color: var(--code-thumb);
   cursor: pointer;
 }
 
@@ -405,8 +405,8 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 /* SQL 文本框 — 带行号 */
 .sql-input-container {
   display: flex;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   transition: border-color .15s;
   min-height: 120px;
@@ -414,15 +414,15 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 }
 
 .sql-input-container:focus-within {
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .line-numbers {
   flex-shrink: 0;
   width: 36px;
   padding: 8px 0;
-  background: #f5f5f5;
-  border-right: 1px solid #e0e0e0;
+  background: var(--surface-2);
+  border-right: 1px solid var(--border);
   overflow: hidden;
   user-select: none;
   text-align: right;
@@ -444,7 +444,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   border-radius: 0;
   font-size: 12px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  color: #333;
+  color: var(--fg);
   resize: none;
   tab-size: 2;
   line-height: 1.6;
@@ -464,26 +464,26 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 .parse-msg {
   font-size: 11px;
   padding: 4px 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   margin-bottom: 3px;
 }
 
 .parse-msg-error {
-  background: #fff0f0;
-  color: #c0392b;
-  border: 1px solid #f5c6cb;
+  background: var(--danger-subtle);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 .parse-msg-warning {
-  background: #fffbe6;
-  color: #856404;
-  border: 1px solid #ffeeba;
+  background: var(--warning-subtle);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
 }
 
 /* 预览区 */
 .preview-section {
   margin-bottom: 14px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -494,7 +494,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
   align-items: center;
   padding: 6px 10px;
   background: #f7f7f7;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border);
 }
 
 .preview-title {
@@ -515,7 +515,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 }
 
 .table-card {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
 }
 
 .table-card:last-child {
@@ -532,7 +532,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 }
 
 .table-card-header:hover {
-  background: #f0f7ff;
+  background: var(--accent-subtle-2);
 }
 
 .table-card-toggle {
@@ -545,18 +545,18 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 .table-card-name {
   font-size: 13px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--fg);
 }
 
 /* 表名编辑输入框 */
 .table-name-input {
   font-size: 13px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--fg);
   border: 1px solid transparent;
   background: transparent;
   padding: 2px 4px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   width: auto;
   min-width: 80px;
   max-width: 200px;
@@ -565,15 +565,15 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 }
 
 .table-name-input:hover {
-  border-color: #d0d0d0;
+  border-color: var(--border-strong);
   background: #fff;
 }
 
 .table-name-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(74, 144, 217, 0.2);
+  box-shadow: 0 0 0 1px rgba(58, 114, 196, 0.2);
 }
 
 .table-card-meta {
@@ -584,7 +584,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 
 .table-card-body {
   padding: 6px 10px 8px;
-  background: #fafafa;
+  background: var(--surface-2);
 }
 
 /* 预览表格 */
@@ -598,27 +598,27 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 .preview-table th {
   text-align: left;
   padding: 3px 6px;
-  background: #f0f0f0;
+  background: var(--surface-3);
   color: #666;
   font-weight: 500;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border);
 }
 
 .preview-table td {
   padding: 2px 6px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
+  border-bottom: 1px solid var(--surface-3);
+  color: var(--fg);
 }
 
 .col-name {
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--fg);
 }
 
 .col-type {
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 10px;
-  color: #555;
+  color: var(--code-thumb);
 }
 
 .col-default {
@@ -651,8 +651,8 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 
 .constraint-item {
   font-size: 10px;
-  color: #555;
-  background: #f0f0f0;
+  color: var(--code-thumb);
+  background: var(--surface-3);
   padding: 1px 5px;
   border-radius: 2px;
   font-family: 'Consolas', 'Monaco', monospace;
@@ -661,12 +661,12 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 /* SQL schema 检测提示 */
 .schema-detect-hint {
   font-size: 11px;
-  color: #4a90d9;
-  background: #edf4fc;
+  color: var(--accent);
+  background: var(--accent-subtle);
   padding: 5px 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   margin-bottom: 8px;
-  border: 1px solid #c5d9f0;
+  border: 1px solid var(--accent-border);
 }
 
 /* 导入目标 */
@@ -686,7 +686,7 @@ useEscClose(computed(() => store.showImportSqlModal), () => { store.showImportSq
 /* 操作按钮 */
 
 .btn-primary:hover:not(:disabled) {
-  background: #3a7bc8;
-  border-color: #3a7bc8;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 </style>

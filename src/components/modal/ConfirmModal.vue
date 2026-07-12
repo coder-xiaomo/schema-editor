@@ -50,7 +50,7 @@ const showCancel = computed(() => !!props.cancelText)
 .confirm-message {
   white-space: pre-line;
   line-height: 1.6;
-  color: #475569;
+  color: var(--fg-muted);
   font-size: 14px;
   margin: 8px 0 20px;
 }

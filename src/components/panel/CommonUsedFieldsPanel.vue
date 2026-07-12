@@ -418,7 +418,7 @@ function toggleCommonFieldExpand(fieldName: string) {
                 <template v-if="field.default === undefined">
                 </template>
                 <template v-else-if="field.unified_type">
-                  <span v-if="store.quoteDefaultForField(field)" style="color:#4a90d9; font-size:11px;">✓</span>
+                  <span v-if="store.quoteDefaultForField(field)" style="color:var(--accent); font-size:11px;">✓</span>
                 </template>
                 <input v-else type="checkbox" class="table-checkbox" v-model="field.quote_default">
               </td>
@@ -518,12 +518,12 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .common-fields-table tbody tr:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .editable-field-name {
   cursor: pointer;
-  color: #4a90d9;
+  color: var(--accent);
   font-weight: 500;
   padding: 2px 4px;
   border-radius: 2px;
@@ -531,42 +531,42 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .editable-field-name:hover {
-  background: #e8f0fe;
+  background: var(--accent-subtle);
   text-decoration: underline;
 }
 
 /* Button styles */
 .btn {
   padding: 4px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn-primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn-primary:hover {
-  background: #3a80c9;
+  background: var(--accent-hover);
 }
 
 .btn-danger {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .btn-danger:hover {
-  background: #ffebee;
+  background: var(--danger-subtle);
 }
 
 .btn-sm {
@@ -576,8 +576,8 @@ function toggleCommonFieldExpand(fieldName: string) {
 
 .table-input {
   padding: 3px 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   width: 100%;
@@ -586,7 +586,7 @@ function toggleCommonFieldExpand(fieldName: string) {
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .move-btns {
@@ -653,7 +653,7 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .disabled-indicator:hover {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 /* Drag-and-drop styles */
@@ -665,7 +665,7 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .drag-handle {
-  color: #ccc;
+  color: var(--border);
   font-size: 18px;
   letter-spacing: -2px;
   line-height: 1;
@@ -681,7 +681,7 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .drag-over-row {
-  border-top: 2px solid #4a90d9 !important;
+  border-top: 2px solid var(--accent) !important;
 }
 
 .drop-tail-row {
@@ -694,7 +694,7 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .drop-tail-row.drag-over-tail {
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
 }
 
 /* Default value cell */
@@ -712,10 +712,10 @@ function toggleCommonFieldExpand(fieldName: string) {
 }
 
 .resolved-type-row code {
-  background: #e8f0fe;
-  color: #333;
+  background: var(--accent-subtle);
+  color: var(--fg);
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-family: 'Consolas', 'Monaco', monospace;
 }

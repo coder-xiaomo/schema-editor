@@ -196,8 +196,8 @@ watch(() => props.modelValue, () => {
 
 .override-toggle.active {
   transform: rotate(90deg);
-  background: #e8f0fe;
-  border-color: #4a90d9;
+  background: var(--accent-subtle);
+  border-color: var(--accent);
 }
 
 .column-override {
@@ -226,8 +226,8 @@ watch(() => props.modelValue, () => {
 /* 复用 IndexTable 已有样式 */
 .table-input {
   padding: 3px 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   box-sizing: border-box;
@@ -235,28 +235,28 @@ watch(() => props.modelValue, () => {
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .form-input {
   padding: 2px 4px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
-  color: #333;
+  color: var(--fg);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn {
   padding: 2px 6px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   cursor: pointer;
   font-family: inherit;
@@ -264,7 +264,7 @@ watch(() => props.modelValue, () => {
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn-sm {
@@ -273,24 +273,24 @@ watch(() => props.modelValue, () => {
 }
 
 .btn-danger {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger);
+  border-color: var(--danger);
   padding: 1px 5px;
   font-size: 11px;
 }
 
 .btn-danger:hover {
-  background: #ffebee;
+  background: var(--danger-subtle);
 }
 
 .btn-add-col {
   align-self: flex-start;
   margin-top: 2px;
-  color: #4a90d9;
-  border-color: #4a90d9;
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .btn-add-col:hover {
-  background: #e8f0fe;
+  background: var(--accent-subtle);
 }
 </style>

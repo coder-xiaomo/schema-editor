@@ -2,21 +2,34 @@
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  color: #333;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
   font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s;
+  user-select: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease;
 }
 
-.btn:hover {
-  background: #e8e8e8;
-  border-color: #aaa;
+.btn:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 
 .btn:disabled {
@@ -25,29 +38,38 @@
 }
 
 .btn-primary {
-  background: #4a90d9;
-  color: #fff;
-  border-color: #4a90d9;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-primary:hover {
-  background: #3a7bc8;
-  border-color: #3a7bc8;
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-active);
+  border-color: var(--accent-active);
 }
 
 .btn-danger {
-  color: #d9534f;
-  border-color: #d9534f;
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background: var(--surface);
 }
 
-.btn-danger:hover {
-  background: #d9534f;
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger);
   color: #fff;
+  border-color: var(--danger);
 }
 
 .btn-sm {
-  padding: 2px 8px;
+  padding: 3px 9px;
   font-size: 11px;
+  border-radius: var(--radius-sm);
 }
 
 .btn-block {
@@ -57,11 +79,12 @@
 
 .btn-ghost {
   background: transparent;
-  border-color: #ccc;
-  color: #666;
+  border-color: transparent;
+  color: var(--fg-muted);
 }
 
-.btn-ghost:hover {
-  background: #f0f0f0;
-  border-color: #aaa;
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: transparent;
+  color: var(--fg);
 }

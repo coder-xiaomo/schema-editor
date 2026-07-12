@@ -1,18 +1,23 @@
 /* ===== Notification Toast ===== */
 .toast {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 10px 18px;
-  background: #333;
+  bottom: 24px;
+  right: 24px;
+  padding: 11px 18px;
+  background: var(--fg);
   color: #fff;
-  border-radius: 4px;
+  border-radius: var(--radius);
   font-size: 13px;
+  font-weight: 500;
   z-index: 2000;
   opacity: 0;
-  transition: opacity 0.3s;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
 }
 
 .toast.show {
   opacity: 1;
+  transform: translateY(0);
 }

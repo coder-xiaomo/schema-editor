@@ -60,19 +60,19 @@ useEscClose(computed(() => props.visible), () => emit('close'))
 <style scoped src="@/assets/style/btn.css"></style>
 <style scoped>
 .modal-box {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
   min-width: 360px;
   max-width: 480px;
   width: 90vw;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-box h3 {
   margin-bottom: 16px;
   font-size: 15px;
-  color: #333;
+  color: var(--fg);
 }
 
 .about-box {
@@ -105,7 +105,7 @@ useEscClose(computed(() => props.visible), () => emit('close'))
 .about-name {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--fg);
 }
 
 .about-version {
@@ -123,13 +123,13 @@ useEscClose(computed(() => props.visible), () => emit('close'))
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #4a90d9;
+  color: var(--accent);
   text-decoration: none;
   transition: color .15s;
 }
 
 .about-github-link:hover {
-  color: #3a7bc8;
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 

@@ -2,19 +2,24 @@
 .expand-toggle {
   cursor: pointer;
   font-size: 10px;
-  color: #888;
+  color: var(--fg-subtle);
   user-select: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.expand-toggle:hover {
+  color: var(--accent);
 }
 
 /* ===== Field Expanded Content ===== */
 .field-expand-content {
-  padding: 10px 14px;
-  background: #fafafa;
-  border-top: 1px solid #eee;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
 }
 
 .expand-section {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .expand-section:last-child {
@@ -24,8 +29,10 @@
 .expand-section-title {
   font-size: 11px;
   font-weight: 600;
-  color: #666;
-  margin-bottom: 6px;
+  color: var(--fg-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .db-override-grid {
@@ -36,14 +43,15 @@
 .db-override-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
 }
 
 .db-label {
   font-size: 10px;
   font-weight: 600;
-  color: #888;
+  color: var(--fg-subtle);
   text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-bottom: 2px;
 }

@@ -95,31 +95,32 @@ function setTablePostSql(dialect: SqlDialect, val: string) {
 <style scoped>
 .tab-bar {
   display: flex;
-  gap: 0;
-  border-bottom: 2px solid #e0e0e0;
-  margin-bottom: 16px;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
 }
 
 .tab-item {
-  padding: 8px 20px;
+  padding: 9px 18px;
   font-size: 13px;
   font-weight: 500;
-  color: #888;
+  color: var(--fg-muted);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  margin-bottom: -1px;
   cursor: pointer;
-  transition: color .15s, border-color .15s;
+  transition: color .15s ease, border-color .15s ease;
   font-family: inherit;
 }
 
 .tab-item:hover {
-  color: #555;
+  color: var(--fg);
 }
 
 .tab-item.active {
-  color: #4a90d9;
-  border-bottom-color: #4a90d9;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
 }
 </style>

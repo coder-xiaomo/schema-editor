@@ -1,31 +1,33 @@
 /* ===== Section Card ===== */
 .section-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   margin-bottom: 16px;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
+  gap: 8px;
+  padding: 11px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
   font-weight: 600;
   font-size: 13px;
-  color: #444;
+  color: var(--fg);
 }
 
 .section-header .badge {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 11px;
-  color: #888;
-  margin-left: 8px;
+  color: var(--fg-muted);
+  margin-left: 4px;
 }
 
 .section-body {
-  padding: 14px;
+  padding: 16px;
 }

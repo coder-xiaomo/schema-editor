@@ -327,41 +327,41 @@ function handleDeleteUnifiedType(idx: number) {
 }
 
 .common-fields-table tbody tr:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 /* Button styles */
 .btn {
   padding: 4px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn-primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn-primary:hover {
-  background: #3a80c9;
+  background: var(--accent-hover);
 }
 
 .btn-danger {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .btn-danger:hover {
-  background: #ffebee;
+  background: var(--danger-subtle);
 }
 
 .btn-sm {
@@ -371,8 +371,8 @@ function handleDeleteUnifiedType(idx: number) {
 
 .table-input {
   padding: 3px 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   width: 100%;
@@ -381,7 +381,7 @@ function handleDeleteUnifiedType(idx: number) {
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .move-btns {
@@ -398,7 +398,7 @@ function handleDeleteUnifiedType(idx: number) {
 }
 
 .drag-handle {
-  color: #ccc;
+  color: var(--border);
   font-size: 18px;
   letter-spacing: -2px;
   line-height: 1;
@@ -414,7 +414,7 @@ function handleDeleteUnifiedType(idx: number) {
 }
 
 .drag-over-row {
-  border-top: 2px solid #4a90d9 !important;
+  border-top: 2px solid var(--accent) !important;
 }
 
 .drop-tail-row {
@@ -427,6 +427,6 @@ function handleDeleteUnifiedType(idx: number) {
 }
 
 .drop-tail-row.drag-over-tail {
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
 }
 </style>

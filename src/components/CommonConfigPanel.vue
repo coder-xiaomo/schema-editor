@@ -168,7 +168,7 @@ const store = useEditorStore()
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--border);
   border-radius: 20px;
   transition: .2s;
 }
@@ -186,7 +186,7 @@ const store = useEditorStore()
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background-color: #4a90d9;
+  background-color: var(--accent);
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
@@ -211,20 +211,20 @@ const store = useEditorStore()
   gap: 8px;
   cursor: pointer;
   font-size: 12px;
-  color: #333;
+  color: var(--fg);
   padding: 6px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   transition: border-color .15s, background .15s;
 }
 
 .radio-option:hover {
-  border-color: #4a90d9;
+  border-color: var(--accent);
   background: #f5f9ff;
 }
 
 .radio-option input[type="radio"] {
-  accent-color: #4a90d9;
+  accent-color: var(--accent);
   width: 16px;
   height: 16px;
   cursor: pointer;

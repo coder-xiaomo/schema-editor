@@ -91,51 +91,53 @@ function copyToClipboard() {
 }
 
 .tab-btn {
-  padding: 3px 10px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #666;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
   font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all .15s;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
   font-family: inherit;
 }
 
 .tab-btn:first-child {
-  border-radius: 3px 0 0 3px;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .tab-btn:last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   border-left: none;
 }
 
 .tab-btn.active {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .tab-btn.active + .tab-btn {
-  border-left-color: #4a90d9;
+  border-left-color: var(--accent);
 }
 
 .tab-btn:not(.active):hover {
-  background: #e8e8e8;
+  background: var(--surface-3);
+  color: var(--fg);
 }
 
 .btn {
   padding: 4px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn-sm {
@@ -160,12 +162,12 @@ function copyToClipboard() {
 
 .sql-code {
   margin: 0;
-  padding: 12px 14px;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.6;
+  padding: 14px 16px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
   overflow-x: auto;
   white-space: pre;
   max-height: 400px;
@@ -173,20 +175,22 @@ function copyToClipboard() {
 }
 
 .sql-code::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 .sql-code::-webkit-scrollbar-track {
-  background: #1e1e2e;
+  background: var(--code-bg);
 }
 
 .sql-code::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 3px;
+  background: var(--code-thumb);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--code-bg);
+  background-clip: padding-box;
 }
 
 .sql-code::-webkit-scrollbar-thumb:hover {
-  background: #777;
+  background: var(--fg-subtle);
 }
 </style>

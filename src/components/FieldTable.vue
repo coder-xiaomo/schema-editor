@@ -327,7 +327,7 @@ function onDropTail(e: DragEvent) {
                 </template>
                 <template v-else-if="field.unified_type">
                   <!-- unified type: quote determined by type definition, non-editable -->
-                  <span v-if="store.quoteDefaultForField(field)" style="color:#4a90d9; font-size:11px;">✓</span>
+                  <span v-if="store.quoteDefaultForField(field)" style="color:var(--accent); font-size:11px;">✓</span>
                 </template>
                 <input v-else type="checkbox" class="table-checkbox" :checked="!!field.quote_default" @change="store.updateFieldProp(store.currentTable!, field, 'quote_default', ($event.target as HTMLInputElement).checked || undefined)">
               </td>
@@ -433,39 +433,39 @@ function onDropTail(e: DragEvent) {
 .fields-table th,
 .fields-table td {
   padding: 6px 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-muted);
   text-align: left;
   vertical-align: middle;
 }
 
 .fields-table th {
-  background: #f8f8f8;
+  background: var(--surface-2);
   font-weight: 600;
-  color: #555;
+  color: var(--code-thumb);
   font-size: 11px;
   white-space: nowrap;
 }
 
 .fields-table tbody tr:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .common-field-row {
-  background: #e8f0fe !important;
+  background: var(--accent-subtle) !important;
 }
 
 .common-field-row:hover {
-  background: #d8e4f8 !important;
+  background: var(--accent-subtle) !important;
 }
 
 .commented-out-row {
-  background: #f0f0f0 !important;
+  background: var(--surface-3) !important;
   text-decoration: line-through;
   color: #999;
 }
 
 .commented-out-row:hover {
-  background: #e8e8e8 !important;
+  background: var(--surface-3) !important;
 }
 
 
@@ -479,8 +479,8 @@ function onDropTail(e: DragEvent) {
 
 .table-input {
   padding: 3px 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-family: inherit;
   width: 100%;
@@ -489,7 +489,7 @@ function onDropTail(e: DragEvent) {
 
 .table-input:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 
@@ -499,35 +499,35 @@ function onDropTail(e: DragEvent) {
 
 .btn {
   padding: 4px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   background: #fff;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
 }
 
 .btn:hover {
-  background: #f5f5f5;
+  background: var(--surface-2);
 }
 
 .btn-primary {
-  background: #4a90d9;
+  background: var(--accent);
   color: #fff;
-  border-color: #4a90d9;
+  border-color: var(--accent);
 }
 
 .btn-primary:hover {
-  background: #3a80c9;
+  background: var(--accent-hover);
 }
 
 .btn-danger {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .btn-danger:hover {
-  background: #ffebee;
+  background: var(--danger-subtle);
 }
 
 .btn-sm {
@@ -614,7 +614,7 @@ function onDropTail(e: DragEvent) {
 }
 
 .disabled-indicator:hover {
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 .resolved-type-row {
@@ -625,10 +625,10 @@ function onDropTail(e: DragEvent) {
 }
 
 .resolved-type-row code {
-  background: #e8f0fe;
-  color: #333;
+  background: var(--accent-subtle);
+  color: var(--fg);
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-family: 'Consolas', 'Monaco', monospace;
 }
@@ -642,7 +642,7 @@ function onDropTail(e: DragEvent) {
 }
 
 .drag-handle {
-  color: #ccc;
+  color: var(--border);
   font-size: 18px;
   letter-spacing: -2px;
   line-height: 1;
@@ -658,7 +658,7 @@ function onDropTail(e: DragEvent) {
 }
 
 .drag-over-row {
-  border-top: 2px solid #4a90d9 !important;
+  border-top: 2px solid var(--accent) !important;
 }
 
 .drop-tail-row {
@@ -671,7 +671,7 @@ function onDropTail(e: DragEvent) {
 }
 
 .drop-tail-row.drag-over-tail {
-  border-top: 2px solid #4a90d9;
+  border-top: 2px solid var(--accent);
 }
 
 /* Default value cell */

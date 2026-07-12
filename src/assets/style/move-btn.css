@@ -1,20 +1,28 @@
 /* ===== Move Buttons ===== */
 .move-btns {
   display: inline-flex;
+  gap: 3px;
 }
 
 .move-btn {
-  padding: 2px 5px;
-  font-size: 10px;
-  border: 1px solid #ccc;
-  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  border-radius: 2px;
-  margin-right: 2px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .move-btn:hover:not(:disabled) {
-  background: #f0f0f0;
+  background: var(--accent-subtle);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 .move-btn:disabled {

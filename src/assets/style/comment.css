@@ -1,42 +1,58 @@
 /* ===== Comment Editor ===== */
 .comment-editor {
   width: 100%;
-  min-height: 40px;
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  font-family: "Consolas", "Monaco", monospace;
-  line-height: 1.5;
+  font-family: var(--font-mono);
+  line-height: 1.55;
   resize: vertical;
+  color: var(--fg);
+  background: var(--surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .comment-editor:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.comment-editor::placeholder {
+  color: var(--fg-subtle);
 }
 
 .comment-hint {
   font-size: 10px;
-  color: #aaa;
-  margin-top: 2px;
+  color: var(--fg-subtle);
+  margin-top: 3px;
 }
 
 /* ===== Field Comment Editor ===== */
 .field-comment-editor {
   width: 100%;
-  min-height: 40px;
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  font-family: "Consolas", "Monaco", monospace;
-  line-height: 1.5;
+  font-family: var(--font-mono);
+  line-height: 1.55;
   resize: vertical;
   box-sizing: border-box;
+  color: var(--fg);
+  background: var(--surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .field-comment-editor:focus {
   outline: none;
-  border-color: #4a90d9;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.field-comment-editor::placeholder {
+  color: var(--fg-subtle);
 }

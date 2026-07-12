@@ -75,8 +75,8 @@ const { t } = useI18n()
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(74, 144, 217, 0.12);
-  border: 3px dashed #4a90d9;
+  background: rgba(58, 114, 196, 0.08);
+  border: 3px dashed var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,22 +88,23 @@ const { t } = useI18n()
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 40px 60px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  gap: 14px;
+  padding: 44px 64px;
+  background: var(--surface);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .drop-overlay-icon {
-  font-size: 48px;
+  font-size: 52px;
   line-height: 1;
 }
 
 .drop-overlay-text {
   font-size: 16px;
   font-weight: 600;
-  color: #4a90d9;
+  color: var(--accent);
 }
 
 /* ===== 未打开文件夹时的全局提示 ===== */
@@ -112,7 +113,7 @@ const { t } = useI18n()
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--fg-muted);
   font-size: 14px;
   padding: 24px;
   text-align: center;
