@@ -225,18 +225,19 @@ function handleRenameSchema(sIdx: number) {
           @dragend="onDragEnd"
         >
           <span class="sidebar-icon arrow-icon" :class="{ rotated: isExpanded(sIdx) }" @click.stop="toggleExpand(sIdx)">&#9654;</span>
-          <span class="schema-label">{{ schema.schema }}</span>
+          <span class="schema-label" :title="schema.schema">{{ schema.schema }}</span>
 
-          <span style="margin-left: auto;"></span>
-          <span class="schema-action-btn" @click.stop="handleRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">
-            <span style="transform: scaleX(-1); display: inline-block;">&#9998;</span>
+          <span class="item-actions">
+            <span class="item-action rename-action" @click.stop="handleRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">
+              <span style="transform: scaleX(-1); display: inline-block;">&#9998;</span>
+            </span>
+            <span class="item-action copy-action" @click.stop="store.copySchema(sIdx)" :title="$t('sidebar.copySchema')">
+              <CopyIcon />
+            </span>
+            <span class="item-action delete-action" @click.stop="store.deleteSchema(sIdx)" :title="$t('sidebar.deleteSchema')">&times;</span>
+            <span class="item-action add-table-action" @click.stop="store.addTable(sIdx)" :title="$t('sidebar.addTable')">+</span>
+            <span class="item-count">{{ schema.tables.length }}</span>
           </span>
-          <span class="schema-action-btn copy-schema-btn" @click.stop="store.copySchema(sIdx)" :title="$t('sidebar.copySchema')">
-            <CopyIcon />
-          </span>
-          <span class="schema-action-btn schema-action-delete" @click.stop="store.deleteSchema(sIdx)" :title="$t('sidebar.deleteSchema')">&times;</span>
-          <span class="add-table-btn" @click.stop="store.addTable(sIdx)" :title="$t('sidebar.addTable')">+</span>
-          <span class="schema-table-count">{{ schema.tables.length }}</span>
         </div>
         <div
           v-for="(table, tIdx) in schema.tables"
@@ -255,10 +256,12 @@ function handleRenameSchema(sIdx: number) {
           <span class="sidebar-icon">&#9679;</span>
           <span class="table-name">{{ table.name }}</span>
           <span v-if="table.comment" class="table-comment" :title="table.comment">{{ table.comment }}</span>
-          <span class="copy-table-btn" @click.stop="store.copyTable(sIdx, tIdx)" :title="$t('sidebar.copyTable')">
-            <CopyIcon />
+          <span class="item-actions">
+            <span class="item-action copy-action" @click.stop="store.copyTable(sIdx, tIdx)" :title="$t('sidebar.copyTable')">
+              <CopyIcon />
+            </span>
+            <span class="item-action delete-action" @click.stop="store.deleteTable(sIdx, tIdx)" :title="$t('sidebar.deleteTable')">&times;</span>
           </span>
-          <span class="delete-btn" @click.stop="store.deleteTable(sIdx, tIdx)" :title="$t('sidebar.deleteTable')">&times;</span>
         </div>
         <!-- 尾部 drop 区域：拖到当前 schema 最后一个表之后 -->
         <!-- 始终占位，用 opacity 控制可见性，避免拖拽开始时布局变化 -->
@@ -400,46 +403,74 @@ function handleRenameSchema(sIdx: number) {
   flex-shrink: 0;
 }
 
-/* 表项操作按钮：默认不占布局空间，hover 时右侧淡入，并以渐变过渡 */
-/* 渐变从第一个按钮（复制）的左边缘开始变为纯色，文字一侧为透明过渡 */
-.sidebar-item.table-item::after {
+/* 行内操作按钮组：绝对定位于行右侧，不占布局空间（不悬浮时不会留白）。
+   悬浮时按钮淡入，并用渐变遮罩其下的文字；渐变从第一个按钮的左边缘开始变实。 */
+.item-actions {
+  --actions-fade: 28px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 1;
+  pointer-events: none;       /* 容器本身不拦截点击，保证行可选中 */
+}
+
+/* 渐变遮罩：左侧透明（露出文字）→ 到第一个按钮左缘变为行背景色（遮住文字） */
+.item-actions::before {
   content: "";
   position: absolute;
   top: 0;
-  right: 0;
   bottom: 0;
-  width: 60px;
-  z-index: 0;
+  left: calc(-1 * var(--actions-fade));
+  right: 0;
+  z-index: -1;
   pointer-events: none;
   opacity: 0;
-  background: linear-gradient(to right, transparent, var(--row-hover-bg) 38%);
+  background: linear-gradient(to right, transparent, var(--row-hover-bg) var(--actions-fade));
   transition: opacity .12s ease;
 }
 
-.sidebar-item.table-item:hover::after {
+.sidebar-item:hover .item-actions::before {
   opacity: 1;
 }
 
-.sidebar-item .delete-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
+.item-action {
   opacity: 0;
   pointer-events: none;
-  color: var(--danger);
   cursor: pointer;
   font-size: 11px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  transition: opacity .12s ease, color .12s ease;
 }
 
-.sidebar-item:hover .delete-btn {
+.sidebar-item:hover .item-action {
   opacity: 0.6;
   pointer-events: auto;
 }
 
-.sidebar-item .delete-btn:hover {
+.item-action:hover {
   opacity: 1;
+}
+
+.item-action.delete-action {
+  color: var(--danger);
+}
+
+.item-action.add-table-action {
+  color: var(--success);
+}
+
+.item-count {
+  font-size: 10px;
+  color: #aaa;
+  min-width: 14px;
+  text-align: center;
 }
 
 .schema-label {
@@ -497,91 +528,7 @@ function handleRenameSchema(sIdx: number) {
   color: var(--accent-hover);
 }
 
-/* Schema 项操作区：默认不占布局空间，hover 时右侧淡入，并以渐变过渡 */
-/* 渐变从第一个按钮（重命名）的左边缘开始变为纯色，文字一侧为透明过渡 */
-.sidebar-item.schema-item::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 118px;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(to right, transparent, var(--row-hover-bg) 20%);
-  transition: opacity .12s ease;
-}
-
-.sidebar-item.schema-item:hover::after {
-  opacity: 1;
-}
-
-.schema-table-count {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-  font-size: 10px;
-  color: #aaa;
-}
-
-.schema-item .schema-action-btn,
-.schema-item .add-table-btn,
-.schema-item .copy-schema-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-  opacity: 0;
-  pointer-events: none;
-  cursor: pointer;
-  font-size: 11px;
-  margin-left: 0;
-}
-
-/* 从右到左排列：计数 / 加表 / 删除 / 复制 / 重命名 */
-.schema-item .schema-table-count { right: 8px; }
-.schema-item .add-table-btn { right: 26px; color: var(--success); }
-.schema-item .schema-action-delete { right: 44px; color: var(--danger); }
-.schema-item .copy-schema-btn { right: 62px; color: var(--accent); display: inline-flex; align-items: center; }
-.schema-item .schema-action-btn:not(.schema-action-delete) { right: 80px; color: var(--accent); }
-
-.schema-item:hover .schema-action-btn,
-.schema-item:hover .add-table-btn,
-.schema-item:hover .copy-schema-btn {
-  opacity: 0.6;
-  pointer-events: auto;
-}
-.schema-item .schema-action-btn:hover,
-.schema-item .add-table-btn:hover,
-.schema-item .copy-schema-btn:hover {
-  opacity: 1;
-}
-
-/* 复制按钮（表项）：默认隐藏，hover 时淡入，位于删除按钮左侧 */
-.sidebar-item.table-item .copy-table-btn {
-  position: absolute;
-  right: 26px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-  opacity: 0;
-  pointer-events: none;
-  margin-left: 0;
-  cursor: pointer;
-  color: var(--accent);
-  display: inline-flex;
-  align-items: center;
-}
-.sidebar-item:hover .copy-table-btn {
-  opacity: 0.6;
-  pointer-events: auto;
-}
-.copy-table-btn:hover {
-  opacity: 1;
-}
+/* Schema / 表项的操作按钮样式统一由上方 .item-actions / .item-action / .item-count 处理 */
 
 /* ===== Drag-and-Drop ===== */
 .sidebar-item.table-item.dragging {
