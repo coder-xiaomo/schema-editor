@@ -1,6 +1,6 @@
 # schema-editor - 数据库 Schema JSON 可视化编辑器
 
-[GitHub](https://github.com/coder-xiaomo/schema-editor) · [在线预览](https://coder-xiaomo.github.io/schema-editor/)
+[GitHub](https://github.com/zhang-brook/schema-editor) · [在线预览](https://zhang-brook.github.io/schema-editor/)
 
 数据库 Schema 可视化编辑器 —— 通过图形界面编辑 JSON 格式的 Schema 定义，实时预览 MySQL / PostgreSQL 建表语句，并将结果导出为 JSON 或 SQL 文件。
 
