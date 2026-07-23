@@ -186,13 +186,40 @@ function handleAddSchema() {
   }
 }
 
-function handleRenameSchema(sIdx: number) {
+// ===== Schema 原地重命名 =====
+const editingSchemaIdx = ref(-1)
+const editingSchemaName = ref('')
+
+// 输入框挂载时立即聚焦并全选（函数 ref：v-if 内元素挂载即触发）
+function focusRenameInput(el: unknown) {
+  if (el instanceof HTMLInputElement) {
+    el.focus()
+    el.select()
+  }
+}
+
+function startRenameSchema(sIdx: number) {
   const schema = store.schemas[sIdx]
   if (!schema) return
-  const newName = prompt(t('sidebar.prompt.newName'), schema.schema)
-  if (newName && newName.trim() && newName.trim() !== schema.schema) {
-    store.renameSchema(sIdx, newName.trim())
+  editingSchemaIdx.value = sIdx
+  editingSchemaName.value = schema.schema
+}
+
+function finishRenameSchema() {
+  const sIdx = editingSchemaIdx.value
+  if (sIdx < 0) return
+  const schema = store.schemas[sIdx]
+  editingSchemaIdx.value = -1
+  if (!schema) return
+  const newName = editingSchemaName.value.trim()
+  if (newName && newName !== schema.schema) {
+    store.renameSchema(sIdx, newName)
   }
+}
+
+function cancelRenameSchema() {
+  editingSchemaIdx.value = -1
+  editingSchemaName.value = ''
 }
 </script>
 
@@ -225,10 +252,20 @@ function handleRenameSchema(sIdx: number) {
           @dragend="onDragEnd"
         >
           <span class="sidebar-icon arrow-icon" :class="{ rotated: isExpanded(sIdx) }" @click.stop="toggleExpand(sIdx)">&#9654;</span>
-          <span class="schema-label" :title="schema.schema">{{ schema.schema }}</span>
+          <input
+            v-if="editingSchemaIdx === sIdx"
+            :ref="focusRenameInput"
+            class="schema-rename-input"
+            v-model="editingSchemaName"
+            @click.stop
+            @blur="finishRenameSchema"
+            @keyup.enter="($event.target as HTMLInputElement).blur()"
+            @keyup.escape="cancelRenameSchema"
+          />
+          <span v-else class="schema-label" :title="schema.schema">{{ schema.schema }}</span>
 
           <span class="item-actions">
-            <span class="item-action rename-action" @click.stop="handleRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">
+            <span class="item-action rename-action" @click.stop="startRenameSchema(sIdx)" :title="$t('sidebar.renameSchema')">
               <span style="transform: scaleX(-1); display: inline-block;">&#9998;</span>
             </span>
             <span class="item-action copy-action" @click.stop="store.copySchema(sIdx)" :title="$t('sidebar.copySchema')">
@@ -487,6 +524,19 @@ function handleRenameSchema(sIdx: number) {
   white-space: nowrap;
   vertical-align: middle;
   flex-shrink: 1;
+}
+
+.schema-rename-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 150px;
+  padding: 2px 6px;
+  font-size: 12px;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  outline: none;
 }
 
 /* ===== Scrollbar ===== */
