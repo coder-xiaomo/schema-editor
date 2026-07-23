@@ -32,8 +32,8 @@ const confirmState = useConfirmState()
       <!-- 已打开文件夹：统一使用新版布局（左侧 tab 切换列 + 右侧页面） -->
       <ProjectSettingsPanel v-if="store.projectOpened" />
 
-      <!-- 未打开文件夹：直接提示打开 -->
-      <div v-else class="app-not-opened">
+      <!-- 未打开文件夹：直接提示打开，点击空白区域即可弹出打开文件夹对话框 -->
+      <div v-else class="app-not-opened" @click="store.openProject()">
         <p>{{ $t('app.notOpened') }}</p>
       </div>
     </div>
@@ -120,5 +120,6 @@ const confirmState = useConfirmState()
   font-size: 14px;
   padding: 24px;
   text-align: center;
+  cursor: pointer;
 }
 </style>

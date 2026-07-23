@@ -1,7 +1,5 @@
 doing:
 
-feat: 未打开项目时，点击屏幕中的空白位置也可打开弹出 打开文件夹 弹窗
-
 feat: ai guide i18n
 
 feat: schema 修改名称改为原地修改，而不是弹出 window.confirm 弹窗来修改

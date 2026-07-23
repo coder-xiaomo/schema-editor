@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Schema 编辑器",
-    "notOpened": "拖入文件夹，或从上方菜单选择「文件 → 打开文件夹 (Ctrl+O)」以继续",
+    "notOpened": "点击此处、拖入文件夹，或从上方菜单选择「文件 → 打开文件夹 (Ctrl+O)」以继续",
     "loadingOpenProject": "正在打开项目，请稍候…",
     "dropHint": "释放以打开文件夹"
   },

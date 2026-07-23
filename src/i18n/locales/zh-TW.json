@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Schema 編輯器",
-    "notOpened": "拖入資料夾，或從上方選單選擇「檔案 → 開啟資料夾 (Ctrl+O)」以繼續",
+    "notOpened": "點擊此處、拖入資料夾，或從上方選單選擇「檔案 → 開啟資料夾 (Ctrl+O)」以繼續",
     "loadingOpenProject": "正在開啟專案，請稍候…",
     "dropHint": "釋放以開啟資料夾"
   },

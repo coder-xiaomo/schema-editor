@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "Schema Editor",
-    "notOpened": "Drop a folder here, or choose File → Open Folder (Ctrl+O) from the menu to continue",
+    "notOpened": "Click here, drop a folder, or choose File → Open Folder (Ctrl+O) from the menu to continue",
     "loadingOpenProject": "Opening project, please wait…",
     "dropHint": "Drop to open folder"
   },
